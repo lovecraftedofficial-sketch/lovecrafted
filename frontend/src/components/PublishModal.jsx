@@ -91,6 +91,15 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         } catch {
             /* ignore */
         }
+
+        // Automatically open WhatsApp with all pre-filled details to owner!
+        setTimeout(() => {
+            try {
+                window.open(whatsappOwnerUrl, "_blank");
+            } catch {
+                /* ignore */
+            }
+        }, 500);
     };
 
     // Mailto & WhatsApp notification text for Studio Owner
