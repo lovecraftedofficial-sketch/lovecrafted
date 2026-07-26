@@ -6,7 +6,6 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const OWNER_UPI_ID = "8618379301@pz";
     const OWNER_NAME = "Love Website Studio";
 
-    // Dynamically fetch price from template registry
     const templateEntry = getTemplate(templateSlug || "sunset-love");
     const priceAmount = templateEntry?.config?.price || 1999;
     const priceFormatted = priceAmount.toLocaleString("en-IN");
@@ -24,49 +23,59 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     if (!isOpen) return null;
 
     const handleFormSubmit = (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
 
+        const cleanSender = senderName.trim() || "love";
+        const cleanPartner = partnerName.trim() || "forever";
         const slugPart = customSlug.trim()
             ? customSlug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
-            : `${senderName || "love"}-and-${partnerName || "forever"}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+            : `${cleanSender}-and-${cleanPartner}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
 
         setGeneratedSlug(slugPart);
         setStep("payment");
     };
 
-    // Encode content into URL string so live link is ready
+    // Safely encode content into URL string
     let encodedData = "";
     try {
         const jsonStr = JSON.stringify(customContent || {});
-        encodedData = encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
+        const bytes = new TextEncoder().encode(jsonStr);
+        let binaryStr = "";
+        for (let i = 0; i < bytes.length; i++) {
+            binaryStr += String.fromCharCode(bytes[i]);
+        }
+        encodedData = encodeURIComponent(btoa(binaryStr));
     } catch {
-        encodedData = "";
+        try {
+            encodedData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(customContent || {})))));
+        } catch {
+            encodedData = "";
+        }
     }
 
-    const baseUrl = window.location.origin;
-    const generatedLink = `${baseUrl}/v/${generatedSlug}?slug=${templateSlug}&d=${encodedData}`;
+    const activeSlug = generatedSlug || "love-and-forever";
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovewebsitestudio.netlify.app";
+    const generatedLink = `${baseUrl}/v/${activeSlug}?slug=${templateSlug || "sunset-love"}&d=${encodedData}`;
 
-    // Dynamic UPI Payment URL & QR Code link matching template price
-    const upiPayUrl = `upi://pay?pa=${OWNER_UPI_ID}&pn=${encodeURIComponent(OWNER_NAME)}&am=${priceAmount}&cu=INR&tn=${encodeURIComponent(`Order-${generatedSlug}`)}`;
+    const upiPayUrl = `upi://pay?pa=${OWNER_UPI_ID}&pn=${encodeURIComponent(OWNER_NAME)}&am=${priceAmount}&cu=INR&tn=${encodeURIComponent(`Order-${activeSlug}`)}`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiPayUrl)}`;
 
     const handleCopyUpi = () => {
-        navigator.clipboard.writeText(OWNER_UPI_ID);
+        if (navigator.clipboard) navigator.clipboard.writeText(OWNER_UPI_ID);
         setCopiedUpi(true);
         setTimeout(() => setCopiedUpi(false), 2000);
     };
 
     const handleCopyLink = () => {
-        navigator.clipboard.writeText(generatedLink);
+        if (navigator.clipboard) navigator.clipboard.writeText(generatedLink);
         setCopiedLink(true);
         setTimeout(() => setCopiedLink(false), 2000);
     };
 
     const handlePaymentSubmit = (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         setStep("success");
 
-        // Save persistent record locally
         try {
             const record = {
                 senderName,
@@ -78,14 +87,14 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 generatedLink,
                 submittedAt: new Date().toISOString(),
             };
-            localStorage.setItem(`lws:published:${templateSlug}:${generatedSlug}`, JSON.stringify(record));
+            localStorage.setItem(`lws:published:${templateSlug}:${activeSlug}`, JSON.stringify(record));
         } catch {
             /* ignore */
         }
     };
 
     // Mailto & WhatsApp notification text for Studio Owner
-    const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} UPI PAYMENT] Order for ${senderName} & ${partnerName}`);
+    const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} UPI PAYMENT] Order for ${senderName || "Customer"} & ${partnerName || "Partner"}`);
     const emailBody = encodeURIComponent(
         `Hi Love Website Studio!\n\n` +
         `I have completed payment of ₹${priceFormatted} to your UPI ID (${OWNER_UPI_ID}).\n\n` +
@@ -114,6 +123,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
             <div className="bg-[#181114] border border-pink-500/30 rounded-2xl p-6 max-w-md w-full text-center relative shadow-2xl overflow-y-auto max-h-[90vh]">
                 <button
+                    type="button"
                     onClick={onClose}
                     className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors"
                 >
@@ -207,7 +217,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
                         <button
                             type="submit"
-                            className="w-full lws-btn-primary py-3 flex items-center justify-center gap-2 text-sm font-semibold mt-4 shadow-lg"
+                            className="w-full lws-btn-primary py-3 flex items-center justify-center gap-2 text-sm font-semibold mt-4 shadow-lg cursor-pointer"
                         >
                             Proceed to Pay ₹{priceFormatted} <ArrowRight size={15} />
                         </button>
@@ -228,6 +238,9 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                     src={qrCodeUrl}
                                     alt="Owner UPI QR Code"
                                     className="w-40 h-40 mx-auto"
+                                    onError={(e) => {
+                                        e.target.style.display = "none";
+                                    }}
                                 />
                             </div>
 
@@ -265,7 +278,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
                         <button
                             type="submit"
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg transition-colors"
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg transition-colors cursor-pointer"
                         >
                             <CheckCircle2 size={16} /> Submit Payment Proof (₹{priceFormatted})
                         </button>
@@ -280,7 +293,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 <CheckCircle2 size={16} /> Payment Proof Received!
                             </div>
                             <p className="text-emerald-200/80 text-[11px]">
-                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono">{utrNumber}</span>) have been sent to Studio for verification.
+                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono">{utrNumber || "Verified"}</span>) have been sent to Studio for verification.
                             </p>
                         </div>
 
@@ -294,6 +307,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
                             <div className="flex gap-2 pt-1">
                                 <button
+                                    type="button"
                                     onClick={handleCopyLink}
                                     className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10"
                                 >
@@ -311,7 +325,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                     href={generatedLink}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10"
+                                    className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 flex items-center gap-1"
                                 >
                                     <ExternalLink size={13} /> Preview Site
                                 </a>
@@ -334,7 +348,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
                             <a
                                 href={mailtoUrl}
-                                className="w-full lws-btn-ghost py-2.5 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5"
+                                className="w-full lws-btn-ghost py-2.5 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5 flex items-center justify-center gap-2"
                             >
                                 <Send size={13} /> Confirm Payment via Email
                             </a>
