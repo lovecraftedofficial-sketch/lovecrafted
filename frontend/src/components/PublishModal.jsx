@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, Copy, Check, QrCode, ShieldCheck, CheckCircle2, ArrowRight } from "lucide-react";
+import { X, Send, Copy, Check, QrCode, ShieldCheck, CheckCircle2, ArrowRight, ExternalLink } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
