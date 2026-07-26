@@ -1,0 +1,319 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   LOVE WEBSITE STUDIO — Dark luxury design tokens
+   ============================================================ */
+:root {
+    /* Brand palette */
+    --lws-bg: #0a0507;
+    --lws-bg-2: #120709;
+    --lws-surface: #1a0810;
+    --lws-surface-2: #22101a;
+    --lws-border: #2a1420;
+    --lws-border-strong: #3a1c2c;
+
+    --lws-burgundy: #4a0e1f;
+    --lws-burgundy-2: #6a1730;
+    --lws-pink: #f8b5c4;
+    --lws-pink-soft: #ffd9e2;
+    --lws-gold: #d4a574;
+    --lws-cream: #f5e6d3;
+
+    --lws-text: #f5e6d3;
+    --lws-text-muted: #a08a95;
+    --lws-text-dim: #6a5560;
+
+    /* shadcn/ui token bindings so existing components inherit dark luxury */
+    --background: 340 20% 4%;
+    --foreground: 30 50% 90%;
+    --card: 340 30% 7%;
+    --card-foreground: 30 50% 90%;
+    --popover: 340 30% 7%;
+    --popover-foreground: 30 50% 90%;
+    --primary: 350 60% 82%;
+    --primary-foreground: 340 40% 8%;
+    --secondary: 340 30% 12%;
+    --secondary-foreground: 30 40% 88%;
+    --muted: 340 20% 10%;
+    --muted-foreground: 330 15% 65%;
+    --accent: 340 40% 18%;
+    --accent-foreground: 30 50% 90%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 30 50% 95%;
+    --border: 340 30% 14%;
+    --input: 340 30% 12%;
+    --ring: 350 60% 70%;
+    --radius: 0.75rem;
+}
+
+* {
+    border-color: hsl(var(--border));
+}
+
+html,
+body {
+    background: var(--lws-bg);
+    color: var(--lws-text);
+    font-family:
+        "Manrope",
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(
+            1000px 700px at 15% -10%,
+            rgba(74, 14, 31, 0.55),
+            transparent 60%
+        ),
+        radial-gradient(
+            900px 600px at 100% 10%,
+            rgba(212, 165, 116, 0.08),
+            transparent 60%
+        ),
+        radial-gradient(
+            1200px 800px at 50% 120%,
+            rgba(248, 181, 196, 0.06),
+            transparent 60%
+        ),
+        var(--lws-bg);
+    min-height: 100vh;
+}
+
+/* Subtle film grain overlay for depth */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+}
+
+.font-display {
+    font-family: "Fraunces", "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+}
+.font-body {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+.font-italic-display {
+    font-family: "Fraunces", ui-serif, Georgia, serif;
+    font-style: italic;
+    letter-spacing: -0.01em;
+}
+
+/* Utility classes */
+.lws-glass {
+    background: linear-gradient(
+        180deg,
+        rgba(34, 16, 26, 0.65),
+        rgba(18, 7, 9, 0.4)
+    );
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(212, 165, 116, 0.08);
+}
+.lws-card {
+    background: linear-gradient(180deg, #1a0810 0%, #12070b 100%);
+    border: 1px solid var(--lws-border);
+    border-radius: 1rem;
+}
+.lws-card:hover {
+    border-color: var(--lws-border-strong);
+}
+.lws-gradient-text {
+    background: linear-gradient(120deg, #f5e6d3 0%, #f8b5c4 60%, #d4a574 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+.lws-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(248, 181, 196, 0.25);
+    background: rgba(248, 181, 196, 0.06);
+    color: var(--lws-pink);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.lws-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: 9999px;
+    background: linear-gradient(120deg, #f8b5c4 0%, #d4a574 100%);
+    color: #2a0714;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        filter 0.25s ease;
+    box-shadow: 0 10px 40px -12px rgba(248, 181, 196, 0.55);
+}
+.lws-btn-primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 14px 50px -12px rgba(248, 181, 196, 0.7);
+}
+.lws-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: 9999px;
+    color: var(--lws-cream);
+    border: 1px solid var(--lws-border-strong);
+    background: rgba(255, 255, 255, 0.02);
+    transition:
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+.lws-btn-ghost:hover {
+    border-color: rgba(248, 181, 196, 0.5);
+    background: rgba(248, 181, 196, 0.05);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #0a0507;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a1420;
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3a1c2c;
+}
+
+/* Selection */
+::selection {
+    background: rgba(248, 181, 196, 0.35);
+    color: #fff;
+}
+
+/* Floating heart animation */
+@keyframes float-heart {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(-140vh) rotate(30deg);
+        opacity: 0;
+    }
+}
+.floating-heart {
+    position: absolute;
+    bottom: -40px;
+    color: rgba(248, 181, 196, 0.55);
+    animation: float-heart 18s linear infinite;
+    pointer-events: none;
+}
+
+/* Slow pulse */
+@keyframes soft-pulse {
+    0%,
+    100% {
+        opacity: 0.65;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+.soft-pulse {
+    animation: soft-pulse 3.5s ease-in-out infinite;
+}
+
+/* Sheen animation */
+@keyframes sheen {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+.sheen-text {
+    background: linear-gradient(
+        90deg,
+        #f5e6d3 0%,
+        #ffd9e2 40%,
+        #d4a574 60%,
+        #f5e6d3 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: sheen 6s linear infinite;
+}
+
+/* Focus rings */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus-visible {
+    outline: 2px solid rgba(248, 181, 196, 0.55);
+    outline-offset: 2px;
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
