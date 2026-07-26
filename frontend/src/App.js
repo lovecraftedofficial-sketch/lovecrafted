@@ -97,7 +97,8 @@ function App() {
                 </Routes>
             </BrowserRouter>
         </div>
-    );
+    </ErrorBoundary>
+);
 }
 
 export default App;
