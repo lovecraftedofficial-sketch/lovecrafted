@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, Copy, Check, QrCode, ShieldCheck, CheckCircle2, ArrowRight, ExternalLink } from "lucide-react";
+import { X, Send, Copy, Check, QrCode, ShieldCheck, CheckCircle2, ArrowRight, ExternalLink, Clock, Heart } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
@@ -146,12 +146,12 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 <h3 className="font-display text-2xl text-white mb-1">
                     {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
                     {step === "payment" && `Scan & Pay ₹${priceFormatted}`}
-                    {step === "success" && "Order Sent to Studio! 🎉"}
+                    {step === "success" && "Thank You For Visiting! 🎉"}
                 </h3>
                 <p className="text-neutral-400 text-xs mb-5">
                     {step === "form" && `Enter details to generate your partner's custom website draft for ${templateEntry?.config?.name || "this template"}.`}
                     {step === "payment" && `Scan with Google Pay, PhonePe, or Paytm to pay ₹${priceFormatted} directly to owner's bank account.`}
-                    {step === "success" && "Your order & customized website link have been sent to Love Website Studio via WhatsApp/Email!"}
+                    {step === "success" && "Your order & payment details have been sent to Studio Owner for verification!"}
                 </p>
 
                 {/* STEP 1: FORM */}
@@ -260,7 +260,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 <button
                                     type="button"
                                     onClick={handleCopyUpi}
-                                    className="text-xs text-pink-300 hover:text-pink-200 bg-pink-500/10 px-2.5 py-1.5 rounded-lg border border-pink-500/20"
+                                    className="text-xs text-pink-300 hover:text-pink-200 bg-pink-500/10 px-2.5 py-1.5 rounded-lg border border-pink-500/20 cursor-pointer"
                                 >
                                     {copiedUpi ? "Copied!" : <Copy size={13} />}
                                 </button>
@@ -305,31 +305,45 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </div>
                 )}
 
-                {/* STEP 3: SUCCESS & PROOF SUBMISSION */}
+                {/* STEP 3: SUCCESS & PAYMENT VERIFICATION PROMPT */}
                 {step === "success" && (
                     <div className="space-y-4 text-left animate-fadeIn">
-                        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3.5 text-emerald-300 text-xs space-y-1">
-                            <div className="flex items-center gap-1.5 font-semibold text-sm">
-                                <CheckCircle2 size={16} /> Order Sent to Studio Owner!
+                        {/* Romantic Thank You Card */}
+                        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/15 to-amber-500/10 border border-amber-400/30 rounded-2xl p-5 text-center space-y-3 shadow-xl">
+                            <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 flex items-center justify-center mx-auto shadow-inner">
+                                <Heart size={24} className="fill-rose-400 text-rose-400 animate-pulse" />
                             </div>
-                            <p className="text-emerald-200/80 text-[11px]">
-                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono">{utrNumber || "Verified"}</span>) and customized link have been sent directly to Love Website Studio via WhatsApp/Email!
+
+                            <h4 className="font-display text-xl text-amber-100 font-bold">
+                                Thank You For Visiting! 💖
+                            </h4>
+
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
+                                <Clock size={13} className="animate-spin" /> Payment Verification In Progress
+                            </div>
+
+                            <p className="text-xs text-neutral-200 leading-relaxed font-serif italic pt-1">
+                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono text-amber-300">{utrNumber || "Verified"}</span>) have been sent to Studio Owner.
                             </p>
+
+                            <div className="bg-black/60 border border-white/10 rounded-xl p-3 text-xs text-pink-200 font-medium">
+                                ✨ <b>Your personalized website link will be DM'd / sent to you on WhatsApp / Email within a few minutes</b> after bank payment verification!
+                            </div>
                         </div>
 
-                        {/* Generated Link Display */}
-                        <div className="bg-black/60 border border-pink-500/40 rounded-xl p-3.5 space-y-2">
+                        {/* Generated Link Preview */}
+                        <div className="bg-black/60 border border-pink-500/30 rounded-xl p-3.5 space-y-2">
                             <span className="text-[10px] uppercase tracking-widest text-pink-300 font-semibold block">
-                                🔗 Requested Custom Website Link
+                                🔗 Your Custom Website Draft Link
                             </span>
-                            <div className="text-xs font-mono text-neutral-200 break-all bg-neutral-900/80 p-2.5 rounded-lg border border-white/10">
+                            <div className="text-xs font-mono text-neutral-300 break-all bg-neutral-900/80 p-2.5 rounded-lg border border-white/10">
                                 {generatedLink}
                             </div>
                             <div className="flex gap-2 pt-1">
                                 <button
                                     type="button"
                                     onClick={handleCopyLink}
-                                    className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10"
+                                    className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 cursor-pointer"
                                 >
                                     {copiedLink ? (
                                         <>
@@ -352,24 +366,14 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
                         </div>
 
-                        <div className="space-y-2 pt-2">
-                            <p className="text-xs text-neutral-400 text-center font-medium">
-                                Didn't open automatically? Click below:
-                            </p>
+                        <div className="space-y-2 pt-1">
                             <a
                                 href={whatsappOwnerUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
                             >
-                                📲 Open WhatsApp Message to Studio
-                            </a>
-
-                            <a
-                                href={mailtoUrl}
-                                className="w-full lws-btn-ghost py-2 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5"
-                            >
-                                <Send size={13} /> Open Email to Studio
+                                📲 Contact Studio on WhatsApp
                             </a>
                         </div>
                     </div>
