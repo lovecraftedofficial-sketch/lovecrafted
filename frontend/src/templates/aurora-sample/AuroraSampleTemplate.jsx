@@ -12,7 +12,8 @@ import LoveLetter from "./components/LoveLetter";
  * Rendered from customer `content` produced by the schema-driven editor.
  * The template never knows any customer identity. It only renders content.
  */
-export default function AuroraSampleTemplate({ content = {} }) {
+export default function AuroraSampleTemplate(props) {
+    const content = props.content || props.data || props || {};
     return (
         <div className="relative">
             <Hero content={content} />
