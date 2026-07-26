@@ -36,7 +36,7 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
         } catch {
             /* ignore */
         }
-        return structuredClone(defaultDataFromSchema);
+        return JSON.parse(JSON.stringify(defaultDataFromSchema || {}));
     }, [slug, siteId, defaultDataFromSchema]);
 
     const [content, setContent] = useState(initialContent);
