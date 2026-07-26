@@ -15,10 +15,21 @@ export default function ViewWebsitePage() {
         // First try decoding from URL parameter
         if (encodedData) {
             try {
-                const decodedStr = decodeURIComponent(escape(atob(decodeURIComponent(encodedData))));
+                const cleanEncoded = decodeURIComponent(encodedData);
+                const rawBinary = atob(cleanEncoded);
+                const decodedStr = decodeURIComponent(
+                    Array.from(rawBinary)
+                        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join("")
+                );
                 return JSON.parse(decodedStr);
             } catch (e) {
-                console.error("Failed to decode URL content data", e);
+                try {
+                    const fallbackStr = decodeURIComponent(escape(atob(decodeURIComponent(encodedData))));
+                    return JSON.parse(fallbackStr);
+                } catch (err) {
+                    console.error("Failed to decode URL content data", err);
+                }
             }
         }
 
