@@ -364,17 +364,16 @@ export default function LandingPage() {
                             a: "Yes. Your website lives at a private random link. Password protection is coming.",
                         },
                         {
-                            q: "How do I pay?",
+                            q: "How do I pay & get my link?",
                             a: (
                                 <span>
-                                    To order or customize a template, send us your details via email at{" "}
+                                    You pay directly via UPI QR Code (<strong className="text-[color:var(--lws-pink)]">8618379301@pz</strong>). After payment, enter your 12-digit UTR transaction ref and click <strong>1-Click WhatsApp Order</strong> or <strong>Email Order</strong> at{" "}
                                     <a
                                         href="mailto:lovewebsitestudio@gmail.com"
                                         className="text-[color:var(--lws-pink)] underline font-medium hover:opacity-80 transition-opacity"
                                     >
                                         lovewebsitestudio@gmail.com
-                                    </a>{" "}
-                                    or Instagram DM. You can pay via UPI/Card, and we'll deliver your private custom website link in 15 minutes!
+                                    </a>. You'll receive your active live link instantly!
                                 </span>
                             ),
                         },
