@@ -72,27 +72,6 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         setTimeout(() => setCopiedLink(false), 2000);
     };
 
-    const handlePaymentSubmit = (e) => {
-        if (e && e.preventDefault) e.preventDefault();
-        setStep("success");
-
-        try {
-            const record = {
-                senderName,
-                partnerName,
-                whatsappNumber,
-                templateSlug,
-                price: priceAmount,
-                utrNumber,
-                generatedLink,
-                submittedAt: new Date().toISOString(),
-            };
-            localStorage.setItem(`lws:published:${templateSlug}:${activeSlug}`, JSON.stringify(record));
-        } catch {
-            /* ignore */
-        }
-    };
-
     // Mailto & WhatsApp notification text for Studio Owner
     const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} UPI PAYMENT] Order for ${senderName || "Customer"} & ${partnerName || "Partner"}`);
     const emailBody = encodeURIComponent(
@@ -119,6 +98,36 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     );
     const whatsappOwnerUrl = `https://wa.me/?text=${whatsappOwnerText}`;
 
+    const handlePaymentSubmit = (e, targetMethod = "whatsapp") => {
+        if (e && e.preventDefault) e.preventDefault();
+
+        // Save persistent record locally
+        try {
+            const record = {
+                senderName,
+                partnerName,
+                whatsappNumber,
+                templateSlug,
+                price: priceAmount,
+                utrNumber,
+                generatedLink,
+                submittedAt: new Date().toISOString(),
+            };
+            localStorage.setItem(`lws:published:${templateSlug}:${activeSlug}`, JSON.stringify(record));
+        } catch {
+            /* ignore */
+        }
+
+        setStep("success");
+
+        // AUTOMATICALLY open WhatsApp or Email with all customer details & generated link!
+        if (targetMethod === "email") {
+            window.location.href = mailtoUrl;
+        } else {
+            window.open(whatsappOwnerUrl, "_blank");
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
             <div className="bg-[#181114] border border-pink-500/30 rounded-2xl p-6 max-w-md w-full text-center relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -137,12 +146,12 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 <h3 className="font-display text-2xl text-white mb-1">
                     {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
                     {step === "payment" && `Scan & Pay ₹${priceFormatted}`}
-                    {step === "success" && "Order & Payment Submitted! 🎉"}
+                    {step === "success" && "Order Sent to Studio! 🎉"}
                 </h3>
                 <p className="text-neutral-400 text-xs mb-5">
                     {step === "form" && `Enter details to generate your partner's custom website draft for ${templateEntry?.config?.name || "this template"}.`}
                     {step === "payment" && `Scan with Google Pay, PhonePe, or Paytm to pay ₹${priceFormatted} directly to owner's bank account.`}
-                    {step === "success" && "Your payment proof has been submitted to Love Website Studio!"}
+                    {step === "success" && "Your order & customized website link have been sent to Love Website Studio via WhatsApp/Email!"}
                 </p>
 
                 {/* STEP 1: FORM */}
@@ -224,9 +233,9 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </form>
                 )}
 
-                {/* STEP 2: UPI PAYMENT & QR CODE */}
+                {/* STEP 2: UPI PAYMENT & AUTOMATIC CONTACT OWNER */}
                 {step === "payment" && (
-                    <form onSubmit={handlePaymentSubmit} className="space-y-4 text-left animate-fadeIn">
+                    <div className="space-y-4 text-left animate-fadeIn">
                         <div className="bg-black/70 border border-pink-500/40 rounded-xl p-4 text-center space-y-3">
                             <div className="flex items-center justify-center gap-2 text-xs text-pink-300 font-semibold uppercase tracking-wider">
                                 <QrCode size={16} /> Pay via GPay / PhonePe / Paytm
@@ -264,7 +273,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
                         <div>
                             <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                                Enter 12-Digit UPI Ref / UTR No. (after payment)
+                                Enter 12-Digit UPI Ref / UTR No. (after payment) *
                             </label>
                             <input
                                 type="text"
@@ -276,13 +285,24 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             />
                         </div>
 
-                        <button
-                            type="submit"
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg transition-colors cursor-pointer"
-                        >
-                            <CheckCircle2 size={16} /> Submit Payment Proof (₹{priceFormatted})
-                        </button>
-                    </form>
+                        <div className="space-y-2 pt-1">
+                            <button
+                                type="button"
+                                onClick={(e) => handlePaymentSubmit(e, "whatsapp")}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors cursor-pointer"
+                            >
+                                📲 Submit & Send Order via WhatsApp
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={(e) => handlePaymentSubmit(e, "email")}
+                                className="w-full lws-btn-ghost py-2.5 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5 cursor-pointer"
+                            >
+                                <Send size={13} /> Submit & Send Order via Email
+                            </button>
+                        </div>
+                    </div>
                 )}
 
                 {/* STEP 3: SUCCESS & PROOF SUBMISSION */}
@@ -290,10 +310,10 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     <div className="space-y-4 text-left animate-fadeIn">
                         <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3.5 text-emerald-300 text-xs space-y-1">
                             <div className="flex items-center gap-1.5 font-semibold text-sm">
-                                <CheckCircle2 size={16} /> Payment Proof Received!
+                                <CheckCircle2 size={16} /> Order Sent to Studio Owner!
                             </div>
                             <p className="text-emerald-200/80 text-[11px]">
-                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono">{utrNumber || "Verified"}</span>) have been sent to Studio for verification.
+                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono">{utrNumber || "Verified"}</span>) and customized link have been sent directly to Love Website Studio via WhatsApp/Email!
                             </p>
                         </div>
 
@@ -332,25 +352,24 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
                         </div>
 
-                        {/* Direct Notification Buttons to Studio Owner */}
-                        <div className="space-y-2.5 pt-2">
-                            <p className="text-xs text-neutral-400 font-medium">
-                                Send payment ref to Studio to get instant live link:
+                        <div className="space-y-2 pt-2">
+                            <p className="text-xs text-neutral-400 text-center font-medium">
+                                Didn't open automatically? Click below:
                             </p>
                             <a
                                 href={whatsappOwnerUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
                             >
-                                📲 Confirm ₹{priceFormatted} Payment via WhatsApp
+                                📲 Open WhatsApp Message to Studio
                             </a>
 
                             <a
                                 href={mailtoUrl}
-                                className="w-full lws-btn-ghost py-2.5 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5 flex items-center justify-center gap-2"
+                                className="w-full lws-btn-ghost py-2 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5"
                             >
-                                <Send size={13} /> Confirm Payment via Email
+                                <Send size={13} /> Open Email to Studio
                             </a>
                         </div>
                     </div>
