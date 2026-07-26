@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, Copy, Check, QrCode, ShieldCheck, CheckCircle2, ArrowRight, ExternalLink, Clock, Heart } from "lucide-react";
+import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
@@ -18,7 +18,6 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const [step, setStep] = useState("form"); // "form" | "payment" | "success"
     const [generatedSlug, setGeneratedSlug] = useState("");
     const [copiedUpi, setCopiedUpi] = useState(false);
-    const [copiedLink, setCopiedLink] = useState(false);
 
     if (!isOpen) return null;
 
@@ -66,14 +65,8 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         setTimeout(() => setCopiedUpi(false), 2000);
     };
 
-    const handleCopyLink = () => {
-        if (navigator.clipboard) navigator.clipboard.writeText(generatedLink);
-        setCopiedLink(true);
-        setTimeout(() => setCopiedLink(false), 2000);
-    };
-
-    // Mailto & WhatsApp notification text for Studio Owner
-    const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} UPI PAYMENT] Order for ${senderName || "Customer"} & ${partnerName || "Partner"}`);
+    // Mailto & WhatsApp notification text sent EXCLUSIVELY to Studio Owner
+    const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} ORDER] Verification Required for ${senderName || "Customer"} & ${partnerName || "Partner"}`);
     const emailBody = encodeURIComponent(
         `Hi Love Website Studio!\n\n` +
         `I have completed payment of ₹${priceFormatted} to your UPI ID (${OWNER_UPI_ID}).\n\n` +
@@ -82,8 +75,11 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         `📱 WhatsApp Number: ${whatsappNumber}\n` +
         `💑 Couple Names: ${senderName} & ${partnerName}\n` +
         `🎨 Template: ${templateEntry?.config?.name || templateSlug} (₹${priceFormatted})\n\n` +
-        `🔗 REQUESTED LIVE LINK:\n${generatedLink}\n\n` +
-        `Please verify ₹${priceFormatted} in your bank account and send me my active live link!`
+        `======================================\n` +
+        `🔗 CUSTOMER'S CUSTOMIZED WEBSITE LINK:\n` +
+        `${generatedLink}\n` +
+        `======================================\n\n` +
+        `Please verify ₹${priceFormatted} in your bank app (GPay/PhonePe). After verification, reply with this link to the customer!`
     );
     const mailtoUrl = `mailto:lovewebsitestudio@gmail.com?subject=${emailSubject}&body=${emailBody}`;
 
@@ -92,9 +88,9 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         `👤 *Name*: ${senderName}\n` +
         `📱 *WhatsApp*: ${whatsappNumber}\n` +
         `💑 *Couple*: ${senderName} & ${partnerName}\n` +
-        `💳 *UTR / Transaction Ref*: ${utrNumber}\n` +
-        `🔗 *Link Requested*:\n${generatedLink}\n\n` +
-        `Please verify ₹${priceFormatted} in your account!`
+        `💳 *UTR Ref*: ${utrNumber}\n\n` +
+        `🔗 *Customized Website Link*:\n${generatedLink}\n\n` +
+        `Please verify ₹${priceFormatted} in your bank account!`
     );
     const whatsappOwnerUrl = `https://wa.me/?text=${whatsappOwnerText}`;
 
@@ -120,7 +116,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
         setStep("success");
 
-        // AUTOMATICALLY open WhatsApp or Email with all customer details & generated link!
+        // AUTOMATICALLY open WhatsApp or Email to transmit details & link EXCLUSIVELY to Studio Owner!
         if (targetMethod === "email") {
             window.location.href = mailtoUrl;
         } else {
@@ -146,12 +142,12 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 <h3 className="font-display text-2xl text-white mb-1">
                     {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
                     {step === "payment" && `Scan & Pay ₹${priceFormatted}`}
-                    {step === "success" && "Thank You For Visiting! 🎉"}
+                    {step === "success" && "Order Submitted Successfully! 🎉"}
                 </h3>
                 <p className="text-neutral-400 text-xs mb-5">
                     {step === "form" && `Enter details to generate your partner's custom website draft for ${templateEntry?.config?.name || "this template"}.`}
                     {step === "payment" && `Scan with Google Pay, PhonePe, or Paytm to pay ₹${priceFormatted} directly to owner's bank account.`}
-                    {step === "success" && "Your order & payment details have been sent to Studio Owner for verification!"}
+                    {step === "success" && "Your order details have been sent to Studio Owner for payment verification."}
                 </p>
 
                 {/* STEP 1: FORM */}
@@ -305,64 +301,37 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </div>
                 )}
 
-                {/* STEP 3: SUCCESS & PAYMENT VERIFICATION PROMPT */}
+                {/* STEP 3: SUCCESS & PAYMENT VERIFICATION PROMPT (LINK IS HELD UNTIL OWNER VERIFIES) */}
                 {step === "success" && (
                     <div className="space-y-4 text-left animate-fadeIn">
-                        {/* Romantic Thank You Card */}
+                        {/* Romantic Confirmation Card */}
                         <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/15 to-amber-500/10 border border-amber-400/30 rounded-2xl p-5 text-center space-y-3 shadow-xl">
                             <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 flex items-center justify-center mx-auto shadow-inner">
                                 <Heart size={24} className="fill-rose-400 text-rose-400 animate-pulse" />
                             </div>
 
                             <h4 className="font-display text-xl text-amber-100 font-bold">
-                                Thank You For Visiting! 💖
+                                Thank You For Ordering! 💖
                             </h4>
 
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
                                 <Clock size={13} className="animate-spin" /> Payment Verification In Progress
                             </div>
 
-                            <p className="text-xs text-neutral-200 leading-relaxed font-serif italic pt-1">
-                                Your payment details for ₹{priceFormatted} (Ref: <span className="font-mono text-amber-300">{utrNumber || "Verified"}</span>) have been sent to Studio Owner.
-                            </p>
-
-                            <div className="bg-black/60 border border-white/10 rounded-xl p-3 text-xs text-pink-200 font-medium">
-                                ✨ <b>Your personalized website link will be DM'd / sent to you on WhatsApp / Email within a few minutes</b> after bank payment verification!
+                            <div className="bg-neutral-900/90 border border-white/10 rounded-xl p-3 text-left space-y-1.5 text-xs text-neutral-300">
+                                <div><span className="text-neutral-400">Customer:</span> <span className="text-white font-medium">{senderName}</span></div>
+                                <div><span className="text-neutral-400">Partner:</span> <span className="text-white font-medium">{partnerName}</span></div>
+                                <div><span className="text-neutral-400">Amount Paid:</span> <span className="text-amber-300 font-bold">₹{priceFormatted}</span></div>
+                                <div><span className="text-neutral-400">UTR / Ref:</span> <span className="font-mono text-emerald-300">{utrNumber || "Submitted"}</span></div>
                             </div>
-                        </div>
 
-                        {/* Generated Link Preview */}
-                        <div className="bg-black/60 border border-pink-500/30 rounded-xl p-3.5 space-y-2">
-                            <span className="text-[10px] uppercase tracking-widest text-pink-300 font-semibold block">
-                                🔗 Your Custom Website Draft Link
-                            </span>
-                            <div className="text-xs font-mono text-neutral-300 break-all bg-neutral-900/80 p-2.5 rounded-lg border border-white/10">
-                                {generatedLink}
-                            </div>
-                            <div className="flex gap-2 pt-1">
-                                <button
-                                    type="button"
-                                    onClick={handleCopyLink}
-                                    className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 cursor-pointer"
-                                >
-                                    {copiedLink ? (
-                                        <>
-                                            <Check size={13} className="text-emerald-400" /> Copied!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy size={13} /> Copy Link
-                                        </>
-                                    )}
-                                </button>
-                                <a
-                                    href={generatedLink}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 flex items-center gap-1"
-                                >
-                                    <ExternalLink size={13} /> Preview Site
-                                </a>
+                            <div className="bg-black/70 border border-amber-400/30 rounded-xl p-3.5 text-xs text-amber-200 text-center font-medium space-y-1">
+                                <div className="flex items-center justify-center gap-1.5 text-amber-300 font-semibold">
+                                    <Lock size={14} /> Link Reserved For Payment Verification
+                                </div>
+                                <p className="text-[11px] text-neutral-300">
+                                    Your customized website link has been sent directly to <b>Studio Owner</b> via WhatsApp/Email. As soon as Studio Owner verifies ₹{priceFormatted} in bank account, your live website link will be sent to you on WhatsApp/Email!
+                                </p>
                             </div>
                         </div>
 
@@ -373,7 +342,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 rel="noreferrer"
                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
                             >
-                                📲 Contact Studio on WhatsApp
+                                📲 Re-send Order Details to Studio WhatsApp
                             </a>
                         </div>
                     </div>
