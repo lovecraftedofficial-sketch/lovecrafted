@@ -20,6 +20,8 @@ function ScrollToTop() {
     return null;
 }
 
+import ErrorBoundary from "@/components/ErrorBoundary";
+
 function Shell({ children, hideFooter = false }) {
     return (
         <div className="relative z-[2]">
@@ -32,11 +34,12 @@ function Shell({ children, hideFooter = false }) {
 
 function App() {
     return (
-        <div className="App">
-            <BrowserRouter>
-                <ScrollToTop />
-                {/* Global Sleek Ambient Music Player */}
-                <BackgroundMusic />
+        <ErrorBoundary>
+            <div className="App">
+                <BrowserRouter>
+                    <ScrollToTop />
+                    {/* Global Sleek Ambient Music Player */}
+                    <BackgroundMusic />
 
                 <Routes>
                     <Route
