@@ -12,15 +12,9 @@ import EditorPage from "@/pages/EditorPage";
 import ViewWebsitePage from "@/pages/ViewWebsitePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
-function ScrollToTop() {
-    const { pathname } = useLocation();
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: "auto" });
-    }, [pathname]);
-    return null;
-}
-
 import ErrorBoundary from "@/components/ErrorBoundary";
+
+function ScrollToTop() {
 
 function Shell({ children, hideFooter = false }) {
     return (
