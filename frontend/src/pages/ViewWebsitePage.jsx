@@ -73,7 +73,7 @@ export default function ViewWebsitePage() {
                     className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-black/80 border border-pink-500/30 text-white/90 hover:text-pink-300 text-xs shadow-xl backdrop-blur-md transition-all hover:scale-105"
                 >
                     <Heart size={13} className="text-pink-500 fill-pink-500 animate-pulse" />
-                    <span>Created with <b>Love Website Studio</b></span>
+                    <span>Created with <b>LoveCrafted</b></span>
                 </Link>
             </div>
         </div>
