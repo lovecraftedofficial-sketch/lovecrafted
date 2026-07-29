@@ -68,7 +68,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     // Mailto & WhatsApp notification text sent EXCLUSIVELY to Studio Owner
     const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} ORDER] Verification Required for ${senderName || "Customer"} & ${partnerName || "Partner"}`);
     const emailBody = encodeURIComponent(
-        `Hi Love Website Studio!\n\n` +
+        `Hi LoveCrafted!\n\n` +
         `I have completed payment of ₹${priceFormatted} to your UPI ID (${OWNER_UPI_ID}).\n\n` +
         `💳 UPI / UTR Transaction Ref: ${utrNumber || "Payment Done via QR"}\n` +
         `👤 Customer Name: ${senderName}\n` +
