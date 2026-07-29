@@ -81,7 +81,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         `======================================\n\n` +
         `Please verify ₹${priceFormatted} in your bank app (GPay/PhonePe). After verification, reply with this link to the customer!`
     );
-    const mailtoUrl = `mailto:lovewebsitestudio@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+    const mailtoUrl = `mailto:lovecrafted.official@gmail.com?subject=${emailSubject}&body=${emailBody}`;
 
     const whatsappOwnerText = encodeURIComponent(
         `Hi LoveCrafted! 💖 I paid ₹${priceFormatted} for ${templateEntry?.config?.name || templateSlug} to your UPI (${OWNER_UPI_ID}).\n\n` +
