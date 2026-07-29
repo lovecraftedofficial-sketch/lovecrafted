@@ -349,7 +349,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 )}
 
                 <p className="text-[10px] text-neutral-500 mt-4">
-                    Direct UPI: {OWNER_UPI_ID} · Support: lovewebsitestudio@gmail.com
+                    Direct UPI: {OWNER_UPI_ID} · Support: lovecrafted.official@gmail.com
                 </p>
             </div>
         </div>
