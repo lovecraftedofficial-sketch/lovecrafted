@@ -20,7 +20,7 @@ export const Footer = () => {
             href="mailto:lovecrafted.official@gmail.com" 
             className="underline underline-offset-4 decoration-neutral-600 hover:decoration-pink-300 font-medium"
           >
-            loveccrafted.official@gmail.com
+            lovecrafted.official@gmail.com
           </a>
         </div>
 
