@@ -33,8 +33,8 @@ export default function Navbar() {
                     >
                         <Heart size={16} fill="#2a0714" />
                     </span>
-                    <span className="lws-gradient-text tracking-wide">
-                        Love Website Studio
+                    <span className="lws-gradient-text tracking-wide font-bold">
+                        LoveCrafted
                     </span>
                 </Link>
 
