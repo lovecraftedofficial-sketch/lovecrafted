@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode } from "lucide-react";
+import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
@@ -15,6 +15,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const [partnerName, setPartnerName] = useState("");
     const [customSlug, setCustomSlug] = useState("");
     const [utrNumber, setUtrNumber] = useState("");
+    const [utrError, setUtrError] = useState("");
     const [step, setStep] = useState("form"); // "form" | "payment" | "success"
     const [generatedSlug, setGeneratedSlug] = useState("");
     const [copiedUpi, setCopiedUpi] = useState(false);
@@ -54,7 +55,9 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
     const activeSlug = generatedSlug || "love-and-forever";
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovewebsitestudio.netlify.app";
-    const generatedLink = `${baseUrl}/v/${activeSlug}?slug=${templateSlug || "sunset-love"}&d=${encodedData}`;
+
+    // Owner's Exclusive Activation Live Link (contains &active=true)
+    const ownerActivationLink = `${baseUrl}/v/${activeSlug}?slug=${templateSlug || "sunset-love"}&active=true&d=${encodedData}`;
 
     const upiPayUrl = `upi://pay?pa=${OWNER_UPI_ID}&pn=${encodeURIComponent(OWNER_NAME)}&am=${priceAmount}&cu=INR&tn=${encodeURIComponent(`Order-${activeSlug}`)}`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiPayUrl)}`;
@@ -70,16 +73,16 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const emailBody = encodeURIComponent(
         `Hi LoveCrafted!\n\n` +
         `I have completed payment of ₹${priceFormatted} to your UPI ID (${OWNER_UPI_ID}).\n\n` +
-        `💳 UPI / UTR Transaction Ref: ${utrNumber || "Payment Done via QR"}\n` +
+        `💳 UPI / UTR Transaction Ref: ${utrNumber}\n` +
         `👤 Customer Name: ${senderName}\n` +
         `📱 WhatsApp Number: ${whatsappNumber}\n` +
         `💑 Couple Names: ${senderName} & ${partnerName}\n` +
         `🎨 Template: ${templateEntry?.config?.name || templateSlug} (₹${priceFormatted})\n\n` +
-        `======================================\n` +
-        `🔗 CUSTOMER'S CUSTOMIZED WEBSITE LINK:\n` +
-        `${generatedLink}\n` +
-        `======================================\n\n` +
-        `Please verify ₹${priceFormatted} in your bank app (GPay/PhonePe). After verification, reply with this link to the customer!`
+        `======================================================\n` +
+        `🔑 OWNER EXCLUSIVE ACTIVATION LIVE LINK:\n` +
+        `${ownerActivationLink}\n` +
+        `======================================================\n\n` +
+        `Please verify ₹${priceFormatted} in your bank app (GPay/PhonePe). After verification, send this activation link to the customer!`
     );
     const mailtoUrl = `mailto:lovecrafted.official@gmail.com?subject=${emailSubject}&body=${emailBody}`;
 
@@ -89,13 +92,21 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         `📱 *WhatsApp*: ${whatsappNumber}\n` +
         `💑 *Couple*: ${senderName} & ${partnerName}\n` +
         `💳 *UTR Ref*: ${utrNumber}\n\n` +
-        `🔗 *Customized Website Link*:\n${generatedLink}\n\n` +
+        `🔑 *Owner Activation Live Link*:\n${ownerActivationLink}\n\n` +
         `Please verify ₹${priceFormatted} in your bank account!`
     );
     const whatsappOwnerUrl = `https://wa.me/?text=${whatsappOwnerText}`;
 
     const handlePaymentSubmit = (e, targetMethod = "email") => {
         if (e && e.preventDefault) e.preventDefault();
+
+        // Enforce UTR validation before allowing order submission!
+        if (!utrNumber || utrNumber.trim().length < 6) {
+            setUtrError("Please enter your 12-digit UPI UTR / Transaction Reference number after completing payment.");
+            return;
+        }
+
+        setUtrError("");
 
         // Save persistent record locally
         try {
@@ -106,7 +117,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 templateSlug,
                 price: priceAmount,
                 utrNumber,
-                generatedLink,
+                ownerActivationLink,
                 submittedAt: new Date().toISOString(),
             };
             localStorage.setItem(`lws:published:${templateSlug}:${activeSlug}`, JSON.stringify(record));
@@ -276,9 +287,19 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 required
                                 placeholder="e.g. 420987654321"
                                 value={utrNumber}
-                                onChange={(e) => setUtrNumber(e.target.value)}
-                                className="w-full bg-neutral-900/80 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-pink-500"
+                                onChange={(e) => {
+                                    setUtrNumber(e.target.value);
+                                    if (e.target.value.trim().length >= 6) setUtrError("");
+                                }}
+                                className={`w-full bg-neutral-900/80 border rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none ${
+                                    utrError ? "border-rose-500" : "border-white/10 focus:border-pink-500"
+                                }`}
                             />
+                            {utrError && (
+                                <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1">
+                                    <AlertCircle size={12} /> {utrError}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2 pt-1">
@@ -322,15 +343,15 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 <div><span className="text-neutral-400">Customer:</span> <span className="text-white font-medium">{senderName}</span></div>
                                 <div><span className="text-neutral-400">Partner:</span> <span className="text-white font-medium">{partnerName}</span></div>
                                 <div><span className="text-neutral-400">Amount Paid:</span> <span className="text-amber-300 font-bold">₹{priceFormatted}</span></div>
-                                <div><span className="text-neutral-400">UTR / Ref:</span> <span className="font-mono text-emerald-300">{utrNumber || "Submitted"}</span></div>
+                                <div><span className="text-neutral-400">UTR / Ref:</span> <span className="font-mono text-emerald-300">{utrNumber}</span></div>
                             </div>
 
                             <div className="bg-black/70 border border-amber-400/30 rounded-xl p-3.5 text-xs text-amber-200 text-center font-medium space-y-1">
                                 <div className="flex items-center justify-center gap-1.5 text-amber-300 font-semibold">
                                     <Lock size={14} /> Link Reserved For Payment Verification
                                 </div>
-                                <p className="text-[11px] text-neutral-300">
-                                    Your customized website link has been transmitted to <b>LoveCrafted Owner</b> at <b>lovecrafted.official@gmail.com</b>. As soon as payment of ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your active live link with greetings to your Email/WhatsApp!
+                                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                                    Your customized website order details have been transmitted to <b>LoveCrafted Owner</b> at <b>lovecrafted.official@gmail.com</b>. As soon as payment of ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your activated live link with warm greetings to your Email/WhatsApp!
                                 </p>
                             </div>
                         </div>
