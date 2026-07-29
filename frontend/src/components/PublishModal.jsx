@@ -84,7 +84,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const mailtoUrl = `mailto:lovewebsitestudio@gmail.com?subject=${emailSubject}&body=${emailBody}`;
 
     const whatsappOwnerText = encodeURIComponent(
-        `Hi Love Website Studio! 💖 I paid ₹${priceFormatted} for ${templateEntry?.config?.name || templateSlug} to your UPI (${OWNER_UPI_ID}).\n\n` +
+        `Hi LoveCrafted! 💖 I paid ₹${priceFormatted} for ${templateEntry?.config?.name || templateSlug} to your UPI (${OWNER_UPI_ID}).\n\n` +
         `👤 *Name*: ${senderName}\n` +
         `📱 *WhatsApp*: ${whatsappNumber}\n` +
         `💑 *Couple*: ${senderName} & ${partnerName}\n` +
