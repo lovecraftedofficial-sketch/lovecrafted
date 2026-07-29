@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock } from "lucide-react";
+import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
@@ -94,7 +94,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     );
     const whatsappOwnerUrl = `https://wa.me/?text=${whatsappOwnerText}`;
 
-    const handlePaymentSubmit = (e, targetMethod = "whatsapp") => {
+    const handlePaymentSubmit = (e, targetMethod = "email") => {
         if (e && e.preventDefault) e.preventDefault();
 
         // Save persistent record locally
@@ -116,11 +116,11 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
         setStep("success");
 
-        // AUTOMATICALLY open WhatsApp or Email to transmit details & link EXCLUSIVELY to Studio Owner!
-        if (targetMethod === "email") {
-            window.location.href = mailtoUrl;
-        } else {
+        // AUTOMATICALLY transmit details & link EXCLUSIVELY to Studio Owner!
+        if (targetMethod === "whatsapp") {
             window.open(whatsappOwnerUrl, "_blank");
+        } else {
+            window.location.href = mailtoUrl;
         }
     };
 
@@ -142,12 +142,12 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 <h3 className="font-display text-2xl text-white mb-1">
                     {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
                     {step === "payment" && `Scan & Pay ₹${priceFormatted}`}
-                    {step === "success" && "Order Submitted Successfully! 🎉"}
+                    {step === "success" && "Thank You For Ordering! 🎉"}
                 </h3>
                 <p className="text-neutral-400 text-xs mb-5">
                     {step === "form" && `Enter details to generate your partner's custom website draft for ${templateEntry?.config?.name || "this template"}.`}
                     {step === "payment" && `Scan with Google Pay, PhonePe, or Paytm to pay ₹${priceFormatted} directly to owner's bank account.`}
-                    {step === "success" && "Your order details have been sent to Studio Owner for payment verification."}
+                    {step === "success" && "Your order details have been sent to LoveCrafted Owner at lovecrafted.official@gmail.com!"}
                 </p>
 
                 {/* STEP 1: FORM */}
@@ -284,18 +284,18 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                         <div className="space-y-2 pt-1">
                             <button
                                 type="button"
-                                onClick={(e) => handlePaymentSubmit(e, "whatsapp")}
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors cursor-pointer"
+                                onClick={(e) => handlePaymentSubmit(e, "email")}
+                                className="w-full bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors cursor-pointer"
                             >
-                                📲 Submit & Send Order via WhatsApp
+                                <Send size={14} /> Submit & Send Order via Email
                             </button>
 
                             <button
                                 type="button"
-                                onClick={(e) => handlePaymentSubmit(e, "email")}
-                                className="w-full lws-btn-ghost py-2.5 flex items-center justify-center gap-2 text-xs font-medium border border-white/10 hover:bg-white/5 cursor-pointer"
+                                onClick={(e) => handlePaymentSubmit(e, "whatsapp")}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-medium cursor-pointer"
                             >
-                                <Send size={13} /> Submit & Send Order via Email
+                                📲 Submit & Send Order via WhatsApp
                             </button>
                         </div>
                     </div>
@@ -311,7 +311,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
 
                             <h4 className="font-display text-xl text-amber-100 font-bold">
-                                Thank You For Ordering! 💖
+                                Thank You For Ordering, {senderName || "Romantic"} & {partnerName || "Partner"}! 💖
                             </h4>
 
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
@@ -330,19 +330,17 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                     <Lock size={14} /> Link Reserved For Payment Verification
                                 </div>
                                 <p className="text-[11px] text-neutral-300">
-                                    Your customized website link has been sent directly to <b>Studio Owner</b> via WhatsApp/Email. As soon as Studio Owner verifies ₹{priceFormatted} in bank account, your live website link will be sent to you on WhatsApp/Email!
+                                    Your customized website link has been transmitted to <b>LoveCrafted Owner</b> at <b>lovecrafted.official@gmail.com</b>. As soon as payment of ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your active live link with greetings to your Email/WhatsApp!
                                 </p>
                             </div>
                         </div>
 
                         <div className="space-y-2 pt-1">
                             <a
-                                href={whatsappOwnerUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
+                                href={mailtoUrl}
+                                className="w-full bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
                             >
-                                📲 Re-send Order Details to Studio WhatsApp
+                                <Send size={14} /> Open Email to LoveCrafted Owner
                             </a>
                         </div>
                     </div>
