@@ -60,7 +60,7 @@ export default function LandingPage() {
                             </span>
                         </h1>
                         <p className="text-lg md:text-xl text-[color:var(--lws-text-muted)] max-w-2xl leading-relaxed mb-10">
-                            Love Website Studio hands you a small collection of
+                            LoveCrafted hands you a small collection of
                             hand-designed romantic templates. Pick one. Personalize
                             the words, photos, memories and music that matter. Share
                             a private link with the person you love.
