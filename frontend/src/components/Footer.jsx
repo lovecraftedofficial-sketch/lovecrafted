@@ -17,10 +17,10 @@ export const Footer = () => {
         <div className="flex items-center gap-2 text-neutral-400 hover:text-pink-300 transition-colors duration-200 text-sm">
           <span>📩</span>
           <a 
-            href="mailto:lovewebsitestudio@gmail.com" 
+            href="mailto:lovecrafted.official@gmail.com" 
             className="underline underline-offset-4 decoration-neutral-600 hover:decoration-pink-300 font-medium"
           >
-            lovewebsitestudio@gmail.com
+            loveccrafted.official@gmail.com
           </a>
         </div>
 
