@@ -4,7 +4,7 @@ import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
     const OWNER_UPI_ID = "8618379301@pz";
-    const OWNER_NAME = "Love Website Studio";
+    const OWNER_NAME = "LoveCrafted";
 
     const templateEntry = getTemplate(templateSlug || "sunset-love");
     const priceAmount = templateEntry?.config?.price || 1999;
