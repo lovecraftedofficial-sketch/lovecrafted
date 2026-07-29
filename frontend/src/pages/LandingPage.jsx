@@ -369,10 +369,10 @@ export default function LandingPage() {
                                 <span>
                                     You pay directly via UPI QR Code (<strong className="text-[color:var(--lws-pink)]">8618379301@pz</strong>). After payment, enter your 12-digit UTR transaction ref and click <strong>1-Click WhatsApp Order</strong> or <strong>Email Order</strong> at{" "}
                                     <a
-                                        href="mailto:lovewebsitestudio@gmail.com"
+                                        href="mailto:lovecrafted.official@gmail.com"
                                         className="text-[color:var(--lws-pink)] underline font-medium hover:opacity-80 transition-opacity"
                                     >
-                                        lovewebsitestudio@gmail.com
+                                        lovecrafted.official@gmail.com
                                     </a>. You'll receive your active live link instantly!
                                 </span>
                             ),
