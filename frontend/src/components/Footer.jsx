@@ -8,8 +8,8 @@ export const Footer = () => {
         {/* Brand Name */}
         <div className="flex items-center gap-2">
           <span className="text-pink-400 text-lg">💖</span>
-          <span className="font-serif text-lg tracking-wide text-white/90">
-            Love Website Studio
+          <span className="font-serif text-lg tracking-wide text-white/90 font-bold">
+            LoveCrafted
           </span>
         </div>
 
@@ -28,7 +28,7 @@ export const Footer = () => {
         <div className="flex flex-col sm:flex-row items-center gap-2 text-xs text-neutral-500 mt-2">
           <span>HANDCRAFTED ROMANTIC WEBSITES · ONE TEMPLATE AT A TIME</span>
           <span className="hidden sm:inline">•</span>
-          <span>© 2026 · Love Website Studio</span>
+          <span>© 2026 · LoveCrafted</span>
         </div>
 
       </div>
