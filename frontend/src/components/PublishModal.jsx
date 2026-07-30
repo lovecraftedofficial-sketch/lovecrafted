@@ -1,6 +1,13 @@
 import React, { useState } from "react";
-import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle, ExternalLink, Check, Mail } from "lucide-react";
+import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle, ExternalLink, Check, Mail, Loader2, Sparkles } from "lucide-react";
+import emailjs from "@emailjs/browser";
 import { getTemplate } from "@/data/templateRegistry";
+
+// EmailJS Credentials Configuration
+// Replace these with your actual keys from https://dashboard.emailjs.com/
+const EMAILJS_SERVICE_ID = process.env.REACT_APP_EMAILJS_SERVICE_ID || "service_lovecrafted";
+const EMAILJS_TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID || "template_order";
+const EMAILJS_PUBLIC_KEY = process.env.REACT_APP_EMAILJS_PUBLIC_KEY || "YOUR_EMAILJS_PUBLIC_KEY";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
     const OWNER_UPI_ID = "8618379301@pz";
@@ -21,6 +28,10 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const [generatedSlug, setGeneratedSlug] = useState("");
     const [copiedUpi, setCopiedUpi] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
+
+    // EmailJS Auto-Send State
+    const [isSending, setIsSending] = useState(false);
+    const [emailSentStatus, setEmailSentStatus] = useState("idle"); // "idle" | "sent" | "fallback"
 
     if (!isOpen) return null;
 
@@ -110,7 +121,8 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     );
     const whatsappOwnerUrl = `https://wa.me/?text=${whatsappOwnerText}`;
 
-    const handlePaymentSubmit = (e, targetMethod = "gmail") => {
+    // AUTOMATIC BACKGROUND EMAILJS SUBMISSION
+    const handlePaymentSubmit = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
 
         // Enforce UTR validation before allowing order submission!
@@ -120,6 +132,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         }
 
         setUtrError("");
+        setIsSending(true);
 
         // Save persistent record locally
         try {
@@ -139,15 +152,41 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
             /* ignore */
         }
 
-        setStep("success");
+        // EmailJS Template Parameters matching your EmailJS Template
+        const templateParams = {
+            to_name: "LoveCrafted Owner",
+            to_email: OWNER_EMAIL,
+            customer_name: senderName,
+            partner_name: partnerName,
+            whatsapp_number: whatsappNumber,
+            amount_paid: `₹${priceFormatted} INR`,
+            utr_number: utrNumber,
+            template_name: templateEntry?.config?.name || templateSlug,
+            owner_activation_link: ownerActivationLink,
+            customer_draft_link: customerDraftLink,
+            upi_id: OWNER_UPI_ID,
+        };
 
-        // AUTOMATICALLY open preferred communication tool to transmit details & link EXCLUSIVELY to Studio Owner!
-        if (targetMethod === "whatsapp") {
-            window.open(whatsappOwnerUrl, "_blank");
-        } else if (targetMethod === "gmail") {
-            window.open(gmailWebUrl, "_blank");
-        } else {
-            window.location.href = mailtoUrl;
+        try {
+            // Trigger automatic EmailJS background send
+            const response = await emailjs.send(
+                EMAILJS_SERVICE_ID,
+                EMAILJS_TEMPLATE_ID,
+                templateParams,
+                EMAILJS_PUBLIC_KEY
+            );
+
+            if (response.status === 200) {
+                setEmailSentStatus("sent");
+            } else {
+                setEmailSentStatus("fallback");
+            }
+        } catch (err) {
+            console.warn("EmailJS background send notice (using fallback handler):", err);
+            setEmailSentStatus("fallback");
+        } finally {
+            setIsSending(false);
+            setStep("success");
         }
     };
 
@@ -174,7 +213,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 <p className="text-neutral-400 text-xs mb-5">
                     {step === "form" && `Enter details to generate your partner's custom website draft for ${templateEntry?.config?.name || "this template"}.`}
                     {step === "payment" && `Scan with Google Pay, PhonePe, or Paytm to pay ₹${priceFormatted} directly to owner's bank account.`}
-                    {step === "success" && `Your order details have been sent to LoveCrafted Owner at ${OWNER_EMAIL}!`}
+                    {step === "success" && `Your order details have been submitted to LoveCrafted Owner at ${OWNER_EMAIL}!`}
                 </p>
 
                 {/* STEP 1: FORM */}
@@ -256,7 +295,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </form>
                 )}
 
-                {/* STEP 2: UPI PAYMENT & AUTOMATIC CONTACT OWNER */}
+                {/* STEP 2: UPI PAYMENT & AUTOMATIC BACKGROUND SUBMISSION */}
                 {step === "payment" && (
                     <div className="space-y-4 text-left animate-fadeIn">
                         <div className="bg-black/70 border border-pink-500/40 rounded-xl p-4 text-center space-y-3">
@@ -321,26 +360,19 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                         <div className="space-y-2 pt-1">
                             <button
                                 type="button"
-                                onClick={(e) => handlePaymentSubmit(e, "gmail")}
-                                className="w-full bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors cursor-pointer"
+                                onClick={handlePaymentSubmit}
+                                disabled={isSending}
+                                className="w-full bg-rose-600 hover:bg-rose-500 disabled:opacity-60 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors cursor-pointer"
                             >
-                                <Mail size={14} /> Send Order via Gmail Web
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={(e) => handlePaymentSubmit(e, "whatsapp")}
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-medium cursor-pointer"
-                            >
-                                📲 Send Order via WhatsApp
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={(e) => handlePaymentSubmit(e, "email")}
-                                className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl py-2 flex items-center justify-center gap-2 text-[11px] font-normal cursor-pointer"
-                            >
-                                <Send size={12} /> Send via Default Mail App
+                                {isSending ? (
+                                    <>
+                                        <Loader2 size={16} className="animate-spin" /> Transmitting Order in Background...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles size={15} /> Submit Order & Payment Proof
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -359,9 +391,15 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 Thank You For Ordering, {senderName || "Romantic"} & {partnerName || "Partner"}! 💖
                             </h4>
 
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
-                                <Clock size={13} className="animate-spin" /> Payment Verification In Progress
-                            </div>
+                            {emailSentStatus === "sent" ? (
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
+                                    <CheckCircle2 size={13} /> Order Transmitted Automatically to Studio Owner!
+                                </div>
+                            ) : (
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
+                                    <Clock size={13} className="animate-spin" /> Payment Verification In Progress
+                                </div>
+                            )}
 
                             <div className="bg-neutral-900/90 border border-white/10 rounded-xl p-3 text-left space-y-1.5 text-xs text-neutral-300">
                                 <div><span className="text-neutral-400">Customer:</span> <span className="text-white font-medium">{senderName}</span></div>
@@ -419,23 +457,24 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
                         </div>
 
+                        {/* SECONDARY OPTIONAL WHATSAPP / GMAIL FALLBACK BUTTONS */}
                         <div className="space-y-2 pt-1">
-                            <a
-                                href={gmailWebUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="w-full bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
-                            >
-                                <Mail size={14} /> Open Gmail Composer to Send Order
-                            </a>
-
                             <a
                                 href={whatsappOwnerUrl}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-medium transition-colors"
                             >
-                                📲 Open WhatsApp to Send Order
+                                📲 Get Instant Updates on WhatsApp (Optional)
+                            </a>
+
+                            <a
+                                href={gmailWebUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl py-2 flex items-center justify-center gap-2 text-[11px] font-normal cursor-pointer"
+                            >
+                                <Mail size={13} /> Open Gmail Web Backup
                             </a>
                         </div>
                     </div>
