@@ -54,7 +54,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     }
 
     const activeSlug = generatedSlug || "love-and-forever";
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovewebsitestudio.netlify.app";
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
 
     // Owner's Exclusive Activation Live Link (contains &active=true)
     const ownerActivationLink = `${baseUrl}/v/${activeSlug}?slug=${templateSlug || "sunset-love"}&active=true&d=${encodedData}`;
