@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle, ExternalLink, Check } from "lucide-react";
+import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle, ExternalLink, Check, Mail } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
     const OWNER_UPI_ID = "8618379301@pz";
     const OWNER_NAME = "LoveCrafted";
+    const OWNER_EMAIL = "lovecrafted.official@gmail.com";
 
     const templateEntry = getTemplate(templateSlug || "sunset-love");
     const priceAmount = templateEntry?.config?.price || 1999;
@@ -78,7 +79,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         setTimeout(() => setCopiedLink(false), 2000);
     };
 
-    // Mailto & WhatsApp notification text sent EXCLUSIVELY to Studio Owner
+    // Notification text sent EXCLUSIVELY to Studio Owner
     const emailSubject = encodeURIComponent(`[NEW ₹${priceFormatted} ORDER] Verification Required for ${senderName || "Customer"} & ${partnerName || "Partner"}`);
     const emailBody = encodeURIComponent(
         `Hi LoveCrafted!\n\n` +
@@ -94,7 +95,9 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         `======================================================\n\n` +
         `Please verify ₹${priceFormatted} in your bank app (GPay/PhonePe). After verification, send this activation link to the customer!`
     );
-    const mailtoUrl = `mailto:lovecrafted.official@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+
+    const mailtoUrl = `mailto:${OWNER_EMAIL}?subject=${emailSubject}&body=${emailBody}`;
+    const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${OWNER_EMAIL}&su=${emailSubject}&body=${emailBody}`;
 
     const whatsappOwnerText = encodeURIComponent(
         `Hi LoveCrafted! 💖 I paid ₹${priceFormatted} for ${templateEntry?.config?.name || templateSlug} to your UPI (${OWNER_UPI_ID}).\n\n` +
@@ -107,7 +110,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     );
     const whatsappOwnerUrl = `https://wa.me/?text=${whatsappOwnerText}`;
 
-    const handlePaymentSubmit = (e, targetMethod = "email") => {
+    const handlePaymentSubmit = (e, targetMethod = "gmail") => {
         if (e && e.preventDefault) e.preventDefault();
 
         // Enforce UTR validation before allowing order submission!
@@ -138,9 +141,11 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
         setStep("success");
 
-        // AUTOMATICALLY transmit details & link EXCLUSIVELY to Studio Owner!
+        // AUTOMATICALLY open preferred communication tool to transmit details & link EXCLUSIVELY to Studio Owner!
         if (targetMethod === "whatsapp") {
             window.open(whatsappOwnerUrl, "_blank");
+        } else if (targetMethod === "gmail") {
+            window.open(gmailWebUrl, "_blank");
         } else {
             window.location.href = mailtoUrl;
         }
@@ -169,7 +174,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 <p className="text-neutral-400 text-xs mb-5">
                     {step === "form" && `Enter details to generate your partner's custom website draft for ${templateEntry?.config?.name || "this template"}.`}
                     {step === "payment" && `Scan with Google Pay, PhonePe, or Paytm to pay ₹${priceFormatted} directly to owner's bank account.`}
-                    {step === "success" && "Your order details have been sent to LoveCrafted Owner at lovecrafted.official@gmail.com!"}
+                    {step === "success" && `Your order details have been sent to LoveCrafted Owner at ${OWNER_EMAIL}!`}
                 </p>
 
                 {/* STEP 1: FORM */}
@@ -316,10 +321,10 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                         <div className="space-y-2 pt-1">
                             <button
                                 type="button"
-                                onClick={(e) => handlePaymentSubmit(e, "email")}
+                                onClick={(e) => handlePaymentSubmit(e, "gmail")}
                                 className="w-full bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors cursor-pointer"
                             >
-                                <Send size={14} /> Submit & Send Order via Email
+                                <Mail size={14} /> Send Order via Gmail Web
                             </button>
 
                             <button
@@ -327,7 +332,15 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 onClick={(e) => handlePaymentSubmit(e, "whatsapp")}
                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-medium cursor-pointer"
                             >
-                                📲 Submit & Send Order via WhatsApp
+                                📲 Send Order via WhatsApp
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={(e) => handlePaymentSubmit(e, "email")}
+                                className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl py-2 flex items-center justify-center gap-2 text-[11px] font-normal cursor-pointer"
+                            >
+                                <Send size={12} /> Send via Default Mail App
                             </button>
                         </div>
                     </div>
@@ -401,24 +414,35 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
                             <div className="bg-black/70 border border-amber-400/30 rounded-xl p-3 text-xs text-amber-200 text-center font-medium space-y-1">
                                 <p className="text-[11px] text-neutral-300 leading-relaxed">
-                                    Your order details have been transmitted to <b>LoveCrafted Owner</b> at <b>lovecrafted.official@gmail.com</b>. As soon as ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your activated live link to your Email/WhatsApp!
+                                    Your order details have been transmitted to <b>LoveCrafted Owner</b> at <b>{OWNER_EMAIL}</b>. As soon as ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your activated live link to your Email/WhatsApp!
                                 </p>
                             </div>
                         </div>
 
                         <div className="space-y-2 pt-1">
                             <a
-                                href={mailtoUrl}
+                                href={gmailWebUrl}
+                                target="_blank"
+                                rel="noreferrer"
                                 className="w-full bg-rose-600 hover:bg-rose-500 text-white rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-semibold shadow-lg transition-colors"
                             >
-                                <Send size={14} /> Open Email to LoveCrafted Owner
+                                <Mail size={14} /> Open Gmail Composer to Send Order
+                            </a>
+
+                            <a
+                                href={whatsappOwnerUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 flex items-center justify-center gap-2 text-xs font-medium transition-colors"
+                            >
+                                📲 Open WhatsApp to Send Order
                             </a>
                         </div>
                     </div>
                 )}
 
                 <p className="text-[10px] text-neutral-500 mt-4">
-                    Direct UPI: {OWNER_UPI_ID} · Support: lovecrafted.official@gmail.com
+                    Direct UPI: {OWNER_UPI_ID} · Support: {OWNER_EMAIL}
                 </p>
             </div>
         </div>
