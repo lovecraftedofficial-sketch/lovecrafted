@@ -10,6 +10,7 @@ import TemplateDetailsPage from "@/pages/TemplateDetailsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EditorPage from "@/pages/EditorPage";
 import ViewWebsitePage from "@/pages/ViewWebsitePage";
+import ActivatePage from "@/pages/ActivatePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -85,6 +86,16 @@ function App() {
                     {/* Dynamic View Route for Customized Partner Websites */}
                     <Route path="/v/:shareId" element={<ViewWebsitePage />} />
                     <Route path="/v" element={<ViewWebsitePage />} />
+
+                    {/* Owner Link Activation Control Panel */}
+                    <Route
+                        path="/activate"
+                        element={
+                            <Shell>
+                                <ActivatePage />
+                            </Shell>
+                        }
+                    />
 
                     <Route
                         path="*"
