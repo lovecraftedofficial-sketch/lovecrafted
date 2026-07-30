@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle } from "lucide-react";
+import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle, ExternalLink, Check } from "lucide-react";
 import { getTemplate } from "@/data/templateRegistry";
 
 export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
@@ -19,6 +19,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const [step, setStep] = useState("form"); // "form" | "payment" | "success"
     const [generatedSlug, setGeneratedSlug] = useState("");
     const [copiedUpi, setCopiedUpi] = useState(false);
+    const [copiedLink, setCopiedLink] = useState(false);
 
     if (!isOpen) return null;
 
@@ -56,7 +57,10 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const activeSlug = generatedSlug || "love-and-forever";
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
 
-    // Owner's Exclusive Activation Live Link (contains &active=true)
+    // Customer Draft Link (Shows pending activation status if clicked before owner verification)
+    const customerDraftLink = `${baseUrl}/v/${activeSlug}?slug=${templateSlug || "sunset-love"}&d=${encodedData}`;
+
+    // Owner's Exclusive Activation Live Link (sent exclusively to Owner email/WhatsApp)
     const ownerActivationLink = `${baseUrl}/v/${activeSlug}?slug=${templateSlug || "sunset-love"}&active=true&d=${encodedData}`;
 
     const upiPayUrl = `upi://pay?pa=${OWNER_UPI_ID}&pn=${encodeURIComponent(OWNER_NAME)}&am=${priceAmount}&cu=INR&tn=${encodeURIComponent(`Order-${activeSlug}`)}`;
@@ -66,6 +70,12 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         if (navigator.clipboard) navigator.clipboard.writeText(OWNER_UPI_ID);
         setCopiedUpi(true);
         setTimeout(() => setCopiedUpi(false), 2000);
+    };
+
+    const handleCopyCustomerLink = () => {
+        if (navigator.clipboard) navigator.clipboard.writeText(customerDraftLink);
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
     };
 
     // Mailto & WhatsApp notification text sent EXCLUSIVELY to Studio Owner
@@ -118,6 +128,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 price: priceAmount,
                 utrNumber,
                 ownerActivationLink,
+                customerDraftLink,
                 submittedAt: new Date().toISOString(),
             };
             localStorage.setItem(`lws:published:${templateSlug}:${activeSlug}`, JSON.stringify(record));
@@ -322,7 +333,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </div>
                 )}
 
-                {/* STEP 3: SUCCESS & PAYMENT VERIFICATION PROMPT (LINK IS HELD UNTIL OWNER VERIFIES) */}
+                {/* STEP 3: SUCCESS & PAYMENT VERIFICATION PROMPT */}
                 {step === "success" && (
                     <div className="space-y-4 text-left animate-fadeIn">
                         {/* Romantic Confirmation Card */}
@@ -346,12 +357,51 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 <div><span className="text-neutral-400">UTR / Ref:</span> <span className="font-mono text-emerald-300">{utrNumber}</span></div>
                             </div>
 
-                            <div className="bg-black/70 border border-amber-400/30 rounded-xl p-3.5 text-xs text-amber-200 text-center font-medium space-y-1">
-                                <div className="flex items-center justify-center gap-1.5 text-amber-300 font-semibold">
-                                    <Lock size={14} /> Link Reserved For Payment Verification
+                            {/* POPPED OUT CUSTOMER WEBSITE LINK BOX */}
+                            <div className="bg-black/80 border border-pink-500/40 rounded-xl p-3.5 space-y-2 text-left">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] uppercase tracking-widest text-pink-300 font-semibold flex items-center gap-1">
+                                        <Lock size={12} className="text-amber-400" /> Your Customized Website Link
+                                    </span>
+                                    <span className="text-[10px] text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20 font-medium">
+                                        Pending Owner Verification
+                                    </span>
                                 </div>
+
+                                <div className="text-xs font-mono text-neutral-200 break-all bg-neutral-900/90 p-2.5 rounded-lg border border-white/10 select-all">
+                                    {customerDraftLink}
+                                </div>
+
+                                <div className="flex gap-2 pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={handleCopyCustomerLink}
+                                        className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 cursor-pointer"
+                                    >
+                                        {copiedLink ? (
+                                            <>
+                                                <Check size={13} className="text-emerald-400" /> Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy size={13} /> Copy Link
+                                            </>
+                                        )}
+                                    </button>
+                                    <a
+                                        href={customerDraftLink}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="lws-btn-ghost text-xs py-1.5 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 flex items-center gap-1 cursor-pointer"
+                                    >
+                                        <ExternalLink size={13} /> Preview Draft
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="bg-black/70 border border-amber-400/30 rounded-xl p-3 text-xs text-amber-200 text-center font-medium space-y-1">
                                 <p className="text-[11px] text-neutral-300 leading-relaxed">
-                                    Your customized website order details have been transmitted to <b>LoveCrafted Owner</b> at <b>lovecrafted.official@gmail.com</b>. As soon as payment of ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your activated live link with warm greetings to your Email/WhatsApp!
+                                    Your order details have been transmitted to <b>LoveCrafted Owner</b> at <b>lovecrafted.official@gmail.com</b>. As soon as ₹{priceFormatted} is verified in bank account, LoveCrafted Owner will send your activated live link to your Email/WhatsApp!
                                 </p>
                             </div>
                         </div>
