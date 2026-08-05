@@ -1,23 +1,22 @@
 import React, { useState } from "react";
 import {
     X,
-    Send,
     Copy,
     ShieldCheck,
     CheckCircle2,
     ArrowRight,
-    Clock,
     Heart,
     Lock,
     QrCode,
     AlertCircle,
     ExternalLink,
     Check,
-    Mail,
     Loader2,
     Sparkles,
     RotateCcw,
-    CreditCard
+    CreditCard,
+    MessageCircle,
+    Globe
 } from "lucide-react";
 import emailjs from "@emailjs/browser";
 import { getTemplate } from "@/data/templateRegistry";
@@ -41,11 +40,13 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const [partnerName, setPartnerName] = useState("");
     const [customSlug, setCustomSlug] = useState("");
 
-    // Step state: "form" | "payment" | "payment-failed" | "success"
+    // Step state: "form" | "payment" | "payment-failed" | "success" | "opening-transition"
     const [step, setStep] = useState("form");
+    const [transitionStage, setTransitionStage] = useState("preparing"); // "preparing" | "opening"
     const [paymentErrorMessage, setPaymentErrorMessage] = useState("");
     const [generatedSlug, setGeneratedSlug] = useState("");
     const [copiedLink, setCopiedLink] = useState(false);
+    const [showQrCode, setShowQrCode] = useState(false);
     const [paymentRecord, setPaymentRecord] = useState(null);
 
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -86,13 +87,34 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const activeSlug = generatedSlug || "our-anniversary";
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
 
-    // Public Live Link unlocked upon payment
+    // Clean Short URL for display (Zero query params or tokens!)
+    const cleanDisplayUrl = `lovecrafted.in/story/${activeSlug}`;
+
+    // Active Public Target URL
     const publicLiveLink = `${baseUrl}/story/${activeSlug}?slug=${templateSlug || "sunset-love"}&active=true&d=${encodedData}`;
+
+    const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`I created a special romantic keepsake website for you! Open your surprise here: ${publicLiveLink}`)}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(publicLiveLink)}`;
 
     const handleCopyPublicLink = () => {
         if (navigator.clipboard) navigator.clipboard.writeText(publicLiveLink);
         setCopiedLink(true);
         setTimeout(() => setCopiedLink(false), 2000);
+    };
+
+    // Trigger 1.5s Transition Overlay before opening live gift
+    const handleOpenGiftWithTransition = () => {
+        setStep("opening-transition");
+        setTransitionStage("preparing");
+
+        setTimeout(() => {
+            setTransitionStage("opening");
+        }, 800);
+
+        setTimeout(() => {
+            window.open(publicLiveLink, "_blank");
+            onClose();
+        }, 1600);
     };
 
     // Trigger Razorpay Payment Checkout
@@ -113,7 +135,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                 setPaymentRecord(paymentData);
                 setStep("success");
 
-                // Update local storage gifts registry to Paid & Published
+                // Update local storage gifts registry to Paid & Published with invoice ref
                 try {
                     const storedGifts = localStorage.getItem("lws:user_gifts");
                     let giftsList = storedGifts ? JSON.parse(storedGifts) : [];
@@ -124,6 +146,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 status: "Published",
                                 paymentStatus: "paid",
                                 invoiceRef: paymentData.invoiceRef,
+                                paymentId: paymentData.paymentId,
                                 slug: activeSlug,
                                 lastEdited: "Just now",
                             };
@@ -183,22 +206,26 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     <X size={18} />
                 </button>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold mb-3">
-                    <ShieldCheck size={12} /> Secure Razorpay Checkout
-                </div>
+                {step !== "success" && step !== "opening-transition" && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold mb-3">
+                        <ShieldCheck size={12} /> Secure Razorpay Checkout
+                    </div>
+                )}
 
-                <h3 className="font-display text-2xl text-white mb-1">
-                    {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
-                    {step === "payment" && `Checkout — ₹${priceFormatted}`}
-                    {step === "payment-failed" && "Payment Unsuccessful"}
-                    {step === "success" && "Keepsake Unlocked & Published! 🎉"}
-                </h3>
-                <p className="text-neutral-400 text-xs mb-5">
-                    {step === "form" && `Enter recipient details and custom slug to unlock public sharing for this ${tierName} template.`}
-                    {step === "payment" && `Pay ₹${priceFormatted} via Razorpay (UPI, Credit/Debit Card, Netbanking) to publish.`}
-                    {step === "payment-failed" && "Your payment was not completed. You can retry safely below."}
-                    {step === "success" && "Your payment was verified. Your live website is active and ready to share!"}
-                </p>
+                {step !== "success" && step !== "opening-transition" && (
+                    <>
+                        <h3 className="font-display text-2xl text-white mb-1">
+                            {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
+                            {step === "payment" && `Checkout — ₹${priceFormatted}`}
+                            {step === "payment-failed" && "Payment Unsuccessful"}
+                        </h3>
+                        <p className="text-neutral-400 text-xs mb-5">
+                            {step === "form" && `Enter recipient details and custom slug to unlock public sharing for this ${tierName} template.`}
+                            {step === "payment" && `Pay ₹${priceFormatted} via Razorpay (UPI, Credit/Debit Card, Netbanking) to publish.`}
+                            {step === "payment-failed" && "Your payment was not completed. You can retry safely below."}
+                        </p>
+                    </>
+                )}
 
                 {/* STEP 1: FORM & CUSTOM SLUG */}
                 {step === "form" && (
@@ -343,74 +370,136 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </div>
                 )}
 
-                {/* STEP 3: PAYMENT SUCCESS & PUBLISHED LINK */}
+                {/* STEP 3: REDESIGNED PREMIUM PAYMENT SUCCESS SCREEN (ZERO SCROLL, CLEAN LUXURY EXPERIENCE) */}
                 {step === "success" && (
-                    <div className="space-y-4 text-left animate-fadeIn">
-                        <div className="bg-gradient-to-r from-emerald-950/60 via-neutral-900 to-emerald-950/60 border border-emerald-500/40 rounded-2xl p-5 text-center space-y-3 shadow-xl">
-                            <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center mx-auto shadow-inner">
-                                <CheckCircle2 size={28} className="text-emerald-400" />
+                    <div className="space-y-4 text-center animate-fadeIn py-1">
+                        {/* Romantic Animated Icon */}
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-500/20 to-pink-500/30 border border-rose-400/40 text-rose-300 flex items-center justify-center mx-auto shadow-inner">
+                            <Heart size={28} className="fill-rose-500 text-rose-400 animate-pulse" />
+                        </div>
+
+                        {/* Title & Short Emotional Subtitle */}
+                        <div className="space-y-1">
+                            <h3 className="font-display text-2xl font-bold text-white tracking-tight">
+                                ❤️ Your Love Story is Live!
+                            </h3>
+                            <p className="text-neutral-400 text-xs max-w-xs mx-auto leading-relaxed">
+                                Your keepsake has been published successfully and is ready to be shared.
+                            </p>
+                        </div>
+
+                        {/* Clean Link Card (Zero technical params, pure short URL) */}
+                        <div className="bg-black/60 border border-rose-500/30 p-3.5 rounded-2xl space-y-2 text-left shadow-lg">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] uppercase tracking-wider text-rose-300 font-semibold flex items-center gap-1">
+                                    <Globe size={12} className="text-rose-400" /> Your Private Link
+                                </span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    ● Live
+                                </span>
                             </div>
 
-                            <h4 className="font-display text-xl text-white font-bold">
-                                Payment Verified & Keepsake Published! 🎉
+                            <div className="flex items-center justify-between bg-neutral-900/90 border border-white/10 p-2.5 rounded-xl">
+                                <span className="text-xs font-mono text-rose-200 truncate select-all px-1 font-medium">
+                                    {cleanDisplayUrl}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleCopyPublicLink}
+                                    className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+                                >
+                                    {copiedLink ? (
+                                        <>
+                                            <Check size={12} className="text-emerald-400" /> Copied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy size={12} /> Copy
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* "What's Next?" Section */}
+                        <div className="bg-neutral-900/70 border border-white/5 p-3 rounded-2xl text-left text-xs text-neutral-300 space-y-1.5">
+                            <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block mb-1">
+                                What's Next?
+                            </span>
+                            <div className="grid grid-cols-1 gap-1 text-[11px]">
+                                <div className="flex items-center gap-2 text-neutral-300">
+                                    <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+                                    <span>Share the link with your partner</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-neutral-300">
+                                    <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+                                    <span>Copy your private keepsake link</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-neutral-300">
+                                    <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+                                    <span>Open & preview your live gift</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Expandable QR Code View */}
+                        {showQrCode && (
+                            <div className="p-3 rounded-2xl bg-black/80 border border-white/10 text-center space-y-2 animate-fadeIn">
+                                <div className="bg-white p-2 rounded-xl inline-block mx-auto shadow-2xl">
+                                    <img src={qrCodeUrl} alt="Gift QR Code" className="w-32 h-32 mx-auto" />
+                                </div>
+                                <p className="text-[10px] text-neutral-400">
+                                    Scan with phone camera to open website
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Primary & Secondary Action Buttons */}
+                        <div className="space-y-2 pt-1">
+                            <button
+                                type="button"
+                                onClick={handleOpenGiftWithTransition}
+                                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-semibold text-xs shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-[1.02]"
+                            >
+                                <Heart size={15} className="fill-white" /> Open My Gift
+                            </button>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <a
+                                    href={whatsappShareUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="py-2.5 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                >
+                                    <MessageCircle size={14} /> WhatsApp
+                                </a>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowQrCode((v) => !v)}
+                                    className="py-2.5 px-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                >
+                                    <QrCode size={14} /> {showQrCode ? "Hide QR" : "QR Code"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 4: 1.5s TRANSITION OVERLAY */}
+                {step === "opening-transition" && (
+                    <div className="py-12 space-y-4 text-center animate-fadeIn">
+                        <div className="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
+                            <Heart size={32} className="fill-rose-500 animate-ping" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <h4 className="font-display text-xl font-bold text-white">
+                                {transitionStage === "preparing" ? "❤️ Preparing your surprise..." : "✨ Opening your keepsake..."}
                             </h4>
-
-                            <div className="bg-black/60 border border-white/10 rounded-xl p-3 text-left space-y-1.5 text-xs text-neutral-300">
-                                <div className="flex justify-between">
-                                    <span className="text-neutral-400">Invoice Reference:</span>
-                                    <span className="font-mono font-bold text-amber-300">{paymentRecord?.invoiceRef || "INV-LC-8921"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-neutral-400">Payment ID:</span>
-                                    <span className="font-mono text-emerald-400 text-[11px]">{paymentRecord?.paymentId || "pay_verified"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-neutral-400">Amount Paid:</span>
-                                    <span className="font-bold text-white">₹{priceFormatted} INR</span>
-                                </div>
-                            </div>
-
-                            {/* UNLOCKED PUBLIC LIVE LINK BOX */}
-                            <div className="bg-black/80 border border-emerald-500/40 rounded-xl p-3.5 space-y-2 text-left">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[10px] uppercase tracking-widest text-emerald-300 font-semibold flex items-center gap-1">
-                                        <Sparkles size={12} /> Active Public Link
-                                    </span>
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                        ● Live
-                                    </span>
-                                </div>
-
-                                <div className="text-xs font-mono text-white break-all bg-neutral-900/90 p-2.5 rounded-lg border border-white/10 select-all">
-                                    {publicLiveLink}
-                                </div>
-
-                                <div className="flex gap-2 pt-1">
-                                    <button
-                                        type="button"
-                                        onClick={handleCopyPublicLink}
-                                        className="lws-btn-ghost text-xs py-2 px-3 flex-1 justify-center border border-white/10 hover:bg-white/10 cursor-pointer font-medium"
-                                    >
-                                        {copiedLink ? (
-                                            <>
-                                                <Check size={13} className="text-emerald-400" /> Copied!
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Copy size={13} /> Copy Link
-                                            </>
-                                        )}
-                                    </button>
-                                    <a
-                                        href={publicLiveLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="lws-btn-primary text-xs py-2 px-4 flex-1 justify-center flex items-center gap-1 cursor-pointer font-semibold shadow-md"
-                                    >
-                                        <ExternalLink size={13} /> Open Live Gift
-                                    </a>
-                                </div>
-                            </div>
+                            <p className="text-xs text-neutral-400">
+                                Launching recipient unboxing experience...
+                            </p>
                         </div>
                     </div>
                 )}
