@@ -89,7 +89,9 @@ function App() {
                                     </Shell>
                                 }
                             />
-                            {/* Dynamic View Route for Customized Partner Websites */}
+                            {/* Public Story Routes for Published Gifts */}
+                            <Route path="/story/:slug" element={<ViewWebsitePage />} />
+                            <Route path="/p/:shareId" element={<ViewWebsitePage />} />
                             <Route path="/v/:shareId" element={<ViewWebsitePage />} />
                             <Route path="/v" element={<ViewWebsitePage />} />
 

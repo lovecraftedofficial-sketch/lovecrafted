@@ -10,17 +10,19 @@ import {
     Search,
     Copy,
     Trash2,
-    Filter,
-    Heart,
-    CheckCircle2,
+    Share2,
+    Check,
     AlertTriangle,
     X,
-    LayoutGrid
+    Lock,
+    Unlock,
+    ExternalLink
 } from "lucide-react";
 import { DASHBOARD } from "@/constants/testIds";
 import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
 import { getOccasionBySlug } from "@/constants/occasions";
 import PublishModal from "@/components/PublishModal";
+import ShareModal from "@/components/ShareModal";
 
 export default function DashboardPage() {
     const navigate = useNavigate();
@@ -43,6 +45,7 @@ export default function DashboardPage() {
             templateSlug: t.config.slug,
             occasionSlug: (t.config.occasions && t.config.occasions[0]) || t.config.category.toLowerCase(),
             status: i === 0 ? "Published" : "Draft",
+            slug: i === 0 ? "our-anniversary" : `story-${i}`,
             lastEdited: i === 0 ? "2 hours ago" : "Yesterday",
             createdAt: new Date().toISOString(),
         }));
@@ -51,6 +54,8 @@ export default function DashboardPage() {
     const [filterTab, setFilterTab] = useState("all"); // 'all' | 'draft' | 'published'
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedPublishDraft, setSelectedPublishDraft] = useState(null);
+    const [selectedShareGift, setSelectedShareGift] = useState(null);
+    const [copiedId, setCopiedId] = useState(null);
 
     // Delete Confirmation Modal State
     const [giftToDelete, setGiftToDelete] = useState(null);
@@ -70,10 +75,22 @@ export default function DashboardPage() {
             id: `gift-${gift.templateSlug}-${Date.now()}`,
             title: `${gift.title} (Copy)`,
             status: "Draft",
+            slug: `${gift.slug || "story"}-copy-${Date.now().toString().slice(-4)}`,
             lastEdited: "Just now",
             createdAt: new Date().toISOString(),
         };
         const nextGifts = [cloned, ...gifts];
+        saveGifts(nextGifts);
+    };
+
+    const handleTogglePublishStatus = (giftId) => {
+        const nextGifts = gifts.map((g) => {
+            if (g.id === giftId) {
+                const nextStatus = g.status.toLowerCase() === "published" ? "Draft" : "Published";
+                return { ...g, status: nextStatus, lastEdited: "Just now" };
+            }
+            return g;
+        });
         saveGifts(nextGifts);
     };
 
@@ -82,6 +99,16 @@ export default function DashboardPage() {
         const nextGifts = gifts.filter((g) => g.id !== giftToDelete.id);
         saveGifts(nextGifts);
         setGiftToDelete(null);
+    };
+
+    const handleCopyPublicLink = (gift) => {
+        const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
+        const publicUrl = `${baseUrl}/story/${gift.slug || gift.id}`;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(publicUrl);
+            setCopiedId(gift.id);
+            setTimeout(() => setCopiedId(null), 2000);
+        }
     };
 
     // Filter & Search logic
@@ -103,6 +130,8 @@ export default function DashboardPage() {
             return true;
         });
     }, [gifts, filterTab, searchQuery]);
+
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
 
     return (
         <div data-testid={DASHBOARD.root} className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 text-white">
@@ -154,7 +183,7 @@ export default function DashboardPage() {
                         <span className="lws-gradient-text">My Romantic Keepsakes</span>
                     </h1>
                     <p className="text-neutral-400 mt-2 text-xs sm:text-sm max-w-xl leading-relaxed">
-                        Manage your customized website drafts, continue editing, or publish to get your shareable live link.
+                        Manage your customized website drafts, continue editing, or share your active live links.
                     </p>
                 </div>
 
@@ -234,6 +263,7 @@ export default function DashboardPage() {
                         const templateEntry = getTemplate(gift.templateSlug);
                         const occasionObj = getOccasionBySlug(gift.occasionSlug);
                         const isPublished = gift.status.toLowerCase() === "published";
+                        const publicLink = `${baseUrl}/story/${gift.slug || gift.id}`;
 
                         return (
                             <article
@@ -290,9 +320,19 @@ export default function DashboardPage() {
                                         </p>
                                     </div>
 
-                                    <div className="text-[11px] text-neutral-400 flex items-center gap-1.5 pt-1 border-t border-white/5">
-                                        <Clock size={12} className="text-rose-400" />
-                                        <span>Last edited {gift.lastEdited}</span>
+                                    <div className="text-[11px] text-neutral-400 flex items-center justify-between pt-1 border-t border-white/5">
+                                        <span className="flex items-center gap-1.5">
+                                            <Clock size={12} className="text-rose-400" />
+                                            <span>Last edited {gift.lastEdited}</span>
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleTogglePublishStatus(gift.id)}
+                                            className="text-[10px] text-neutral-400 hover:text-rose-300 underline cursor-pointer"
+                                        >
+                                            {isPublished ? "Unpublish" : "Set Published"}
+                                        </button>
                                     </div>
 
                                     {/* Quick Actions Grid */}
@@ -305,22 +345,53 @@ export default function DashboardPage() {
                                             >
                                                 <PenLine size={13} className="text-rose-400" /> Edit
                                             </Link>
-                                            <Link
-                                                to={`/templates/${gift.templateSlug}`}
-                                                data-testid={DASHBOARD.previewBtn(gift.id)}
-                                                className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
-                                            >
-                                                <Eye size={13} className="text-rose-400" /> Preview
-                                            </Link>
+
+                                            {isPublished ? (
+                                                <a
+                                                    href={publicLink}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
+                                                >
+                                                    <ExternalLink size={13} className="text-emerald-400" /> View Live
+                                                </a>
+                                            ) : (
+                                                <Link
+                                                    to={`/templates/${gift.templateSlug}`}
+                                                    data-testid={DASHBOARD.previewBtn(gift.id)}
+                                                    className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
+                                                >
+                                                    <Eye size={13} className="text-rose-400" /> Preview
+                                                </Link>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center gap-2">
+                                            {isPublished ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedShareGift(gift)}
+                                                    className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
+                                                >
+                                                    <Share2 size={13} /> Share Link
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedPublishDraft(gift)}
+                                                    className="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
+                                                >
+                                                    <Send size={13} /> Publish
+                                                </button>
+                                            )}
+
                                             <button
                                                 type="button"
-                                                onClick={() => setSelectedPublishDraft(gift)}
-                                                className="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
+                                                onClick={() => handleCopyPublicLink(gift)}
+                                                title="Copy public link"
+                                                className="p-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
                                             >
-                                                <Send size={13} /> {isPublished ? "View Live Link" : "Publish"}
+                                                {copiedId === gift.id ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                                             </button>
 
                                             <button
@@ -375,7 +446,7 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* ORDER & PUBLISH MODAL */}
+            {/* PUBLISH MODAL */}
             <PublishModal
                 isOpen={!!selectedPublishDraft}
                 onClose={() => setSelectedPublishDraft(null)}
@@ -390,6 +461,14 @@ export default function DashboardPage() {
                         return {};
                     }
                 })()}
+            />
+
+            {/* SHARE MODAL */}
+            <ShareModal
+                isOpen={!!selectedShareGift}
+                onClose={() => setSelectedShareGift(null)}
+                publicUrl={selectedShareGift ? `${baseUrl}/story/${selectedShareGift.slug || selectedShareGift.id}` : ""}
+                giftTitle={selectedShareGift?.title}
             />
         </div>
     );
