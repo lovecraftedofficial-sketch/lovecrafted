@@ -25,7 +25,7 @@ export default function BackgroundMusic() {
 
     window.addEventListener("click", handleFirstClick);
     return () => window.removeEventListener("click", handleFirstClick);
-  }, []);
+  }, [isPlaying]);
 
   const toggleMusic = () => {
     if (!audioRef.current) return;

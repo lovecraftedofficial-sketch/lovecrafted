@@ -15,7 +15,7 @@ const DRAFT_KEY = (slug, siteId) => `lws:draft:${slug}:${siteId || "demo"}`;
 export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
     const config = templateEntry?.config || {};
     const slug = config.slug || "sunset-love";
-    const schema = config.editableSchema || [];
+    const schema = useMemo(() => config.editableSchema || [], [config.editableSchema]);
 
     // Fallback default state built dynamically from schema keys & defaultValues
     const defaultDataFromSchema = useMemo(() => {
