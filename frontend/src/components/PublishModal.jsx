@@ -1,3 +1,4 @@
+import { MAX_SAFE_IMAGE_PAYLOAD_BYTES } from "@/config/imageConfig";
 import React, { useState } from "react";
 import { X, Send, Copy, ShieldCheck, CheckCircle2, ArrowRight, Clock, Heart, Lock, QrCode, AlertCircle, ExternalLink, Check, Mail, Loader2, Sparkles } from "lucide-react";
 import emailjs from "@emailjs/browser";
