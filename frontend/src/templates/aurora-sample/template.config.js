@@ -20,6 +20,7 @@ const auroraSampleConfig = {
     slug: "aurora-sample",
     name: "Aurora Sample",
     category: "Demo",
+    occasions: ["anniversary", "birthday", "friendship"],
     tier: "Premium",
     price: 1999,
     currency: "INR",

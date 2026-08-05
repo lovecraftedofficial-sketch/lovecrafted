@@ -1,112 +1,292 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { MARKETPLACE } from "@/constants/testIds";
 import { listTemplates } from "@/data/templateRegistry";
+import { OCCASIONS, getOccasionCounts, getOccasionBySlug } from "@/constants/occasions";
 import TemplateCard from "@/components/TemplateCard";
-import { Filter } from "lucide-react";
+import { Filter, LayoutGrid, Sparkles, X } from "lucide-react";
+
+const TIERS = ["All", "Basic", "Premium", "Luxury"];
+const PRICE_BUCKETS = [
+    { id: "all", label: "Any price", min: 0, max: Infinity },
+    { id: "u1000", label: "Under ₹1,000", min: 0, max: 999 },
+    { id: "1000-2000", label: "₹1,000 – ₹2,000", min: 1000, max: 2000 },
+    { id: "2000p", label: "₹2,000+", min: 2000, max: Infinity },
+];
 
 export default function MarketplacePage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeOccasionSlug = searchParams.get("occasion") || "all";
+    const tier = searchParams.get("tier") || "All";
+    const price = searchParams.get("price") || "all";
+
     const all = useMemo(() => listTemplates(), []);
-    const categories = useMemo(
-        () => ["All", ...Array.from(new Set(all.map((t) => t.config.category)))],
-        [all],
+
+    // Compute dynamic template counts for every occasion from the registry
+    const occasionCounts = useMemo(() => getOccasionCounts(all), [all]);
+
+    const activeOccasionObj = useMemo(
+        () => getOccasionBySlug(activeOccasionSlug),
+        [activeOccasionSlug]
     );
-    const tiers = ["All", "Basic", "Premium", "Luxury"];
-    const priceBuckets = [
-        { id: "all", label: "Any price", min: 0, max: Infinity },
-        { id: "u1000", label: "Under ₹1,000", min: 0, max: 999 },
-        { id: "1000-2000", label: "₹1,000 – ₹2,000", min: 1000, max: 2000 },
-        { id: "2000p", label: "₹2,000+", min: 2000, max: Infinity },
-    ];
 
-    const [category, setCategory] = useState("All");
-    const [tier, setTier] = useState("All");
-    const [price, setPrice] = useState("all");
+    const handleOccasionChange = (slug) => {
+        const newParams = new URLSearchParams(searchParams);
+        if (slug === "all") {
+            newParams.delete("occasion");
+        } else {
+            newParams.set("occasion", slug);
+        }
+        setSearchParams(newParams);
+    };
 
-    const filtered = all.filter((t) => {
-        const c = t.config;
-        if (category !== "All" && c.category !== category) return false;
-        if (tier !== "All" && c.tier !== tier) return false;
-        const bucket = priceBuckets.find((b) => b.id === price);
-        if (bucket && (c.price < bucket.min || c.price > bucket.max)) return false;
-        return true;
-    });
+    const handleTierChange = (newTier) => {
+        const newParams = new URLSearchParams(searchParams);
+        if (newTier === "All") {
+            newParams.delete("tier");
+        } else {
+            newParams.set("tier", newTier);
+        }
+        setSearchParams(newParams);
+    };
+
+    const handlePriceChange = (newPrice) => {
+        const newParams = new URLSearchParams(searchParams);
+        if (newPrice === "all") {
+            newParams.delete("price");
+        } else {
+            newParams.set("price", newPrice);
+        }
+        setSearchParams(newParams);
+    };
+
+    const handleResetAll = () => {
+        setSearchParams({});
+    };
+
+    // Filter logic checking multi-occasion arrays
+    const filtered = useMemo(() => {
+        return all.filter((t) => {
+            const c = t.config || {};
+            const tOccasions = (c.occasions || []).map((o) => o.toLowerCase());
+            const legacyCategory = (c.category || "").toLowerCase();
+
+            // Occasion Filter
+            if (activeOccasionSlug !== "all") {
+                const target = activeOccasionSlug.toLowerCase();
+                const matchesOccasion =
+                    tOccasions.includes(target) ||
+                    legacyCategory === target ||
+                    (target === "anniversary" && legacyCategory === "romantic");
+
+                if (!matchesOccasion) return false;
+            }
+
+            // Tier Filter
+            if (tier !== "All" && c.tier !== tier) return false;
+
+            // Price Bucket Filter
+            const bucket = PRICE_BUCKETS.find((b) => b.id === price);
+            if (bucket && (c.price < bucket.min || c.price > bucket.max)) return false;
+
+            return true;
+        });
+    }, [all, activeOccasionSlug, tier, price]);
 
     return (
-        <div data-testid={MARKETPLACE.root} className="max-w-7xl mx-auto px-6 py-14 md:py-20">
-            <div className="mb-10 md:mb-14">
-                <div className="lws-pill mb-4">Marketplace</div>
-                <h1 className="font-display text-5xl md:text-6xl">
-                    <span className="lws-gradient-text">Every template, one place</span>
+        <div data-testid={MARKETPLACE.root} className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16">
+            {/* Header Banner */}
+            <div className="mb-8 md:mb-12">
+                <div className="lws-pill mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300">
+                    <Sparkles size={13} /> Occasion Keepsakes
+                </div>
+                <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
+                    <span className="lws-gradient-text">Crafted for Every Special Moment</span>
                 </h1>
-                <p className="text-[color:var(--lws-text-muted)] mt-3 max-w-2xl">
-                    Handcrafted romantic websites. Each has its own personality, editable
-                    fields and price. Browse, preview and choose.
+                <p className="text-[color:var(--lws-text-muted,#a3929e)] mt-3 max-w-2xl text-sm sm:text-base leading-relaxed">
+                    Explore luxury digital keepsake websites tailored for Anniversaries, Proposals, Weddings, Birthdays, and cherished relationships.
                 </p>
             </div>
 
-            <div className="lws-card p-4 md:p-5 mb-8 flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[color:var(--lws-text-muted)]">
-                    <Filter size={12} /> Filters
+            {/* Dynamic Occasions Filter Bar */}
+            <div className="mb-8 space-y-3">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-widest text-neutral-400 font-semibold flex items-center gap-1.5">
+                        <Filter size={13} className="text-rose-400" /> Select Occasion
+                    </span>
+                    {activeOccasionSlug !== "all" && (
+                        <button
+                            onClick={() => handleOccasionChange("all")}
+                            className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                            <X size={12} /> Clear occasion filter
+                        </button>
+                    )}
+                </div>
+
+                {/* Horizontal Scroll Pill Bar */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none snap-x">
+                    {/* "All Occasions" Pill */}
+                    <button
+                        type="button"
+                        onClick={() => handleOccasionChange("all")}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 shrink-0 cursor-pointer snap-start ${
+                            activeOccasionSlug === "all"
+                                ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/20 border border-rose-400/40"
+                                : "bg-neutral-900/80 border border-white/10 text-neutral-300 hover:border-white/20 hover:text-white"
+                        }`}
+                    >
+                        <LayoutGrid size={14} />
+                        <span>All Occasions</span>
+                        <span
+                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                activeOccasionSlug === "all"
+                                    ? "bg-white/20 text-white"
+                                    : "bg-white/10 text-neutral-400"
+                            }`}
+                        >
+                            {all.length}
+                        </span>
+                    </button>
+
+                    {/* Dynamically Generated Occasion Pills */}
+                    {OCCASIONS.map((occ) => {
+                        const IconComp = occ.icon;
+                        const isSelected = activeOccasionSlug === occ.slug;
+                        const count = occasionCounts[occ.id] || 0;
+
+                        return (
+                            <button
+                                key={occ.id}
+                                type="button"
+                                onClick={() => handleOccasionChange(occ.slug)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 shrink-0 cursor-pointer snap-start ${
+                                    isSelected
+                                        ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/20 border border-rose-400/40 scale-[1.02]"
+                                        : "bg-neutral-900/80 border border-white/10 text-neutral-300 hover:border-rose-500/40 hover:text-white"
+                                }`}
+                            >
+                                <IconComp
+                                    size={14}
+                                    className={isSelected ? "text-white" : "text-rose-400"}
+                                />
+                                <span>{occ.name}</span>
+                                <span
+                                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                        isSelected
+                                            ? "bg-white/20 text-white"
+                                            : "bg-white/10 text-neutral-400"
+                                    }`}
+                                >
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Active Occasion Banner (if selected) */}
+            {activeOccasionObj && (
+                <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-rose-950/40 via-neutral-900/80 to-purple-950/30 border border-rose-500/20 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center justify-center shrink-0">
+                            {React.createElement(activeOccasionObj.icon, { size: 20 })}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-lg font-bold text-white font-serif">
+                                    {activeOccasionObj.name} Keepsakes
+                                </h2>
+                                {activeOccasionObj.isComingSoon && (
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 uppercase tracking-wide">
+                                        Development Phase
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-neutral-400 mt-0.5">
+                                {activeOccasionObj.shortDescription}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Secondary Controls Bar (Tier & Price Filters + Result Count) */}
+            <div className="lws-card p-4 mb-8 flex flex-wrap items-center gap-3 bg-neutral-900/60 border border-white/10 rounded-2xl">
+                <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-neutral-400 font-semibold">
+                    <Filter size={12} /> Refine:
                 </span>
 
-                <select
-                    data-testid={MARKETPLACE.filterCategory}
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="bg-[color:var(--lws-surface-2)] border border-[color:var(--lws-border-strong)] rounded-full px-4 py-1.5 text-sm text-[color:var(--lws-cream)]"
-                >
-                    {categories.map((c) => (
-                        <option key={c} value={c}>
-                            {c === "All" ? "Category: All" : c}
-                        </option>
-                    ))}
-                </select>
-
+                {/* Tier Filter Dropdown */}
                 <select
                     data-testid={MARKETPLACE.filterTier}
                     value={tier}
-                    onChange={(e) => setTier(e.target.value)}
-                    className="bg-[color:var(--lws-surface-2)] border border-[color:var(--lws-border-strong)] rounded-full px-4 py-1.5 text-sm text-[color:var(--lws-cream)]"
+                    onChange={(e) => handleTierChange(e.target.value)}
+                    className="bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-rose-500/50 cursor-pointer"
                 >
-                    {tiers.map((t) => (
-                        <option key={t} value={t}>
-                            {t === "All" ? "Tier: All" : t}
+                    {TIERS.map((t) => (
+                        <option key={t} value={t} className="bg-neutral-900 text-white">
+                            {t === "All" ? "All Tiers" : `${t} Tier`}
                         </option>
                     ))}
                 </select>
 
+                {/* Price Filter Dropdown */}
                 <select
                     data-testid={MARKETPLACE.filterPrice}
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="bg-[color:var(--lws-surface-2)] border border-[color:var(--lws-border-strong)] rounded-full px-4 py-1.5 text-sm text-[color:var(--lws-cream)]"
+                    onChange={(e) => handlePriceChange(e.target.value)}
+                    className="bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-rose-500/50 cursor-pointer"
                 >
-                    {priceBuckets.map((b) => (
-                        <option key={b.id} value={b.id}>
+                    {PRICE_BUCKETS.map((b) => (
+                        <option key={b.id} value={b.id} className="bg-neutral-900 text-white">
                             {b.label}
                         </option>
                     ))}
                 </select>
 
-                <span className="ml-auto text-xs text-[color:var(--lws-text-dim)]">
-                    {filtered.length} template{filtered.length === 1 ? "" : "s"}
-                </span>
+                <div className="ml-auto flex items-center gap-3 text-xs text-neutral-400">
+                    <span>
+                        Showing <strong className="text-white font-semibold">{filtered.length}</strong> template{filtered.length === 1 ? "" : "s"}
+                    </span>
+                    {(activeOccasionSlug !== "all" || tier !== "All" || price !== "all") && (
+                        <button
+                            type="button"
+                            onClick={handleResetAll}
+                            className="text-xs text-rose-400 hover:text-rose-300 underline underline-offset-4 cursor-pointer"
+                        >
+                            Reset filters
+                        </button>
+                    )}
+                </div>
             </div>
 
+            {/* Template Grid or Empty State */}
             {filtered.length > 0 ? (
-                <div data-testid={MARKETPLACE.grid} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div data-testid={MARKETPLACE.grid} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filtered.map((t) => (
                         <TemplateCard key={t.config.slug} entry={t} />
                     ))}
                 </div>
             ) : (
-                <div data-testid={MARKETPLACE.emptyState} className="lws-card p-14 text-center">
-                    <div className="font-display text-2xl mb-2 lws-gradient-text">
-                        Nothing matches those filters yet
+                <div data-testid={MARKETPLACE.emptyState} className="lws-card p-12 md:p-16 text-center rounded-3xl bg-neutral-900/40 border border-white/10 max-w-xl mx-auto space-y-4">
+                    <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/20">
+                        <Sparkles size={22} />
                     </div>
-                    <p className="text-[color:var(--lws-text-muted)]">
-                        Try a wider price range or different tier.
+                    <h3 className="font-serif text-2xl font-bold text-white">
+                        No Keepsakes Found
+                    </h3>
+                    <p className="text-xs text-neutral-400 leading-relaxed">
+                        No templates currently match the selected combination of occasion, tier, and price filters.
                     </p>
+                    <button
+                        type="button"
+                        onClick={handleResetAll}
+                        className="lws-btn-primary text-xs py-2.5 px-5 rounded-full inline-flex items-center gap-2 cursor-pointer shadow-lg"
+                    >
+                        <X size={14} /> Clear All Filters
+                    </button>
                 </div>
             )}
         </div>
