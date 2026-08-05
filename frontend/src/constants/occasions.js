@@ -8,14 +8,13 @@ import {
     Users,
     Smile,
     Trophy,
-    Clock,
-    Flame
+    Clock
 } from "lucide-react";
 
 /**
  * Single Source of Truth for LoveCrafted Occasions
  * ------------------------------------------------
- * Easily add or edit occasions here to update marketplace filters across the entire studio.
+ * Easily toggle `isActive: true/false` to control visible occasion filters across the marketplace.
  */
 export const OCCASIONS = [
     {
@@ -27,6 +26,7 @@ export const OCCASIONS = [
         shortDescription: "Celebrate your milestone journey & timeless love together",
         heroImage: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: true,
     },
     {
         id: "proposal",
@@ -37,6 +37,7 @@ export const OCCASIONS = [
         shortDescription: "Create a magical, unforgettable 'Will You Marry Me?' moment",
         heroImage: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: true,
     },
     {
         id: "wedding",
@@ -47,6 +48,7 @@ export const OCCASIONS = [
         shortDescription: "Share your royal wedding story, schedule & memories with guests",
         heroImage: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: true,
     },
     {
         id: "birthday",
@@ -57,16 +59,7 @@ export const OCCASIONS = [
         shortDescription: "Surprise your favorite person with a dazzling birthday keepsake",
         heroImage: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
-    },
-    {
-        id: "graduation",
-        name: "Graduation",
-        slug: "graduation",
-        icon: GraduationCap,
-        color: "blue",
-        shortDescription: "Commemorate academic success & big dreams achieved",
-        heroImage: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
-        isComingSoon: false,
+        isActive: true,
     },
     {
         id: "long-distance",
@@ -77,6 +70,18 @@ export const OCCASIONS = [
         shortDescription: "Bridge the miles with open-when notes & romantic timelines",
         heroImage: "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: true,
+    },
+    {
+        id: "graduation",
+        name: "Graduation",
+        slug: "graduation",
+        icon: GraduationCap,
+        color: "blue",
+        shortDescription: "Commemorate academic success & big dreams achieved",
+        heroImage: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+        isComingSoon: false,
+        isActive: false,
     },
     {
         id: "parents",
@@ -87,6 +92,7 @@ export const OCCASIONS = [
         shortDescription: "Honor Mom, Dad & family with a heartwarming tribute",
         heroImage: "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: false,
     },
     {
         id: "friendship",
@@ -97,6 +103,7 @@ export const OCCASIONS = [
         shortDescription: "Celebrate endless laughs, late-night chats & bestie memories",
         heroImage: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: false,
     },
     {
         id: "promotion",
@@ -107,6 +114,7 @@ export const OCCASIONS = [
         shortDescription: "Cheer on career milestones, promotions & new chapters",
         heroImage: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: false,
+        isActive: false,
     },
     {
         id: "coming-soon",
@@ -117,8 +125,16 @@ export const OCCASIONS = [
         shortDescription: "Preview upcoming luxury keepsakes currently in development",
         heroImage: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80",
         isComingSoon: true,
+        isActive: false,
     },
 ];
+
+/**
+ * Get active occasions only (for filters and navigation)
+ */
+export function getActiveOccasions() {
+    return OCCASIONS.filter((o) => o.isActive);
+}
 
 /**
  * Get occasion metadata by slug or ID
