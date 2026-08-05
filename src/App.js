@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
+import AuthModal from "@/components/AuthModal";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackgroundMusic from "@/components/BackgroundMusic";
@@ -36,80 +38,85 @@ function Shell({ children, hideFooter = false }) {
 function App() {
     return (
         <ErrorBoundary>
-            <div className="App">
-                <BrowserRouter>
-                    <ScrollToTop />
-                    {/* Global Sleek Ambient Music Player */}
-                    <BackgroundMusic />
+            <AuthProvider>
+                <div className="App">
+                    <BrowserRouter>
+                        <ScrollToTop />
+                        {/* Global Sleek Ambient Music Player */}
+                        <BackgroundMusic />
 
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <Shell>
-                                <LandingPage />
-                            </Shell>
-                        }
-                    />
-                    <Route
-                        path="/templates"
-                        element={
-                            <Shell>
-                                <MarketplacePage />
-                            </Shell>
-                        }
-                    />
-                    <Route
-                        path="/templates/:slug"
-                        element={
-                            <Shell>
-                                <TemplateDetailsPage />
-                            </Shell>
-                        }
-                    />
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <Shell>
-                                <DashboardPage />
-                            </Shell>
-                        }
-                    />
-                    <Route
-                        path="/dashboard/websites/:slug/edit"
-                        element={
-                            <Shell hideFooter>
-                                <EditorPage />
-                            </Shell>
-                        }
-                    />
-                    {/* Dynamic View Route for Customized Partner Websites */}
-                    <Route path="/v/:shareId" element={<ViewWebsitePage />} />
-                    <Route path="/v" element={<ViewWebsitePage />} />
+                        {/* Global Auth Modal */}
+                        <AuthModal />
 
-                    {/* Owner Link Activation Control Panel */}
-                    <Route
-                        path="/activate"
-                        element={
-                            <Shell>
-                                <ActivatePage />
-                            </Shell>
-                        }
-                    />
+                        <Routes>
+                            <Route
+                                path="/"
+                                element={
+                                    <Shell>
+                                        <LandingPage />
+                                    </Shell>
+                                }
+                            />
+                            <Route
+                                path="/templates"
+                                element={
+                                    <Shell>
+                                        <MarketplacePage />
+                                    </Shell>
+                                }
+                            />
+                            <Route
+                                path="/templates/:slug"
+                                element={
+                                    <Shell>
+                                        <TemplateDetailsPage />
+                                    </Shell>
+                                }
+                            />
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    <Shell>
+                                        <DashboardPage />
+                                    </Shell>
+                                }
+                            />
+                            <Route
+                                path="/dashboard/websites/:slug/edit"
+                                element={
+                                    <Shell hideFooter>
+                                        <EditorPage />
+                                    </Shell>
+                                }
+                            />
+                            {/* Dynamic View Route for Customized Partner Websites */}
+                            <Route path="/v/:shareId" element={<ViewWebsitePage />} />
+                            <Route path="/v" element={<ViewWebsitePage />} />
 
-                    <Route
-                        path="*"
-                        element={
-                            <Shell>
-                                <NotFoundPage />
-                            </Shell>
-                        }
-                    />
-                </Routes>
-            </BrowserRouter>
-        </div>
-    </ErrorBoundary>
-);
+                            {/* Owner Link Activation Control Panel */}
+                            <Route
+                                path="/activate"
+                                element={
+                                    <Shell>
+                                        <ActivatePage />
+                                    </Shell>
+                                }
+                            />
+
+                            <Route
+                                path="*"
+                                element={
+                                    <Shell>
+                                        <NotFoundPage />
+                                    </Shell>
+                                }
+                            />
+                        </Routes>
+                    </BrowserRouter>
+                </div>
+            </AuthProvider>
+        </ErrorBoundary>
+    );
 }
 
 export default App;

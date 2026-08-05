@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { Heart, Menu, X } from "lucide-react";
+import { Heart, Menu, X, User, LogOut, Sparkles } from "lucide-react";
 import { NAV } from "@/constants/testIds";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
+    const { user, openAuthModal, logout } = useAuth();
 
     const linkClass = ({ isActive }) =>
         `text-sm tracking-wide transition-colors ${
             isActive
-                ? "text-[color:var(--lws-pink)]"
+                ? "text-[color:var(--lws-pink)] font-semibold"
                 : "text-[color:var(--lws-text-muted)] hover:text-[color:var(--lws-cream)]"
         }`;
 
@@ -56,14 +58,52 @@ export default function Navbar() {
                     >
                         Dashboard
                     </NavLink>
+                </nav>
+
+                <div className="hidden md:flex items-center gap-4">
+                    {user ? (
+                        <div className="flex items-center gap-3 bg-neutral-900/80 border border-white/10 px-3 py-1.5 rounded-full">
+                            {user.avatar ? (
+                                <img
+                                    src={user.avatar}
+                                    alt={user.name}
+                                    className="w-6 h-6 rounded-full object-cover border border-rose-400/40"
+                                />
+                            ) : (
+                                <div className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold flex items-center justify-center border border-rose-500/30">
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <span className="text-xs font-semibold text-neutral-200">
+                                {user.name}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={logout}
+                                title="Sign Out"
+                                className="text-neutral-400 hover:text-rose-400 p-1 transition-colors cursor-pointer"
+                            >
+                                <LogOut size={13} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => openAuthModal("signin")}
+                            className="text-xs font-semibold text-neutral-300 hover:text-white px-3 py-2 transition-colors cursor-pointer"
+                        >
+                            Sign In
+                        </button>
+                    )}
+
                     <Link
                         data-testid={NAV.ctaExplore}
                         to="/templates"
-                        className="lws-btn-primary text-sm"
+                        className="lws-btn-primary text-xs py-2 px-4"
                     >
                         Explore Templates
                     </Link>
-                </nav>
+                </div>
 
                 <button
                     className="md:hidden text-[color:var(--lws-cream)]"
@@ -94,6 +134,39 @@ export default function Navbar() {
                         >
                             Dashboard
                         </NavLink>
+
+                        {user ? (
+                            <div className="flex items-center justify-between p-3 rounded-2xl bg-neutral-900 border border-white/10">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold flex items-center justify-center">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-xs font-medium text-white">
+                                        {user.name}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        setOpen(false);
+                                    }}
+                                    className="text-xs text-rose-400 hover:underline"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    openAuthModal("signin");
+                                    setOpen(false);
+                                }}
+                                className="text-xs text-neutral-300 text-left font-medium"
+                            >
+                                Sign In / Register
+                            </button>
+                        )}
+
                         <Link
                             onClick={() => setOpen(false)}
                             to="/templates"

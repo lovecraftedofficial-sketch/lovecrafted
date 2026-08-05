@@ -1,136 +1,390 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { PenLine, Eye, Plus, Clock, Send, Sparkles, X } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+    PenLine,
+    Eye,
+    Plus,
+    Clock,
+    Send,
+    Sparkles,
+    Search,
+    Copy,
+    Trash2,
+    Filter,
+    Heart,
+    CheckCircle2,
+    AlertTriangle,
+    X,
+    LayoutGrid
+} from "lucide-react";
 import { DASHBOARD } from "@/constants/testIds";
 import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
+import { getOccasionBySlug } from "@/constants/occasions";
 import PublishModal from "@/components/PublishModal";
 
 export default function DashboardPage() {
+    const navigate = useNavigate();
     const shippable = listShippableTemplates();
-    const [selectedDraft, setSelectedDraft] = useState(null);
 
-    // Fictional website cards derived from registered templates.
-    const mockWebsites = shippable.map((t, i) => ({
-        id: `demo-${t.config.slug}`,
-        title: `Website Draft ${i + 1}`,
-        templateSlug: t.config.slug,
-        status: "Draft Saved",
-        lastEdited: "just now",
-    }));
+    // Gift cards state persisted locally
+    const [gifts, setGifts] = useState(() => {
+        const stored = localStorage.getItem("lws:user_gifts");
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch {
+                /* ignore */
+            }
+        }
+        // Fallback default starter drafts
+        return shippable.slice(0, 3).map((t, i) => ({
+            id: `gift-${t.config.slug}-${i}`,
+            title: i === 0 ? "Anniversary Memory Website" : i === 1 ? "Special Proposal Keepsake" : "Our Love Story",
+            templateSlug: t.config.slug,
+            occasionSlug: (t.config.occasions && t.config.occasions[0]) || t.config.category.toLowerCase(),
+            status: i === 0 ? "Published" : "Draft",
+            lastEdited: i === 0 ? "2 hours ago" : "Yesterday",
+            createdAt: new Date().toISOString(),
+        }));
+    });
+
+    const [filterTab, setFilterTab] = useState("all"); // 'all' | 'draft' | 'published'
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedPublishDraft, setSelectedPublishDraft] = useState(null);
+
+    // Delete Confirmation Modal State
+    const [giftToDelete, setGiftToDelete] = useState(null);
+
+    const saveGifts = (updatedGifts) => {
+        setGifts(updatedGifts);
+        try {
+            localStorage.setItem("lws:user_gifts", JSON.stringify(updatedGifts));
+        } catch {
+            /* ignore */
+        }
+    };
+
+    const handleDuplicateGift = (gift) => {
+        const cloned = {
+            ...gift,
+            id: `gift-${gift.templateSlug}-${Date.now()}`,
+            title: `${gift.title} (Copy)`,
+            status: "Draft",
+            lastEdited: "Just now",
+            createdAt: new Date().toISOString(),
+        };
+        const nextGifts = [cloned, ...gifts];
+        saveGifts(nextGifts);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!giftToDelete) return;
+        const nextGifts = gifts.filter((g) => g.id !== giftToDelete.id);
+        saveGifts(nextGifts);
+        setGiftToDelete(null);
+    };
+
+    // Filter & Search logic
+    const filteredGifts = useMemo(() => {
+        return gifts.filter((g) => {
+            // Filter Tab
+            if (filterTab === "draft" && g.status.toLowerCase() !== "draft") return false;
+            if (filterTab === "published" && g.status.toLowerCase() !== "published") return false;
+
+            // Search Query
+            if (searchQuery.trim() !== "") {
+                const q = searchQuery.toLowerCase();
+                const matchTitle = g.title.toLowerCase().includes(q);
+                const matchTemplate = g.templateSlug.toLowerCase().includes(q);
+                const matchOccasion = (g.occasionSlug || "").toLowerCase().includes(q);
+                if (!matchTitle && !matchTemplate && !matchOccasion) return false;
+            }
+
+            return true;
+        });
+    }, [gifts, filterTab, searchQuery]);
 
     return (
-        <div data-testid={DASHBOARD.root} className="max-w-6xl mx-auto px-6 py-12 md:py-16">
-            <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
-                <div>
-                    <div className="lws-pill mb-4 flex items-center gap-1.5">
-                        <Sparkles size={12} /> Your Studio
+        <div data-testid={DASHBOARD.root} className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 text-white">
+            {/* Custom Delete Confirmation Modal */}
+            {giftToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 relative">
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                <AlertTriangle size={22} />
+                            </div>
+                            <div>
+                                <h3 className="font-serif text-lg font-bold text-white">Delete Keepsake?</h3>
+                                <p className="text-xs text-neutral-400">This action cannot be undone.</p>
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-neutral-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5">
+                            Are you sure you want to delete "<strong className="text-white">{giftToDelete.title}</strong>"?
+                        </p>
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setGiftToDelete(null)}
+                                className="px-4 py-2 rounded-xl text-xs font-medium bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleConfirmDelete}
+                                className="px-4 py-2 rounded-xl text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white shadow-lg transition-colors cursor-pointer"
+                            >
+                                Yes, Delete
+                            </button>
+                        </div>
                     </div>
-                    <h1 className="font-display text-4xl md:text-5xl">
-                        <span className="lws-gradient-text">Your websites</span>
+                </div>
+            )}
+
+            {/* Studio Dashboard Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+                <div>
+                    <div className="lws-pill mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300">
+                        <Sparkles size={13} /> Your Studio
+                    </div>
+                    <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight">
+                        <span className="lws-gradient-text">My Romantic Keepsakes</span>
                     </h1>
-                    <p className="text-[color:var(--lws-text-muted)] mt-2">
-                        Customize your romantic website drafts or request your final shareable live link.
+                    <p className="text-neutral-400 mt-2 text-xs sm:text-sm max-w-xl leading-relaxed">
+                        Manage your customized website drafts, continue editing, or publish to get your shareable live link.
                     </p>
                 </div>
+
                 <Link
                     to="/templates"
                     data-testid={DASHBOARD.newSiteBtn}
-                    className="lws-btn-primary text-sm flex items-center gap-1.5"
+                    className="lws-btn-primary text-xs py-3 px-5 rounded-full inline-flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-105 transition-transform shrink-0"
                 >
-                    <Plus size={14} /> Create a new website
+                    <Plus size={16} /> Create New Keepsake
                 </Link>
             </div>
 
-            {mockWebsites.length === 0 ? (
-                <div data-testid={DASHBOARD.empty} className="lws-card p-14 text-center">
-                    <div className="font-display text-2xl mb-2 lws-gradient-text">
-                        No websites yet
-                    </div>
-                    <p className="text-[color:var(--lws-text-muted)] mb-6">
-                        Pick a template from the marketplace to begin.
-                    </p>
-                    <Link to="/templates" className="lws-btn-primary">
-                        Browse templates
-                    </Link>
+            {/* Filter Tabs & Search Control Bar */}
+            <div className="lws-card p-4 mb-8 bg-neutral-900/60 border border-white/10 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* Filter Tabs */}
+                <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-full p-1 w-full sm:w-auto">
+                    <button
+                        type="button"
+                        onClick={() => setFilterTab("all")}
+                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                            filterTab === "all"
+                                ? "bg-rose-500 text-white shadow-md"
+                                : "text-neutral-400 hover:text-white"
+                        }`}
+                    >
+                        All Gifts ({gifts.length})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilterTab("draft")}
+                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                            filterTab === "draft"
+                                ? "bg-rose-500 text-white shadow-md"
+                                : "text-neutral-400 hover:text-white"
+                        }`}
+                    >
+                        Drafts ({gifts.filter((g) => g.status.toLowerCase() === "draft").length})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilterTab("published")}
+                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                            filterTab === "published"
+                                ? "bg-rose-500 text-white shadow-md"
+                                : "text-neutral-400 hover:text-white"
+                        }`}
+                    >
+                        Published ({gifts.filter((g) => g.status.toLowerCase() === "published").length})
+                    </button>
                 </div>
-            ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {mockWebsites.map((w) => {
-                        const t = getTemplate(w.templateSlug);
+
+                {/* Search Bar */}
+                <div className="relative w-full sm:w-72">
+                    <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                    <input
+                        type="text"
+                        placeholder="Search gifts or occasions..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-9 pr-8 py-2 rounded-full bg-black/60 border border-white/10 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-rose-500/50"
+                    />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
+                        >
+                            <X size={12} />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Gift Grid or Guided Empty State */}
+            {filteredGifts.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredGifts.map((gift) => {
+                        const templateEntry = getTemplate(gift.templateSlug);
+                        const occasionObj = getOccasionBySlug(gift.occasionSlug);
+                        const isPublished = gift.status.toLowerCase() === "published";
+
                         return (
                             <article
-                                key={w.id}
-                                data-testid={DASHBOARD.websiteCard(w.id)}
-                                className="lws-card overflow-hidden flex flex-col"
+                                key={gift.id}
+                                data-testid={DASHBOARD.websiteCard(gift.id)}
+                                className="lws-card overflow-hidden rounded-3xl border border-white/10 bg-neutral-900/80 hover:border-rose-500/30 transition-all duration-300 flex flex-col group shadow-xl"
                             >
-                                <div className="aspect-[16/10] bg-[color:var(--lws-surface-2)] overflow-hidden relative">
-                                    {t?.config.coverImage && (
+                                {/* Thumbnail Header */}
+                                <div className="aspect-[16/10] bg-neutral-950 overflow-hidden relative">
+                                    {templateEntry?.config?.coverImage ? (
                                         <img
-                                            src={t.config.coverImage}
-                                            alt=""
-                                            className="w-full h-full object-cover"
+                                            src={templateEntry.config.coverImage}
+                                            alt={gift.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-neutral-600 text-xs">
+                                            No preview cover
+                                        </div>
                                     )}
-                                </div>
-                                <div className="p-5 flex-1 flex flex-col">
-                                    <div className="flex items-center justify-between gap-2 mb-2">
-                                        <h3 className="font-display text-xl lws-gradient-text">
-                                            {w.title}
-                                        </h3>
-                                        <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-[color:var(--lws-border-strong)] text-[color:var(--lws-pink)]">
-                                            {w.status}
+
+                                    {/* Status Badge */}
+                                    <div className="absolute top-3 left-3">
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest backdrop-blur-md border ${
+                                                isPublished
+                                                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                                    : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                                            }`}
+                                        >
+                                            {isPublished ? "● Published" : "○ Draft Saved"}
                                         </span>
                                     </div>
-                                    <p className="text-xs uppercase tracking-widest text-[color:var(--lws-text-dim)] mb-4">
-                                        {t?.config.name || w.templateSlug}
-                                    </p>
-                                    <div className="text-xs text-[color:var(--lws-text-dim)] flex items-center gap-2 mb-5">
-                                        <Clock size={12} /> Last edited {w.lastEdited}
+
+                                    {/* Occasion Badge */}
+                                    {occasionObj && (
+                                        <div className="absolute bottom-3 left-3">
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-black/70 text-rose-300 border border-white/10 flex items-center gap-1 backdrop-blur-sm">
+                                                {React.createElement(occasionObj.icon, { size: 11 })}
+                                                <span>{occasionObj.name}</span>
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Body Info */}
+                                <div className="p-5 flex-1 flex flex-col space-y-4">
+                                    <div>
+                                        <h3 className="font-serif text-lg font-bold text-white group-hover:text-rose-200 transition-colors">
+                                            {gift.title}
+                                        </h3>
+                                        <p className="text-xs text-neutral-400 mt-1">
+                                            Template: <strong className="text-neutral-300 font-medium">{templateEntry?.config?.name || gift.templateSlug}</strong>
+                                        </p>
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="mt-auto flex flex-col gap-2">
-                                        <div className="flex gap-2">
+                                    <div className="text-[11px] text-neutral-400 flex items-center gap-1.5 pt-1 border-t border-white/5">
+                                        <Clock size={12} className="text-rose-400" />
+                                        <span>Last edited {gift.lastEdited}</span>
+                                    </div>
+
+                                    {/* Quick Actions Grid */}
+                                    <div className="pt-2 mt-auto space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
                                             <Link
-                                                to={`/dashboard/websites/${w.templateSlug}/edit`}
-                                                data-testid={DASHBOARD.editBtn(w.id)}
-                                                className="lws-btn-ghost text-xs flex-1 justify-center py-2"
+                                                to={`/dashboard/websites/${gift.templateSlug}/edit`}
+                                                data-testid={DASHBOARD.editBtn(gift.id)}
+                                                className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
                                             >
-                                                <PenLine size={13} /> Edit
+                                                <PenLine size={13} className="text-rose-400" /> Edit
                                             </Link>
                                             <Link
-                                                to={`/templates/${w.templateSlug}`}
-                                                data-testid={DASHBOARD.previewBtn(w.id)}
-                                                className="lws-btn-ghost text-xs flex-1 justify-center py-2"
+                                                to={`/templates/${gift.templateSlug}`}
+                                                data-testid={DASHBOARD.previewBtn(gift.id)}
+                                                className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
                                             >
-                                                <Eye size={13} /> Preview
+                                                <Eye size={13} className="text-rose-400" /> Preview
                                             </Link>
                                         </div>
 
-                                        <button
-                                            onClick={() => setSelectedDraft(w)}
-                                            className="lws-btn-primary text-xs w-full justify-center py-2 flex items-center gap-1.5"
-                                        >
-                                            <Send size={13} /> Publish & Get Live Link
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedPublishDraft(gift)}
+                                                className="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
+                                            >
+                                                <Send size={13} /> {isPublished ? "View Live Link" : "Publish"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDuplicateGift(gift)}
+                                                title="Duplicate gift"
+                                                className="p-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                                            >
+                                                <Copy size={13} />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setGiftToDelete(gift)}
+                                                title="Delete gift"
+                                                className="p-2 rounded-xl bg-neutral-800 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 border border-white/10 transition-colors cursor-pointer"
+                                            >
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </article>
                         );
                     })}
                 </div>
+            ) : (
+                /* Guided Empty State */
+                <div data-testid={DASHBOARD.empty} className="lws-card p-12 md:p-16 text-center rounded-3xl bg-neutral-900/40 border border-white/10 max-w-xl mx-auto space-y-5">
+                    <div className="w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
+                        <Heart size={26} className="animate-pulse fill-rose-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="font-serif text-2xl font-bold text-white">
+                            No Keepsakes Found
+                        </h3>
+                        <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
+                            {searchQuery
+                                ? `No romantic gifts match your search query "${searchQuery}".`
+                                : "You haven't created any digital gifts yet. Pick a template from our luxury gallery to begin customizing."}
+                        </p>
+                    </div>
+
+                    <div className="pt-2">
+                        <Link
+                            to="/templates"
+                            className="lws-btn-primary text-xs py-3 px-6 rounded-full inline-flex items-center gap-2 cursor-pointer shadow-xl hover:scale-105 transition-transform"
+                        >
+                            <Plus size={14} /> Browse Templates & Create
+                        </Link>
+                    </div>
+                </div>
             )}
 
-            {/* ORDER & PAYMENT MODAL */}
+            {/* ORDER & PUBLISH MODAL */}
             <PublishModal
-                isOpen={!!selectedDraft}
-                onClose={() => setSelectedDraft(null)}
-                templateSlug={selectedDraft?.templateSlug}
-                draftTitle={selectedDraft?.title}
+                isOpen={!!selectedPublishDraft}
+                onClose={() => setSelectedPublishDraft(null)}
+                templateSlug={selectedPublishDraft?.templateSlug}
+                draftTitle={selectedPublishDraft?.title}
                 customContent={(() => {
-                    if (!selectedDraft) return {};
+                    if (!selectedPublishDraft) return {};
                     try {
-                        const raw = localStorage.getItem(`lws:draft:${selectedDraft.templateSlug}:demo`);
+                        const raw = localStorage.getItem(`lws:draft:${selectedPublishDraft.templateSlug}:demo`);
                         return raw ? JSON.parse(raw) : {};
                     } catch {
                         return {};
