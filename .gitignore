@@ -1,6 +1,17 @@
+# Database & task logs
 *.db
 *.db-journal
 .system_generated/tasks/
 .system_generated/terminals/
 .tempmediaStorage/
 browser/
+
+# Secrets & environment variables
+.env
+.env.*
+*.env
+*.secret
+
+# Node modules
+node_modules/
+frontend/node_modules/
