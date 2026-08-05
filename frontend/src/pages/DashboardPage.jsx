@@ -16,7 +16,9 @@ import {
     X,
     Lock,
     Unlock,
-    ExternalLink
+    ExternalLink,
+    CreditCard,
+    FileText
 } from "lucide-react";
 import { DASHBOARD } from "@/constants/testIds";
 import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
@@ -45,6 +47,8 @@ export default function DashboardPage() {
             templateSlug: t.config.slug,
             occasionSlug: (t.config.occasions && t.config.occasions[0]) || t.config.category.toLowerCase(),
             status: i === 0 ? "Published" : "Draft",
+            paymentStatus: i === 0 ? "paid" : "unpaid",
+            invoiceRef: i === 0 ? "INV-LC-8921" : null,
             slug: i === 0 ? "our-anniversary" : `story-${i}`,
             lastEdited: i === 0 ? "2 hours ago" : "Yesterday",
             createdAt: new Date().toISOString(),
@@ -75,6 +79,8 @@ export default function DashboardPage() {
             id: `gift-${gift.templateSlug}-${Date.now()}`,
             title: `${gift.title} (Copy)`,
             status: "Draft",
+            paymentStatus: "unpaid",
+            invoiceRef: null,
             slug: `${gift.slug || "story"}-copy-${Date.now().toString().slice(-4)}`,
             lastEdited: "Just now",
             createdAt: new Date().toISOString(),
@@ -183,7 +189,7 @@ export default function DashboardPage() {
                         <span className="lws-gradient-text">My Romantic Keepsakes</span>
                     </h1>
                     <p className="text-neutral-400 mt-2 text-xs sm:text-sm max-w-xl leading-relaxed">
-                        Manage your customized website drafts, continue editing, or share your active live links.
+                        Manage your customized website drafts, continue editing, or unlock publishing via Razorpay checkout.
                     </p>
                 </div>
 
@@ -263,6 +269,7 @@ export default function DashboardPage() {
                         const templateEntry = getTemplate(gift.templateSlug);
                         const occasionObj = getOccasionBySlug(gift.occasionSlug);
                         const isPublished = gift.status.toLowerCase() === "published";
+                        const isPaid = gift.paymentStatus === "paid" || isPublished;
                         const publicLink = `${baseUrl}/story/${gift.slug || gift.id}`;
 
                         return (
@@ -286,15 +293,25 @@ export default function DashboardPage() {
                                     )}
 
                                     {/* Status Badge */}
-                                    <div className="absolute top-3 left-3">
+                                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
                                         <span
-                                            className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest backdrop-blur-md border ${
+                                            className={`px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest backdrop-blur-md border ${
                                                 isPublished
                                                     ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                                                     : "bg-amber-500/20 text-amber-300 border-amber-500/40"
                                             }`}
                                         >
                                             {isPublished ? "● Published" : "○ Draft Saved"}
+                                        </span>
+
+                                        <span
+                                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide backdrop-blur-md border ${
+                                                isPaid
+                                                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                                    : "bg-neutral-800 text-neutral-400 border-white/10"
+                                            }`}
+                                        >
+                                            {isPaid ? "Paid" : "Unpaid"}
                                         </span>
                                     </div>
 
@@ -318,6 +335,11 @@ export default function DashboardPage() {
                                         <p className="text-xs text-neutral-400 mt-1">
                                             Template: <strong className="text-neutral-300 font-medium">{templateEntry?.config?.name || gift.templateSlug}</strong>
                                         </p>
+                                        {gift.invoiceRef && (
+                                            <p className="text-[10px] font-mono text-emerald-300 mt-0.5 flex items-center gap-1">
+                                                <FileText size={10} /> {gift.invoiceRef}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="text-[11px] text-neutral-400 flex items-center justify-between pt-1 border-t border-white/5">
@@ -381,7 +403,7 @@ export default function DashboardPage() {
                                                     onClick={() => setSelectedPublishDraft(gift)}
                                                     className="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
                                                 >
-                                                    <Send size={13} /> Publish
+                                                    <CreditCard size={13} /> Unlock & Publish
                                                 </button>
                                             )}
 
@@ -446,7 +468,7 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* PUBLISH MODAL */}
+            {/* PUBLISH & PAYMENTS MODAL */}
             <PublishModal
                 isOpen={!!selectedPublishDraft}
                 onClose={() => setSelectedPublishDraft(null)}
