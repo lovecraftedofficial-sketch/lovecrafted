@@ -7,10 +7,18 @@
 import AuroraSampleTemplate from "@/templates/aurora-sample/AuroraSampleTemplate";
 import auroraSampleConfig from "@/templates/aurora-sample/template.config";
 
-// Sunset Love Template Import
 import SunsetLoveTemplate from "../templates/sunset-love/SunsetLoveTemplate";
+import UntilForeverTemplate from "../templates/until-forever/UntilForeverTemplate";
+import untilForeverConfig from "../templates/until-forever/template.config";
 
 export const templateRegistry = {
+  // Until Forever Flagship Experience Entry
+  "until-forever": {
+    component: UntilForeverTemplate,
+    comingSoon: false,
+    config: untilForeverConfig.config || untilForeverConfig,
+  },
+
   [auroraSampleConfig.slug]: {
     component: AuroraSampleTemplate,
     config: auroraSampleConfig,
