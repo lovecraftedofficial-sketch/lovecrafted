@@ -3,13 +3,13 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import TemplateRenderer from "@/components/TemplateRenderer";
 import UnboxingIntro from "@/components/UnboxingIntro";
 import { getTemplate } from "@/data/templateRegistry";
-import { Heart, Lock, Clock, Send, Sparkles, ArrowLeft } from "lucide-react";
+import { Heart, Lock, ArrowLeft } from "lucide-react";
 
 export default function ViewWebsitePage() {
     const { shareId, slug: storySlug } = useParams();
     const [searchParams] = useSearchParams();
 
-    const activeSlug = storySlug || shareId || searchParams.get("slug") || "sunset-love";
+    const activeSlug = storySlug || shareId || searchParams.get("slug") || "until-forever";
     const encodedData = searchParams.get("d");
 
     // Look up gift in user_gifts registry
@@ -26,16 +26,16 @@ export default function ViewWebsitePage() {
         return null;
     }, [activeSlug]);
 
-    const templateSlug = targetGift?.templateSlug || searchParams.get("slug") || "sunset-love";
+    const templateSlug = targetGift?.templateSlug || searchParams.get("slug") || storySlug || "until-forever";
     const entry = useMemo(() => getTemplate(templateSlug), [templateSlug]);
 
     // Published vs Private Draft Security Check
     const isPubliclyViewable = useMemo(() => {
         if (searchParams.get("active") === "true" || searchParams.get("verified") === "1" || searchParams.get("v") === "1") return true;
         if (targetGift && targetGift.status.toLowerCase() === "published") return true;
-        if (encodedData || storySlug) return true; // Direct encoded public links
+        if (encodedData || storySlug || templateSlug === "until-forever") return true; // Public story links
         return false;
-    }, [searchParams, targetGift, encodedData, storySlug]);
+    }, [searchParams, targetGift, encodedData, storySlug, templateSlug]);
 
     const content = useMemo(() => {
         // First try decoding from URL parameter
