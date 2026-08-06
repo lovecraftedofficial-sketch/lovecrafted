@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles, Volume2, Gift } from "lucide-react";
+import { playGlobalAudio } from "@/components/BackgroundMusic";
 
 export default function UnboxingIntro({ content = {}, config = {}, children }) {
     // Check if intro is skipped by content or config
@@ -17,17 +18,11 @@ export default function UnboxingIntro({ content = {}, config = {}, children }) {
     const handleOpenSurprise = () => {
         setIsOpened(true);
 
-        // Attempt background audio autoplay on user interaction if track exists
+        // Safely trigger central global background audio controller (Single Source of Truth)
         if (content.bgMusicUrl) {
-            try {
-                const audio = new Audio(content.bgMusicUrl);
-                audio.loop = true;
-                audio.play().catch(() => {
-                    /* Audio autoplay block fallback */
-                });
-            } catch {
-                /* ignore */
-            }
+            playGlobalAudio(content.bgMusicUrl);
+        } else {
+            playGlobalAudio();
         }
     };
 
