@@ -37,25 +37,33 @@ export default function BackgroundMusic() {
     audio.addEventListener("pause", onPause);
     audio.addEventListener("error", onError);
 
-    // Initial check in case browser allowed autoplay or audio state restored
+    // Initial sync check
     setIsPlaying(!audio.paused);
 
-    // 2. Single User Interaction Listener for browser autoplay compliance
+    // 2. Single User Interaction Listener for cross-device & mobile autoplay compliance
     const handleFirstUserInteraction = () => {
       if (audio.paused) {
         audio
           .play()
           .then(() => setIsPlaying(true))
           .catch(() => {
-            /* Autoplay blocked until explicit click */
+            /* Autoplay blocked until explicit tap */
           });
       }
+      cleanupInteractionListeners();
+    };
+
+    const cleanupInteractionListeners = () => {
       window.removeEventListener("click", handleFirstUserInteraction);
       window.removeEventListener("touchstart", handleFirstUserInteraction);
+      window.removeEventListener("touchend", handleFirstUserInteraction);
+      window.removeEventListener("pointerdown", handleFirstUserInteraction);
     };
 
     window.addEventListener("click", handleFirstUserInteraction);
-    window.addEventListener("touchstart", handleFirstUserInteraction);
+    window.addEventListener("touchstart", handleFirstUserInteraction, { passive: true });
+    window.addEventListener("touchend", handleFirstUserInteraction, { passive: true });
+    window.addEventListener("pointerdown", handleFirstUserInteraction, { passive: true });
 
     // 3. Custom Event Listeners for global cross-component control (e.g., UnboxingIntro)
     const handleCustomPlay = (e) => {
@@ -68,8 +76,7 @@ export default function BackgroundMusic() {
         .play()
         .then(() => setIsPlaying(true))
         .catch(() => {});
-      window.removeEventListener("click", handleFirstUserInteraction);
-      window.removeEventListener("touchstart", handleFirstUserInteraction);
+      cleanupInteractionListeners();
     };
 
     const handleCustomPause = () => {
@@ -94,8 +101,7 @@ export default function BackgroundMusic() {
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("error", onError);
-      window.removeEventListener("click", handleFirstUserInteraction);
-      window.removeEventListener("touchstart", handleFirstUserInteraction);
+      cleanupInteractionListeners();
       window.removeEventListener("lws:play_music", handleCustomPlay);
       window.removeEventListener("lws:pause_music", handleCustomPause);
       window.removeEventListener("lws:toggle_music", handleCustomToggle);
