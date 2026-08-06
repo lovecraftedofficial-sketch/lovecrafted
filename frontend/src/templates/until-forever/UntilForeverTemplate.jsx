@@ -8,6 +8,7 @@ import Chapter4MemoryBox from "./components/Chapter4MemoryBox";
 import Chapter5HearMyHeart from "./components/Chapter5HearMyHeart";
 import Chapter6VinylPlayer from "./components/Chapter6VinylPlayer";
 import Chapter7BookOfReasons from "./components/Chapter7BookOfReasons";
+import Chapter8StarlightPlanetarium from "./components/Chapter8StarlightPlanetarium";
 
 /**
  * UntilForeverTemplate.jsx
@@ -86,8 +87,16 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
         />
       )}
 
-      {/* CHAPTER 8+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
-      {currentChapter > 7 && (
+      {/* CHAPTER 8: THE STARLIGHT PLANETARIUM */}
+      {currentChapter === 8 && (
+        <Chapter8StarlightPlanetarium
+          content={activeContent}
+          onComplete={() => setCurrentChapter(9)}
+        />
+      )}
+
+      {/* CHAPTER 9+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
+      {currentChapter > 8 && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fadeIn space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
             Chapter {currentChapter} Active
