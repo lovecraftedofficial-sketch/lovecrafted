@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { VolumeX, Disc } from "lucide-react";
 
-const DEFAULT_AUDIO_SRC = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3";
+const DEFAULT_AUDIO_SRC = "/audio/romantic.mp3";
 
 /**
  * Helper function to trigger background music from anywhere in the app
@@ -27,19 +27,28 @@ export default function BackgroundMusic() {
 
     audio.volume = 0.15; // Soft background ambience (15%)
 
-    // Helper to safely execute audio.play() with Promise rejection logging & state fallback
-    const safePlay = () => {
+    // REQUIREMENT 2 & 4: Strict Event-Driven State Sync (NO optimistic updates)
+    audio.onplay = () => {
+      setIsPlaying(true);
+    };
+
+    audio.onpause = () => {
+      setIsPlaying(false);
+    };
+
+    audio.onerror = (err) => {
+      console.warn("[BackgroundMusic] Media loading error:", err);
+      setIsPlaying(false);
+    };
+
+    // REQUIREMENT 1 & 7: Helper to safely play with explicit console logging
+    const safePlay = async () => {
       if (!audioRef.current) return;
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((err) => {
-            console.warn("[BackgroundMusic] audio.play() Promise rejected:", err);
-            setIsPlaying(false);
-          });
+      try {
+        await audioRef.current.play();
+      } catch (err) {
+        console.warn("[BackgroundMusic] audio.play() rejected:", err);
+        setIsPlaying(false);
       }
     };
 
@@ -56,19 +65,19 @@ export default function BackgroundMusic() {
     window.addEventListener("touchstart", handleFirstClick, { passive: true });
 
     // Custom event handlers for UnboxingIntro / template triggers
-    const handleCustomPlay = (e) => {
+    const handleCustomPlay = async (e) => {
       if (!audioRef.current) return;
-      const customSrc = e.detail?.src;
+      const customSrc = e.detail?.src || DEFAULT_AUDIO_SRC;
 
-      // Safely assign new audio src if provided and different from current absolute URL
       if (customSrc && typeof window !== "undefined") {
         try {
           const resolvedCustomUrl = new URL(customSrc, window.location.href).href;
           if (audioRef.current.src !== resolvedCustomUrl) {
             audioRef.current.src = resolvedCustomUrl;
-            audioRef.current.load(); // Load buffer when source changes
+            audioRef.current.load();
           }
-        } catch {
+        } catch (err) {
+          console.warn("[BackgroundMusic] URL resolution error:", err);
           if (audioRef.current.src !== customSrc) {
             audioRef.current.src = customSrc;
             audioRef.current.load();
@@ -76,13 +85,12 @@ export default function BackgroundMusic() {
         }
       }
 
-      safePlay();
+      await safePlay();
     };
 
     const handleCustomPause = () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        setIsPlaying(false);
       }
     };
 
@@ -90,6 +98,11 @@ export default function BackgroundMusic() {
     window.addEventListener("lws:pause_music", handleCustomPause);
 
     return () => {
+      if (audio) {
+        audio.onplay = null;
+        audio.onpause = null;
+        audio.onerror = null;
+      }
       window.removeEventListener("click", handleFirstClick);
       window.removeEventListener("touchstart", handleFirstClick);
       window.removeEventListener("lws:play_music", handleCustomPlay);
@@ -97,22 +110,20 @@ export default function BackgroundMusic() {
     };
   }, []);
 
-  const toggleMusic = (e) => {
+  // REQUIREMENT 3: toggleMusic awaits audio.play() before state changes via onplay handler
+  const toggleMusic = async (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+    if (!audio.paused) {
+      audio.pause();
     } else {
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch((err) => {
-            console.warn("[BackgroundMusic] toggleMusic play() rejected:", err);
-            setIsPlaying(false);
-          });
+      try {
+        await audio.play();
+      } catch (err) {
+        console.warn("[BackgroundMusic] toggleMusic play() failed:", err);
+        setIsPlaying(false);
       }
     }
   };
