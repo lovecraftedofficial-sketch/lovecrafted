@@ -18,7 +18,8 @@ import {
     Unlock,
     ExternalLink,
     CreditCard,
-    FileText
+    FileText,
+    Heart
 } from "lucide-react";
 import { DASHBOARD } from "@/constants/testIds";
 import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
