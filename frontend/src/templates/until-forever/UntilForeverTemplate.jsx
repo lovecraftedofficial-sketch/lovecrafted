@@ -11,12 +11,14 @@ import Chapter7BookOfReasons from "./components/Chapter7BookOfReasons";
 import Chapter8StarlightPlanetarium from "./components/Chapter8StarlightPlanetarium";
 import Chapter9SeasonsWeShared from "./components/Chapter9SeasonsWeShared";
 import Chapter10OpenWhen from "./components/Chapter10OpenWhen";
+import Chapter11SecretGift from "./components/Chapter11SecretGift";
+import Chapter12FinalClosure from "./components/Chapter12FinalClosure";
 
 /**
  * UntilForeverTemplate.jsx
  * ------------------------
  * LoveCrafted Flagship Ultra-Luxury Digital Love Experience.
- * 12-Chapter Emotional Journey Orchestrator.
+ * Complete 12-Chapter Emotional Journey Orchestrator.
  */
 export default function UntilForeverTemplate({ content = {}, config = {} }) {
   // Merge user custom content with default demo data
@@ -113,27 +115,17 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
         />
       )}
 
-      {/* CHAPTER 11+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
-      {currentChapter > 10 && (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fadeIn space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
-            Chapter {currentChapter} Active
-          </div>
-          <h2 className="font-serif text-3xl font-bold text-white">
-            "{activeContent.recipientName}"
-          </h2>
-          <p className="text-sm text-neutral-400 max-w-md leading-relaxed">
-            Chapter {currentChapter} is being crafted with award-winning emotional storytelling...
-          </p>
-          <button
-            type="button"
-            onClick={() => setCurrentChapter(1)}
-            aria-label="Replay invitation chapter"
-            className="text-xs text-rose-400 hover:text-rose-300 underline cursor-pointer pt-4"
-          >
-            ← Replay Chapter 1 Invitation
-          </button>
-        </div>
+      {/* CHAPTER 11: THE SECRET GIFT (INTIMATE SAVED PROMISE) */}
+      {currentChapter === 11 && (
+        <Chapter11SecretGift
+          content={activeContent}
+          onComplete={() => setCurrentChapter(12)}
+        />
+      )}
+
+      {/* CHAPTER 12: THE FINAL CHAPTER (QUIET CLOSURE TO BLACK) */}
+      {currentChapter === 12 && (
+        <Chapter12FinalClosure content={activeContent} />
       )}
     </div>
   );
