@@ -1,25 +1,26 @@
 /**
- * Production Netlify Serverless Story Database Retriever
- * ------------------------------------------------------
- * Retrieves complete published story payloads by storyId from production database.
+ * Production Netlify Serverless Draft Retriever
+ * --------------------------------------------
+ * Retrieves creator draft payload by userSessionId and templateSlug.
  */
 
 const { query } = require("./lib/db");
 
 exports.handler = async (event) => {
-  const storyId = event.queryStringParameters?.storyId;
+  const userSessionId = event.queryStringParameters?.userSessionId;
+  const templateSlug = event.queryStringParameters?.templateSlug || "until-forever";
 
-  if (!storyId) {
+  if (!userSessionId) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Missing storyId parameter" }),
+      body: JSON.stringify({ error: "Missing userSessionId parameter" }),
     };
   }
 
   try {
     const dbResult = await query(
-      `SELECT id, template_slug, title, content, status, created_at FROM stories WHERE id = $1 LIMIT 1;`,
-      [storyId]
+      `SELECT content, updated_at FROM drafts WHERE user_session_id = $1 AND template_slug = $2 LIMIT 1;`,
+      [userSessionId, templateSlug]
     );
 
     if (dbResult && dbResult.rows && dbResult.rows.length > 0) {
@@ -32,23 +33,18 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify({
           success: true,
-          storyId: row.id,
-          templateSlug: row.template_slug,
-          title: row.title,
           content: typeof row.content === "string" ? JSON.parse(row.content) : row.content,
-          status: row.status,
-          createdAt: row.created_at,
-          source: "database",
+          updatedAt: row.updated_at,
         }),
       };
     }
 
     return {
       statusCode: 404,
-      body: JSON.stringify({ error: "Story not found in database" }),
+      body: JSON.stringify({ error: "Draft not found" }),
     };
   } catch (err) {
-    console.error("[get-story error]", err);
+    console.error("[get-draft error]", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message }),
