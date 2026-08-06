@@ -19,117 +19,74 @@ export function pauseGlobalAudio() {
 
 export default function BackgroundMusic() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioSrc, setAudioSrc] = useState(DEFAULT_AUDIO_SRC);
   const audioRef = useRef(null);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    if (audioRef.current) {
+      audioRef.current.volume = 0.15; // Soft background ambience (15%)
+    }
 
-    audio.volume = 0.15; // 15% soft background ambience
-
-    // 1. Direct Sync: HTMLAudioElement event listeners to keep React state 100% synchronized
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    const onError = () => setIsPlaying(false);
-
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("error", onError);
-
-    // Initial sync check
-    setIsPlaying(!audio.paused);
-
-    // 2. Single User Interaction Listener for cross-device & mobile autoplay compliance
-    const handleFirstUserInteraction = () => {
-      if (audio.paused) {
-        audio
+    // Auto-play on first click interaction if not already playing
+    const handleFirstClick = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current
           .play()
           .then(() => setIsPlaying(true))
-          .catch(() => {
-            /* Autoplay blocked until explicit tap */
-          });
+          .catch(() => {});
       }
-      cleanupInteractionListeners();
+      window.removeEventListener("click", handleFirstClick);
     };
 
-    const cleanupInteractionListeners = () => {
-      window.removeEventListener("click", handleFirstUserInteraction);
-      window.removeEventListener("touchstart", handleFirstUserInteraction);
-      window.removeEventListener("touchend", handleFirstUserInteraction);
-      window.removeEventListener("pointerdown", handleFirstUserInteraction);
-    };
+    window.addEventListener("click", handleFirstClick);
 
-    window.addEventListener("click", handleFirstUserInteraction);
-    window.addEventListener("touchstart", handleFirstUserInteraction, { passive: true });
-    window.addEventListener("touchend", handleFirstUserInteraction, { passive: true });
-    window.addEventListener("pointerdown", handleFirstUserInteraction, { passive: true });
-
-    // 3. Custom Event Listeners for global cross-component control (e.g., UnboxingIntro)
+    // Custom event handlers for UnboxingIntro / template triggers
     const handleCustomPlay = (e) => {
-      const newSrc = e.detail?.src || DEFAULT_AUDIO_SRC;
-      if (newSrc && newSrc !== audio.src) {
-        audio.src = newSrc;
-        setAudioSrc(newSrc);
+      if (!audioRef.current) return;
+      const customSrc = e.detail?.src;
+      if (customSrc && audioRef.current.src !== customSrc) {
+        audioRef.current.src = customSrc;
       }
-      audio
+      audioRef.current
         .play()
         .then(() => setIsPlaying(true))
         .catch(() => {});
-      cleanupInteractionListeners();
     };
 
     const handleCustomPause = () => {
-      audio.pause();
-      setIsPlaying(false);
-    };
-
-    const handleCustomToggle = () => {
-      if (audio.paused) {
-        audio.play().then(() => setIsPlaying(true)).catch(() => {});
-      } else {
-        audio.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
         setIsPlaying(false);
       }
     };
 
     window.addEventListener("lws:play_music", handleCustomPlay);
     window.addEventListener("lws:pause_music", handleCustomPause);
-    window.addEventListener("lws:toggle_music", handleCustomToggle);
 
     return () => {
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("error", onError);
-      cleanupInteractionListeners();
+      window.removeEventListener("click", handleFirstClick);
       window.removeEventListener("lws:play_music", handleCustomPlay);
       window.removeEventListener("lws:pause_music", handleCustomPause);
-      window.removeEventListener("lws:toggle_music", handleCustomToggle);
     };
   }, []);
 
   const toggleMusic = (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
-    const audio = audioRef.current;
-    if (!audio) return;
+    if (!audioRef.current) return;
 
-    if (audio.paused) {
-      audio
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current
         .play()
         .then(() => setIsPlaying(true))
-        .catch((err) => {
-          console.warn("Audio playback failed:", err);
-          setIsPlaying(false);
-        });
-    } else {
-      audio.pause();
-      setIsPlaying(false);
+        .catch(() => setIsPlaying(false));
     }
   };
 
   return (
     <div className="fixed bottom-5 right-5 z-40">
-      <audio ref={audioRef} src={audioSrc} loop preload="auto" />
+      <audio ref={audioRef} src={DEFAULT_AUDIO_SRC} loop preload="auto" />
       <button
         type="button"
         onClick={toggleMusic}
