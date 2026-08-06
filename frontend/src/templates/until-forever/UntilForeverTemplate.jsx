@@ -5,6 +5,7 @@ import Chapter1Invitation from "./components/Chapter1Invitation";
 import Chapter2HandwrittenLetter from "./components/Chapter2HandwrittenLetter";
 import Chapter3KeepsakeTable from "./components/Chapter3KeepsakeTable";
 import Chapter4MemoryBox from "./components/Chapter4MemoryBox";
+import Chapter5HearMyHeart from "./components/Chapter5HearMyHeart";
 
 /**
  * UntilForeverTemplate.jsx
@@ -59,8 +60,16 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
         />
       )}
 
-      {/* CHAPTER 5+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
-      {currentChapter > 4 && (
+      {/* CHAPTER 5: HEAR MY HEART (DISCOVERED VOICE KEEPSAKES) */}
+      {currentChapter === 5 && (
+        <Chapter5HearMyHeart
+          content={activeContent}
+          onComplete={() => setCurrentChapter(6)}
+        />
+      )}
+
+      {/* CHAPTER 6+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
+      {currentChapter > 5 && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fadeIn space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
             Chapter {currentChapter} Active
