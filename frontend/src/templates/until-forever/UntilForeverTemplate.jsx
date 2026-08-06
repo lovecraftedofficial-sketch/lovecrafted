@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import BackgroundMusic from "@/components/BackgroundMusic";
 import untilForeverConfig from "./template.config";
 import Chapter1Invitation from "./components/Chapter1Invitation";
 import Chapter2HandwrittenLetter from "./components/Chapter2HandwrittenLetter";
@@ -19,6 +18,9 @@ import Chapter12FinalClosure from "./components/Chapter12FinalClosure";
  * ------------------------
  * LoveCrafted Flagship Ultra-Luxury Digital Love Experience.
  * Complete 12-Chapter Emotional Journey Orchestrator.
+ *
+ * NOTE: Background ambience is handled by the single global <BackgroundMusic />
+ * mounted at the App root level. This component renders NO duplicate floating controls.
  */
 export default function UntilForeverTemplate({ content = {}, config = {} }) {
   // Merge user custom content with default demo data
@@ -32,9 +34,6 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
 
   return (
     <div className="min-h-screen bg-[#040103] text-white selection:bg-rose-500 selection:text-white font-sans overflow-x-hidden">
-      {/* Central Single Source of Truth Audio Ambient Controller */}
-      <BackgroundMusic />
-
       {/* CHAPTER 1: THE INVITATION */}
       {currentChapter === 1 && (
         <Chapter1Invitation

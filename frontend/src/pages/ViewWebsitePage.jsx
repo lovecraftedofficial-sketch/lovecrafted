@@ -116,8 +116,8 @@ export default function ViewWebsitePage() {
                 <TemplateRenderer templateSlug={templateSlug} content={content} />
             </UnboxingIntro>
 
-            {/* Subtle Romantic Studio Badge at Bottom */}
-            <div className="fixed bottom-4 right-4 z-40">
+            {/* Subtle Romantic Studio Badge at Bottom Left (Separate from music control on right) */}
+            <div className="fixed bottom-5 left-5 z-40">
                 <Link
                     to="/"
                     target="_blank"

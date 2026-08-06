@@ -150,25 +150,7 @@ export default function SunsetLoveTemplate(props) {
         }
       `}</style>
 
-      {/* Floating Sleek Music Control */}
-      <button
-        onClick={toggleMusic}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full bg-black/80 border border-amber-400/40 backdrop-blur-xl shadow-2xl text-xs font-medium text-amber-200 hover:bg-rose-950/60 transition cursor-pointer group"
-      >
-        <span className="relative flex h-3 w-3">
-          {isPlaying && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-          )}
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400"></span>
-        </span>
-        {isPlaying ? <Volume2 size={16} className="text-amber-300 animate-bounce" /> : <VolumeX size={16} className="text-white/50" />}
-        <div className="flex flex-col text-left">
-          <span className="text-[10px] uppercase tracking-widest text-amber-300/80 font-bold">
-            {isPlaying ? "Playing Track" : "Background Music"}
-          </span>
-          <span className="text-xs font-medium text-white truncate max-w-[120px]">{songTitle}</span>
-        </div>
-      </button>
+      {/* Background ambience is handled globally by <BackgroundMusic /> in App.js */}
 
       {/* Golden Hour Ambient Glow Backdrop */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-amber-500/20 via-rose-500/15 to-transparent blur-[140px] pointer-events-none" />
