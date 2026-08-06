@@ -22,34 +22,61 @@ export default function BackgroundMusic() {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.15; // Soft background ambience (15%)
-    }
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    // Auto-play on first click interaction if not already playing
+    audio.volume = 0.15; // Soft background ambience (15%)
+
+    // Helper to safely execute audio.play() with Promise rejection logging & state fallback
+    const safePlay = () => {
+      if (!audioRef.current) return;
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.warn("[BackgroundMusic] audio.play() Promise rejected:", err);
+            setIsPlaying(false);
+          });
+      }
+    };
+
+    // Auto-play on first user click interaction if not already playing
     const handleFirstClick = () => {
       if (audioRef.current && audioRef.current.paused) {
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => {});
+        safePlay();
       }
       window.removeEventListener("click", handleFirstClick);
+      window.removeEventListener("touchstart", handleFirstClick);
     };
 
     window.addEventListener("click", handleFirstClick);
+    window.addEventListener("touchstart", handleFirstClick, { passive: true });
 
     // Custom event handlers for UnboxingIntro / template triggers
     const handleCustomPlay = (e) => {
       if (!audioRef.current) return;
       const customSrc = e.detail?.src;
-      if (customSrc && audioRef.current.src !== customSrc) {
-        audioRef.current.src = customSrc;
+
+      // Safely assign new audio src if provided and different from current absolute URL
+      if (customSrc && typeof window !== "undefined") {
+        try {
+          const resolvedCustomUrl = new URL(customSrc, window.location.href).href;
+          if (audioRef.current.src !== resolvedCustomUrl) {
+            audioRef.current.src = resolvedCustomUrl;
+            audioRef.current.load(); // Load buffer when source changes
+          }
+        } catch {
+          if (audioRef.current.src !== customSrc) {
+            audioRef.current.src = customSrc;
+            audioRef.current.load();
+          }
+        }
       }
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {});
+
+      safePlay();
     };
 
     const handleCustomPause = () => {
@@ -64,6 +91,7 @@ export default function BackgroundMusic() {
 
     return () => {
       window.removeEventListener("click", handleFirstClick);
+      window.removeEventListener("touchstart", handleFirstClick);
       window.removeEventListener("lws:play_music", handleCustomPlay);
       window.removeEventListener("lws:pause_music", handleCustomPause);
     };
@@ -77,10 +105,15 @@ export default function BackgroundMusic() {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch((err) => {
+            console.warn("[BackgroundMusic] toggleMusic play() rejected:", err);
+            setIsPlaying(false);
+          });
+      }
     }
   };
 
