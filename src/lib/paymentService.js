@@ -3,8 +3,9 @@
  * -----------------
  * Production-Grade Razorpay Payment Architecture for LoveCrafted.
  * 1. Requests server-generated order_id via Netlify Function (`create-order`).
- * 2. Mandatory Order ID validation: Never launches checkout without a valid order_id.
- * 3. Enforces cryptographic HMAC SHA256 server-side signature verification (`verify-payment`)
+ *    The server authoritatively determines the payable amount based on template catalog.
+ * 2. Mandatory Order ID validation: Never launches checkout without a valid server order_id.
+ * 3. Enforces cryptographic HMAC SHA256 server-side signature verification + amount validation (`verify-payment`)
  *    BEFORE unlocking published gift access.
  */
 
@@ -32,8 +33,7 @@ export function generateInvoiceRef() {
 }
 
 export async function processRazorpayPayment({
-    amount,
-    currency = "INR",
+    templateSlug = "sunset-love",
     templateName = "LoveCrafted Template",
     tier = "Premium",
     customerName = "Customer",
@@ -51,9 +51,11 @@ export async function processRazorpayPayment({
 
     let razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
     let orderId = null;
+    let serverAmountPaise = null;
+    let serverAmountINR = null;
     let createOrderError = null;
 
-    // STEP 1: Request Server-Created Razorpay Order from Netlify Function
+    // STEP 1: Request Server-Created Razorpay Order from Netlify Function (Client DOES NOT send amount!)
     try {
         const response = await fetch("/.netlify/functions/create-order", {
             method: "POST",
@@ -61,7 +63,7 @@ export async function processRazorpayPayment({
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                amount,
+                templateSlug,
                 templateName,
                 tier,
                 customerName,
@@ -72,6 +74,8 @@ export async function processRazorpayPayment({
             const data = await response.json();
             if (data.success && data.orderId) {
                 orderId = data.orderId;
+                serverAmountPaise = data.amount;
+                serverAmountINR = data.amountINR;
                 if (data.keyId) razorpayKey = data.keyId;
             } else {
                 createOrderError = data.error || "Server failed to generate Razorpay Order ID";
@@ -88,7 +92,7 @@ export async function processRazorpayPayment({
         createOrderError = err.message || "Failed to reach server endpoint create-order";
     }
 
-    // REQUIREMENT 7: If create-order fails or does not return orderId, DO NOT continue!
+    // MANDATORY GUARD: If create-order fails or does not return orderId, DO NOT continue!
     if (!orderId) {
         const failureMsg = createOrderError || "Failed to create Razorpay order";
         console.error("[paymentService] Mandatory Order ID missing:", failureMsg);
@@ -98,18 +102,18 @@ export async function processRazorpayPayment({
         throw new Error("Failed to create Razorpay order: " + failureMsg);
     }
 
-    // STEP 2: Launch Production Razorpay Checkout SDK with Mandatory Server Order ID
+    // STEP 2: Launch Production Razorpay Checkout SDK with Server-Calculated Order Amount
     try {
         const options = {
             key: razorpayKey,
-            amount: Math.round(amount * 100), // Amount in paise
-            currency: currency,
+            amount: serverAmountPaise, // Server-calculated amount in paise
+            currency: "INR",
             name: "LoveCrafted Studio",
             description: `Unlock ${templateName} (${tier} Tier)`,
             image: "https://lovecrafted-official.netlify.app/favicon.ico",
             order_id: orderId, // MANDATORY Server-created Order ID
             handler: async function (response) {
-                // STEP 3: Cryptographic Server-Side Signature Verification
+                // STEP 3: Cryptographic Server-Side Signature Verification + Server Price Check
                 try {
                     const verifyRes = await fetch("/.netlify/functions/verify-payment", {
                         method: "POST",
@@ -131,7 +135,7 @@ export async function processRazorpayPayment({
                                 orderId: response.razorpay_order_id || orderId,
                                 signature: response.razorpay_signature,
                                 invoiceRef: verifyData.invoiceRef || generateInvoiceRef(),
-                                amount,
+                                amount: serverAmountINR || 1999,
                                 paidAt: new Date().toISOString(),
                                 isServerVerified: true,
                             };
@@ -140,8 +144,14 @@ export async function processRazorpayPayment({
                         }
                     }
 
+                    let verifyErrText = "Cryptographic payment signature or price verification failed. Access denied.";
+                    try {
+                        const vJson = await verifyRes.json();
+                        if (vJson.error) verifyErrText = vJson.error;
+                    } catch {}
+
                     if (onFailure) {
-                        onFailure("Cryptographic payment signature verification failed. Access denied.");
+                        onFailure(verifyErrText);
                     }
                 } catch (verifyErr) {
                     console.error("Signature verification error:", verifyErr);

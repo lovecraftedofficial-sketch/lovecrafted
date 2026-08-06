@@ -1,5 +1,14 @@
 const Razorpay = require("razorpay");
 
+// SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth - Client cannot override)
+const SERVER_PRICING_CATALOG = {
+    "sunset-love": 1999,
+    "aurora-sample": 1999,
+    "midnight-love": 3499,
+    "royal-love": 3499,
+    "soft-memories": 999,
+};
+
 exports.handler = async (event, context) => {
     // Enable CORS for frontend requests
     const headers = {
@@ -34,8 +43,6 @@ exports.handler = async (event, context) => {
         secretEndsWith: key_secret ? key_secret.slice(-4) : "",
     };
 
-    console.log("Razorpay Environment Diagnostics:", diagnostics);
-
     if (!key_id || !key_secret) {
         return {
             statusCode: 500,
@@ -49,20 +56,29 @@ exports.handler = async (event, context) => {
 
     try {
         const body = JSON.parse(event.body || "{}");
-        const amount = body.amount || 1999;
+        const templateSlug = body.templateSlug || "sunset-love";
         const templateName = body.templateName || "LoveCrafted Keepsake";
         const customerName = body.customerName || "Customer";
+
+        // SECURITY RULE 1 & 2: Ignore client body.amount completely!
+        // Calculate authoritative price on the server based on template catalog
+        const serverPriceINR = SERVER_PRICING_CATALOG[templateSlug] || 1999;
+        const serverAmountPaise = Math.round(serverPriceINR * 100); // Convert to paise
 
         const instance = new Razorpay({
             key_id,
             key_secret,
         });
 
+        // SECURITY RULE 3, 4 & 5: Create Razorpay Order using ONLY server-calculated amount and persist metadata notes
         const options = {
-            amount: Math.round(amount * 100), // Amount in paise
+            amount: serverAmountPaise,
             currency: "INR",
-            receipt: `receipt_${Date.now()}`,
+            receipt: `rcpt_${templateSlug}_${Date.now()}`,
             notes: {
+                templateSlug,
+                serverPriceINR: String(serverPriceINR),
+                serverAmountPaise: String(serverAmountPaise),
                 templateName,
                 customerName,
                 studio: "LoveCrafted",
@@ -77,7 +93,8 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 success: true,
                 orderId: order.id,
-                amount: order.amount,
+                amount: order.amount, // Server-calculated amount in paise
+                amountINR: serverPriceINR,
                 currency: order.currency,
                 keyId: key_id,
                 diagnostics,

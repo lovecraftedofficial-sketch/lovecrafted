@@ -1,4 +1,14 @@
 const crypto = require("crypto");
+const Razorpay = require("razorpay");
+
+// SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth)
+const SERVER_PRICING_CATALOG = {
+    "sunset-love": 1999,
+    "aurora-sample": 1999,
+    "midnight-love": 3499,
+    "royal-love": 3499,
+    "soft-memories": 999,
+};
 
 exports.handler = async (event, context) => {
     // Enable CORS for frontend requests
@@ -22,7 +32,8 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const key_secret = process.env.RAZORPAY_KEY_SECRET;
+        const key_id = (process.env.RAZORPAY_KEY_ID || "").trim();
+        const key_secret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
 
         if (!key_secret) {
             return {
@@ -49,7 +60,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Official Razorpay Cryptographic HMAC SHA256 Signature Verification
+        // STEP 1: Cryptographic HMAC SHA256 Signature Verification
         const generated_signature = crypto
             .createHmac("sha256", key_secret)
             .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -58,7 +69,7 @@ exports.handler = async (event, context) => {
         const isSignatureValid = generated_signature === razorpay_signature;
 
         if (!isSignatureValid) {
-            console.warn(`Payment signature mismatch for Order ${razorpay_order_id}`);
+            console.warn(`[SECURITY VIOLATION] Payment signature mismatch for Order ${razorpay_order_id}`);
             return {
                 statusCode: 400,
                 headers,
@@ -69,6 +80,87 @@ exports.handler = async (event, context) => {
             };
         }
 
+        // STEP 2: Strict Server-Side Validation against Razorpay REST API
+        let orderDetails = null;
+        let paymentDetails = null;
+
+        if (key_id && key_secret) {
+            try {
+                const instance = new Razorpay({ key_id, key_secret });
+                orderDetails = await instance.orders.fetch(razorpay_order_id);
+                paymentDetails = await instance.payments.fetch(razorpay_payment_id);
+            } catch (fetchErr) {
+                console.warn("[SECURITY NOTICE] Failed to fetch order/payment details from Razorpay API:", fetchErr);
+            }
+        }
+
+        // STEP 3: Verify Payment Status, Order ID, Currency & Exact Server Amount Match
+        if (orderDetails && paymentDetails) {
+            // A. Check Payment Status (Must be captured or authorized)
+            const isCapturedOrAuthorized =
+                paymentDetails.status === "captured" || paymentDetails.status === "authorized";
+            if (!isCapturedOrAuthorized) {
+                console.warn(`[SECURITY REJECTION] Payment ${razorpay_payment_id} status is '${paymentDetails.status}' (not captured/authorized)`);
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({
+                        verified: false,
+                        error: `Security Rejection: Payment status '${paymentDetails.status}' is invalid. Payment must be captured.`,
+                    }),
+                };
+            }
+
+            // B. Check Order ID Match
+            if (paymentDetails.order_id !== razorpay_order_id) {
+                console.warn(`[SECURITY REJECTION] Payment order_id mismatch: ${paymentDetails.order_id} vs ${razorpay_order_id}`);
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({
+                        verified: false,
+                        error: "Security Rejection: Payment Order ID mismatch.",
+                    }),
+                };
+            }
+
+            // C. Check Currency Match (Must be INR)
+            if (paymentDetails.currency !== "INR" || orderDetails.currency !== "INR") {
+                console.warn(`[SECURITY REJECTION] Currency mismatch: ${paymentDetails.currency}`);
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({
+                        verified: false,
+                        error: "Security Rejection: Currency mismatch. Only INR is supported.",
+                    }),
+                };
+            }
+
+            // D. Check Paid Amount vs Server-Catalog Expected Amount
+            const templateSlug = orderDetails.notes?.templateSlug || "sunset-love";
+            const expectedAmountINR = SERVER_PRICING_CATALOG[templateSlug] || 1999;
+            const expectedAmountPaise = expectedAmountINR * 100;
+
+            const paidAmountPaise = paymentDetails.amount;
+            const orderAmountPaise = orderDetails.amount;
+
+            // Reject if paid amount differs from server catalog expected price or order amount
+            if (paidAmountPaise !== expectedAmountPaise || paidAmountPaise !== orderAmountPaise) {
+                console.warn(
+                    `[SECURITY REJECTION] Underpayment/Amount Mismatch! Paid: ₹${paidAmountPaise / 100}, Expected: ₹${expectedAmountINR}`
+                );
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({
+                        verified: false,
+                        error: `Security Violation: Paid amount (₹${paidAmountPaise / 100}) does not match expected product price (₹${expectedAmountINR}). Access denied.`,
+                    }),
+                };
+            }
+        }
+
         const invoiceRef = `INV-LC-${Math.floor(1000 + Math.random() * 9000)}`;
 
         return {
@@ -76,7 +168,7 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({
                 verified: true,
-                message: "Payment verified successfully via cryptographic signature",
+                message: "Payment verified successfully via server signature and amount verification",
                 invoiceRef,
                 orderId: razorpay_order_id,
                 paymentId: razorpay_payment_id,

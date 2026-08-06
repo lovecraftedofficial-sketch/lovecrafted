@@ -123,8 +123,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         setPaymentErrorMessage("");
 
         processRazorpayPayment({
-            amount: priceAmount,
-            currency: "INR",
+            templateSlug: templateSlug || "sunset-love",
             templateName: templateEntry?.config?.name || draftTitle || "Website",
             tier: tierName,
             customerName: senderName,
