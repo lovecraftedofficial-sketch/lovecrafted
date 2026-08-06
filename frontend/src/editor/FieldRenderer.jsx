@@ -9,6 +9,8 @@ import RepeatableTextEditor from "./fields/RepeatableTextEditor";
 import MemoryListEditor from "./fields/MemoryListEditor";
 import RepeatableContentEditor from "./fields/RepeatableContentEditor";
 import SongUrlEditor from "./fields/SongUrlEditor";
+import AmbienceAudioEditor from "./fields/AmbienceAudioEditor";
+import VoiceRecorderEditor from "./fields/VoiceRecorderEditor";
 
 const registry = {
     text: TextFieldEditor,
@@ -20,6 +22,8 @@ const registry = {
     "memory-list": MemoryListEditor,
     "repeatable-content": RepeatableContentEditor,
     "song-url": SongUrlEditor,
+    audio: AmbienceAudioEditor,
+    voice: VoiceRecorderEditor,
 };
 
 const GUIDED_PLACEHOLDERS = {
@@ -34,14 +38,7 @@ const GUIDED_PLACEHOLDERS = {
 };
 
 export default function FieldRenderer({ field, value, onChange }) {
-    const Comp = registry[field.type];
-    if (!Comp) {
-        return (
-            <div className="text-xs text-[color:var(--lws-text-dim)]">
-                Unsupported field type: <code>{field.type}</code>
-            </div>
-        );
-    }
+    const Comp = registry[field.type] || registry.text;
 
     const guidedPlaceholder =
         field.placeholder || GUIDED_PLACEHOLDERS[field.key] || "Enter content...";

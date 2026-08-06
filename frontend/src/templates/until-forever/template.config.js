@@ -58,14 +58,15 @@ const untilForeverConfig = {
     { key: "boxItem1Title", label: "Memory Box Keepsake 1", type: "text", defaultValue: "Folded Secret Letter" },
     { key: "boxItem1Note", label: "Memory Box Keepsake 1 Note", type: "text", defaultValue: "Saved from our very first year together." },
 
-    // CHAPTER 5: HEAR MY HEART
+    // CHAPTER 5: HEAR MY HEART (VOICE NOTES)
     { key: "voice1Title", label: "Voice Keepsake 1 Title", type: "text", defaultValue: "Vintage Mixtape Cassette" },
-    { key: "voice1Note", label: "Voice Keepsake 1 Note", type: "textarea", defaultValue: "I recorded this in the quiet hours of the night so you could hear my voice." },
+    { key: "voice1Note", label: "Voice Keepsake 1 Voice Note", type: "voice", defaultValue: "" },
 
     // CHAPTER 6: OUR SONG
     { key: "songTitle", label: "Our Song Title", type: "text", defaultValue: "Golden Hour Romance" },
     { key: "songStory", label: "Story Behind Our Song", type: "textarea", defaultValue: "Remember that late-night drive when this song played on repeat three times? You sang every word out of tune." },
     { key: "lyricsExcerpt", label: "Lyrics Excerpt", type: "text", defaultValue: "“In every lifetime, under every sky, I would still choose you...”" },
+    { key: "songAudioUrl", label: "Our Song Music Provider / MP3", type: "song-url", defaultValue: "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT" },
 
     // CHAPTER 7: BOOK OF REASONS
     { key: "reason1", label: "Reason #1", type: "textarea", defaultValue: "I still smile every time you steal food off my plate and pretend it wasn't you." },
@@ -93,8 +94,8 @@ const untilForeverConfig = {
     { key: "closingLine2", label: "Final Sentence 2", type: "text", defaultValue: "Wherever tomorrow leads us, I am yours." },
     { key: "closingCoda", label: "Final Coda Signature", type: "text", defaultValue: "Until forever. ❤️" },
 
-    // GLOBAL THEME
-    { key: "bgMusicUrl", label: "Background Music Track (MP3 Link)", type: "text", defaultValue: "/audio/romantic.mp3" },
+    // GLOBAL THEME & AMBIENCE
+    { key: "bgMusicUrl", label: "Global Background Ambience", type: "audio", defaultValue: "/audio/romantic.mp3" },
   ],
   demoData: {
     recipientName: "My Dearest Ananya",
@@ -118,11 +119,12 @@ const untilForeverConfig = {
     boxItem1Note: "Saved from our very first year together.",
 
     voice1Title: "Vintage Mixtape Cassette",
-    voice1Note: "I recorded this in the quiet hours of the night so you could hear my voice.",
+    voice1Note: "",
 
     songTitle: "Golden Hour Romance",
     songStory: "Remember that late-night drive when this song played on repeat three times? You sang every word out of tune.",
     lyricsExcerpt: "“In every lifetime, under every sky, I would still choose you...”",
+    songAudioUrl: "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT",
 
     reason1: "I still smile every time you steal food off my plate and pretend it wasn't you.",
     reason2: "The quiet way you squeeze my hand three times whenever we walk through a crowded room.",
