@@ -7,6 +7,7 @@ import Chapter3KeepsakeTable from "./components/Chapter3KeepsakeTable";
 import Chapter4MemoryBox from "./components/Chapter4MemoryBox";
 import Chapter5HearMyHeart from "./components/Chapter5HearMyHeart";
 import Chapter6VinylPlayer from "./components/Chapter6VinylPlayer";
+import Chapter7BookOfReasons from "./components/Chapter7BookOfReasons";
 
 /**
  * UntilForeverTemplate.jsx
@@ -77,8 +78,16 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
         />
       )}
 
-      {/* CHAPTER 7+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
-      {currentChapter > 6 && (
+      {/* CHAPTER 7: THE BOOK OF REASONS (LEATHER JOURNAL) */}
+      {currentChapter === 7 && (
+        <Chapter7BookOfReasons
+          content={activeContent}
+          onComplete={() => setCurrentChapter(8)}
+        />
+      )}
+
+      {/* CHAPTER 8+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
+      {currentChapter > 7 && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fadeIn space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
             Chapter {currentChapter} Active
