@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart } from "lucide-react";
 import { playGlobalAudio } from "@/components/BackgroundMusic";
 
 /**
- * Web Audio API Sound Synthesizer for Hyper-Realistic Micro Sound Design
+ * Web Audio API Micro Sound Design
  * (Wax cracking, paper rustle, heartbeat pulse)
  */
 function playMicroSound(type) {
@@ -18,16 +18,16 @@ function playMicroSound(type) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(55, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(25, ctx.currentTime + 0.18);
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc.frequency.setValueAtTime(50, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.18);
+      osc.stop(ctx.currentTime + 0.2);
     } else if (type === "waxCrack") {
-      const bufferSize = ctx.sampleRate * 0.12;
+      const bufferSize = ctx.sampleRate * 0.15;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -37,29 +37,29 @@ function playMicroSound(type) {
       noise.buffer = buffer;
       const filter = ctx.createBiquadFilter();
       filter.type = "highpass";
-      filter.frequency.value = 1200;
+      filter.frequency.value = 1400;
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
       noise.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
       noise.start();
     } else if (type === "paperRustle") {
-      const bufferSize = ctx.sampleRate * 0.25;
+      const bufferSize = ctx.sampleRate * 0.3;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const output = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * 0.25;
+        output[i] = (Math.random() * 2 - 1) * 0.2;
       }
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
       const filter = ctx.createBiquadFilter();
       filter.type = "bandpass";
-      filter.frequency.value = 2200;
+      filter.frequency.value = 2000;
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
       noise.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -69,26 +69,26 @@ function playMicroSound(type) {
 }
 
 /**
- * Chapter 1: The Invitation (Pure Emotional Realism)
- * --------------------------------------------------
- * Stripped of all digital UI reminders. Pure paper, candlelight, and tactile intimacy.
+ * Chapter 1: The Invitation (Ultimate Physical Memory Realism)
+ * -----------------------------------------------------------
+ * Zero digital UI. Pure paper, candlelit silence, tactile wax seal, and pressed rose petal.
  */
 export default function Chapter1Invitation({ content = {}, onComplete }) {
   const recipientName = content.recipientName || "Ananya";
   const bgMusicUrl = content.bgMusicUrl || "/audio/romantic.mp3";
 
-  // Intimate conversation beat index (0 to 4)
+  // Intimate dialogue beat (0 to 4)
   const [whisperBeat, setWhisperBeat] = useState(0);
 
   // Stage state: "conversation" | "envelope" | "surprise" | "completed"
   const [stage, setStage] = useState("conversation");
 
-  // 2-Second Hold-to-Break Wax Seal State
-  const [holdProgress, setHoldProgress] = useState(0); // 0 to 100%
+  // Hold-to-Break Wax Seal State (0 to 100%)
+  const [holdProgress, setHoldProgress] = useState(0);
   const isHoldingRef = useRef(false);
   const holdIntervalRef = useRef(null);
 
-  // Paced emotional conversation sequence (15-second unhurried opening)
+  // Unhurried emotional dialogue pacing (16-second unhurried opening)
   useEffect(() => {
     const b1 = setTimeout(() => setWhisperBeat(1), 3200);  // "Before you continue..."
     const b2 = setTimeout(() => setWhisperBeat(2), 6800);  // "Promise me one thing."
@@ -105,17 +105,15 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
     };
   }, []);
 
-  // Handle Press & Hold on Wax Seal
+  // Handle Physical Hold on Wax Seal
   const handleHoldStart = () => {
     if (stage !== "envelope") return;
     isHoldingRef.current = true;
 
-    // Start background music ambience cleanly
     try {
       playGlobalAudio(bgMusicUrl);
     } catch {}
 
-    // Trigger haptic feedback if supported
     try {
       if (typeof navigator !== "undefined" && navigator.vibrate) {
         navigator.vibrate([15, 30, 15]);
@@ -136,7 +134,7 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
           playMicroSound("heartbeat");
         }
 
-        return prev + 3.5; // Reaches 100% in ~2 seconds
+        return prev + 3.5;
       });
     }, 50);
   };
@@ -150,14 +148,13 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
     }
   };
 
-  // Called when 2-second hold completes successfully
   const handleSealBreakSuccess = () => {
     playMicroSound("waxCrack");
     playMicroSound("paperRustle");
 
     try {
       if (typeof navigator !== "undefined" && navigator.vibrate) {
-        navigator.vibrate([40, 80, 40]);
+        navigator.vibrate([50, 100, 50]);
       }
     } catch {}
 
@@ -180,20 +177,19 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#050204] text-white flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden select-none font-serif">
-      {/* Gentle Candlelight Glow Flicker */}
+    <div className="relative min-h-screen bg-[#040103] text-white flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden select-none font-serif">
+      {/* Candlelight Warmth Bloom */}
       <motion.div
         animate={{
-          scale: [1, 1.06, 1],
-          opacity: [0.14, 0.22, 0.14],
+          scale: [1, 1.05, 1],
+          opacity: [0.12, 0.2, 0.12],
         }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-rose-600/15 rounded-full blur-[140px] pointer-events-none"
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] bg-rose-600/15 rounded-full blur-[150px] pointer-events-none"
       />
-      <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none" />
 
       <AnimatePresence mode="wait">
-        {/* STAGE 1: INTIMATE CONVERSATIONAL DIALOGUE */}
+        {/* STAGE 1: INTIMATE HANDWRITTEN DIALOGUE */}
         {stage === "conversation" && (
           <motion.div
             key={`whisper-${whisperBeat}`}
@@ -209,7 +205,7 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
           </motion.div>
         )}
 
-        {/* STAGE 2: THE TIMELESS LUXURY PARCHMENT ENVELOPE */}
+        {/* STAGE 2: PHYSICAL PARCHMENT ENVELOPE */}
         {stage === "envelope" && (
           <motion.div
             key="envelope-stage"
@@ -219,25 +215,25 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
             transition={{ duration: 1.6, ease: "easeOut" }}
             className="relative max-w-md w-full flex flex-col items-center z-10"
           >
-            {/* Physical Parchment Envelope Object */}
-            <div className="relative w-full max-w-[340px] sm:max-w-[380px] aspect-[4/3] rounded-3xl bg-gradient-to-b from-[#1b1114] via-[#140b0d] to-[#0c0507] border border-rose-500/20 p-8 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden">
-              {/* Soft Paper Texture Overlay */}
+            {/* Real Parchment Envelope Object with Physical Drop Shadow */}
+            <div className="relative w-full max-w-[340px] sm:max-w-[380px] aspect-[4/3] rounded-3xl bg-gradient-to-b from-[#1b1013] via-[#130a0c] to-[#0a0406] border border-rose-500/20 p-8 shadow-[0_40px_90px_-20px_rgba(0,0,0,0.98)] flex flex-col justify-between overflow-hidden">
+              {/* Paper Texture Overlay */}
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:14px_14px] pointer-events-none" />
 
               {/* Minimal Calligraphic Address */}
               <div className="pt-2 text-center space-y-1.5 z-10 font-serif">
-                <span className="text-xs tracking-[0.3em] text-neutral-400 font-light uppercase block">
+                <span className="text-xs tracking-[0.35em] text-neutral-400 font-light uppercase block">
                   For
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-normal text-rose-100 tracking-wide italic">
                   {recipientName} <span className="text-rose-500 not-italic">❤️</span>
                 </h2>
-                <span className="text-[11px] tracking-[0.25em] text-amber-300/70 font-light uppercase block pt-0.5">
+                <span className="text-[11px] tracking-[0.3em] text-amber-300/70 font-light uppercase block pt-0.5">
                   Only.
                 </span>
               </div>
 
-              {/* Pure Physical Hold-to-Break Wax Seal (NO Tech Meters or Percentages) */}
+              {/* Pure Physical Wax Seal Interaction */}
               <div className="relative my-auto flex flex-col items-center justify-center z-20">
                 <div
                   onMouseDown={handleHoldStart}
@@ -247,11 +243,11 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
                   onTouchEnd={handleHoldEnd}
                   className="relative cursor-pointer focus:outline-none select-none group/seal"
                 >
-                  {/* Organic Golden Candlelight Bloom */}
+                  {/* Organic Candlelight Warmth Expansion during Hold */}
                   <motion.div
                     animate={{
-                      scale: holdProgress > 0 ? 1.25 + holdProgress / 200 : 1,
-                      opacity: holdProgress > 0 ? 0.85 : 0.25,
+                      scale: holdProgress > 0 ? 1.3 + holdProgress / 200 : 1,
+                      opacity: holdProgress > 0 ? 0.9 : 0.25,
                     }}
                     className="absolute -inset-5 rounded-full bg-gradient-to-r from-rose-500 via-amber-400 to-rose-600 blur-xl pointer-events-none"
                   />
@@ -262,7 +258,7 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
                       holdProgress > 0 ? "scale-105" : ""
                     }`}
                   >
-                    {/* Organic Crack Spread Overlay */}
+                    {/* Organic Crack Lines Spread */}
                     {holdProgress > 25 && (
                       <div className="absolute inset-0 rounded-full border border-amber-300/40 animate-ping opacity-60 pointer-events-none" />
                     )}
@@ -273,37 +269,19 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
                         holdProgress > 0 ? "scale-110 animate-pulse" : ""
                       }`}
                     />
-
-                    {/* Minimal Circular Progress Outline */}
-                    <svg
-                      className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none opacity-80"
-                      viewBox="0 0 100 100"
-                    >
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="46"
-                        className="stroke-amber-300 fill-none"
-                        strokeWidth="2.5"
-                        strokeDasharray="289"
-                        strokeDashoffset={289 - (289 * holdProgress) / 100}
-                        strokeLinecap="round"
-                      />
-                    </svg>
                   </div>
                 </div>
 
                 {/* Tactile Handwritten Prompt */}
-                <p className="mt-4 text-xs text-rose-200/80 font-light italic tracking-wider flex items-center gap-1.5">
-                  <Sparkles size={12} className="text-amber-300/80 animate-spin [animation-duration:6s]" />
-                  <span>{holdProgress > 0 ? "Hold tight..." : "Press & hold the wax seal..."}</span>
+                <p className="mt-4 text-xs text-rose-200/80 font-light italic tracking-wider">
+                  {holdProgress > 0 ? "Hold tight..." : "Hold wax seal to open..."}
                 </p>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* STAGE 3: THE SURPRISE INSIDE THE ENVELOPE (FALLING ROSE PETAL & HANDWRITTEN KEEPSAKE NOTE) */}
+        {/* STAGE 3: PRESSED ROSE PETAL & KEEPSAKE NOTE */}
         {stage === "surprise" && (
           <motion.div
             key="surprise-stage"
@@ -313,7 +291,7 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="relative max-w-sm w-full text-center space-y-6 z-20"
           >
-            {/* Pressed Rose Petal Falling Animation */}
+            {/* Real Pressed Rose Petal Falling Animation */}
             <motion.div
               initial={{ opacity: 0, y: -35, rotate: -25 }}
               animate={{ opacity: 1, y: 0, rotate: 12 }}
