@@ -5,6 +5,7 @@ const DEFAULT_AUDIO_SRC = "/audio/romantic.mp3";
 
 /**
  * Helper function to trigger background music from anywhere in the app
+ * (e.g. UnboxingIntro, Template detail page, etc.)
  */
 export function playGlobalAudio(customSrc) {
   if (typeof window === "undefined") return;
@@ -14,16 +15,6 @@ export function playGlobalAudio(customSrc) {
 export function pauseGlobalAudio() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent("lws:pause_music"));
-}
-
-export function duckGlobalAudio() {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent("lws:duck_music"));
-}
-
-export function restoreGlobalAudio() {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent("lws:restore_music"));
 }
 
 export default function BackgroundMusic() {
@@ -36,6 +27,7 @@ export default function BackgroundMusic() {
 
     audio.volume = 0.15; // Soft background ambience (15%)
 
+    // REQUIREMENT 2 & 4: Strict Event-Driven State Sync (NO optimistic updates)
     audio.onplay = () => {
       setIsPlaying(true);
     };
@@ -49,6 +41,7 @@ export default function BackgroundMusic() {
       setIsPlaying(false);
     };
 
+    // REQUIREMENT 1 & 7: Helper to safely play with explicit console logging
     const safePlay = async () => {
       if (!audioRef.current) return;
       try {
@@ -59,6 +52,7 @@ export default function BackgroundMusic() {
       }
     };
 
+    // Auto-play on first user click interaction if not already playing
     const handleFirstClick = () => {
       if (audioRef.current && audioRef.current.paused) {
         safePlay();
@@ -70,6 +64,7 @@ export default function BackgroundMusic() {
     window.addEventListener("click", handleFirstClick);
     window.addEventListener("touchstart", handleFirstClick, { passive: true });
 
+    // Custom event handlers for UnboxingIntro / template triggers
     const handleCustomPlay = async (e) => {
       if (!audioRef.current) return;
       const customSrc = e.detail?.src || DEFAULT_AUDIO_SRC;
@@ -99,23 +94,8 @@ export default function BackgroundMusic() {
       }
     };
 
-    // Smooth Volume Ducking for Chapter 6 / Voice Notes
-    const handleCustomDuck = () => {
-      if (audioRef.current) {
-        audioRef.current.volume = 0.02;
-      }
-    };
-
-    const handleCustomRestore = () => {
-      if (audioRef.current) {
-        audioRef.current.volume = 0.15;
-      }
-    };
-
     window.addEventListener("lws:play_music", handleCustomPlay);
     window.addEventListener("lws:pause_music", handleCustomPause);
-    window.addEventListener("lws:duck_music", handleCustomDuck);
-    window.addEventListener("lws:restore_music", handleCustomRestore);
 
     return () => {
       if (audio) {
@@ -127,11 +107,10 @@ export default function BackgroundMusic() {
       window.removeEventListener("touchstart", handleFirstClick);
       window.removeEventListener("lws:play_music", handleCustomPlay);
       window.removeEventListener("lws:pause_music", handleCustomPause);
-      window.removeEventListener("lws:duck_music", handleCustomDuck);
-      window.removeEventListener("lws:restore_music", handleCustomRestore);
     };
   }, []);
 
+  // REQUIREMENT 3: toggleMusic awaits audio.play() before state changes via onplay handler
   const toggleMusic = async (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
     const audio = audioRef.current;
@@ -155,13 +134,14 @@ export default function BackgroundMusic() {
       <button
         type="button"
         onClick={toggleMusic}
-        title={isPlaying ? "Mute Background Ambience" : "Play Background Ambience"}
+        title={isPlaying ? "Mute Background Music" : "Play Background Music"}
         className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer group text-[11px] font-sans tracking-wide ${
           isPlaying
             ? "bg-black/60 border border-rose-500/30 hover:border-rose-400/60 text-white shadow-xl shadow-rose-950/30 backdrop-blur-xl"
             : "bg-black/40 border border-white/10 hover:border-white/20 text-neutral-400 hover:text-neutral-200 shadow-md backdrop-blur-lg"
         }`}
       >
+        {/* Disc Icon */}
         <Disc
           className={`w-3.5 h-3.5 transition-colors ${
             isPlaying
@@ -170,10 +150,12 @@ export default function BackgroundMusic() {
           }`}
         />
 
+        {/* Label */}
         <span className="font-light opacity-90 group-hover:opacity-100 select-none">
-          {isPlaying ? "Background Ambience" : "Muted"}
+          {isPlaying ? "Background Music" : "Muted"}
         </span>
 
+        {/* Dynamic Indicator: Animated 3-Bar Equalizer when playing, Muted Icon when paused */}
         {isPlaying ? (
           <div className="flex items-end gap-0.5 h-3 shrink-0 px-0.5" aria-hidden="true">
             <span className="w-0.5 h-2.5 bg-rose-400 rounded-full animate-bounce [animation-duration:0.8s]" />

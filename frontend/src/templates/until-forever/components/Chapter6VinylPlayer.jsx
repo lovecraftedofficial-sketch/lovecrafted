@@ -1,8 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Disc, Music } from "lucide-react";
-import { duckGlobalAudio, restoreGlobalAudio } from "@/components/BackgroundMusic";
-import AudioPlayerProvider from "@/components/AudioPlayerProvider";
+import { Heart, Disc, Music, AlertCircle, Play, Pause } from "lucide-react";
+import { playGlobalAudio, pauseGlobalAudio } from "@/components/BackgroundMusic";
+
+/**
+ * Music Provider Detection Helper
+ */
+function detectMusicProvider(url = "") {
+  if (!url || typeof url !== "string") return { type: "mp3", embedUrl: "" };
+
+  const spotifyMatch = url.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+  if (spotifyMatch) {
+    return {
+      type: "spotify",
+      embedUrl: `https://open.spotify.com/embed/${spotifyMatch[1]}/${spotifyMatch[2]}?utm_source=generator&theme=0`,
+    };
+  }
+
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) {
+    return {
+      type: "youtube",
+      embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&enablejsapi=1`,
+    };
+  }
+
+  const appleMatch = url.match(/music\.apple\.com\/([a-z]{2})\/(album|song|playlist)\/([^/]+)\/([0-9]+)/);
+  if (appleMatch) {
+    return {
+      type: "apple",
+      embedUrl: `https://embed.music.apple.com/${appleMatch[1]}/${appleMatch[2]}/${appleMatch[3]}/${appleMatch[4]}`,
+    };
+  }
+
+  return { type: "mp3", embedUrl: url };
+}
 
 /**
  * Micro Sound Synthesizer for Vinyl Record Needle Drop & Crackle
@@ -53,7 +85,8 @@ function playVinylFxSound(type) {
  * Chapter 6: Our Song (Vintage Spinning Vinyl Record Player)
  * ---------------------------------------------------------
  * Emotion: Warmth & Shared Happiness.
- * Recipient slides the vinyl record onto the turntable and drops the brass needle.
+ * Handles provider detection (Spotify, YouTube, Apple Music, MP3)
+ * Ducks global background music during playback & restores on exit.
  */
 export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
   const songTitle = content.songTitle || "Golden Hour Romance";
@@ -63,15 +96,21 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
   const lyricsExcerpt =
     content.lyricsExcerpt ||
     "“In every lifetime, under every sky, I would still choose you...”";
-  const bgMusicUrl = content.bgMusicUrl || "/audio/romantic.mp3";
+  const rawMusicUrl = content.songAudioUrl || content.bgMusicUrl || "/audio/romantic.mp3";
+
+  const provider = detectMusicProvider(rawMusicUrl);
 
   // Stages: "sleeve" | "turntable" | "playing"
   const [stage, setStage] = useState("sleeve");
+  const audioRef = useRef(null);
 
-  // Restore global ambience when leaving Chapter 6
+  // Pause global background music when playing vinyl song, restore on unmount
   useEffect(() => {
     return () => {
-      restoreGlobalAudio();
+      pauseGlobalAudio();
+      setTimeout(() => {
+        playGlobalAudio();
+      }, 300);
     };
   }, []);
 
@@ -88,14 +127,23 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
     playVinylFxSound("needleDrop");
     playVinylFxSound("crackle");
 
-    // Duck global background ambience so Our Song takes precedence cleanly
-    duckGlobalAudio();
+    // Duck global background music
+    pauseGlobalAudio();
+
+    if (provider.type === "mp3" && audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
 
     setStage("playing");
   };
 
   return (
     <div className="relative min-h-screen bg-[#040103] text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-hidden select-none font-serif">
+      {/* Hidden HTML Audio for MP3 files */}
+      {provider.type === "mp3" && (
+        <audio ref={audioRef} src={provider.embedUrl} preload="auto" loop />
+      )}
+
       {/* Warm Sunset Amber Glow */}
       <motion.div
         animate={{
@@ -156,7 +204,7 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
           </motion.div>
         )}
 
-        {/* STAGE 2 & 3: TURNTABLE & SPINNING VINYL */}
+        {/* STAGE 2 & 3: TURNTABLE & EMBEDDED PLAYER */}
         {(stage === "turntable" || stage === "playing") && (
           <motion.div
             key="turntable-stage"
@@ -166,7 +214,7 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="relative max-w-lg w-full my-auto z-10 flex flex-col items-center space-y-6"
           >
-            {/* Turntable Wooden Plinth */}
+            {/* Turntable Plinth */}
             <div className="relative w-full aspect-[4/3] rounded-3xl bg-gradient-to-b from-[#1e1014] via-[#14080b] to-[#0a0305] border-2 border-amber-900/40 p-8 shadow-[0_50px_110px_-20px_rgba(0,0,0,0.98)] flex items-center justify-between overflow-hidden">
               {/* Spinning Vinyl Platter */}
               <div className="relative w-48 h-48 sm:w-60 sm:h-60 mx-auto">
@@ -216,24 +264,63 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
               </div>
             </div>
 
-            {/* Provider-Aware Music Player Component (Spotify, YouTube, Apple Music, MP3) */}
+            {/* Provider Specific Official Embed */}
+            {stage === "playing" && provider.type !== "mp3" && (
+              <div className="w-full max-w-md rounded-2xl overflow-hidden border border-rose-500/30 shadow-2xl bg-black">
+                {provider.type === "spotify" && (
+                  <iframe
+                    src={provider.embedUrl}
+                    width="100%"
+                    height="152"
+                    frameBorder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    title="Spotify Music Player"
+                  />
+                )}
+
+                {provider.type === "youtube" && (
+                  <div className="aspect-video w-full">
+                    <iframe
+                      src={provider.embedUrl}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="YouTube Music Player"
+                    />
+                  </div>
+                )}
+
+                {provider.type === "apple" && (
+                  <iframe
+                    src={provider.embedUrl}
+                    width="100%"
+                    height="175"
+                    frameBorder="0"
+                    allow="autoplay *; encrypted-media *; fullscreen *"
+                    loading="lazy"
+                    title="Apple Music Player"
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Song Memory Note & Lyrics Excerpt */}
             {stage === "playing" && (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1 }}
-                className="w-full space-y-4 text-center"
+                className="p-6 rounded-2xl bg-gradient-to-b from-[#180d11] to-[#0f0709] border border-rose-500/25 shadow-2xl text-center space-y-3 max-w-md"
               >
-                <AudioPlayerProvider url={bgMusicUrl} title={songTitle} />
-
-                <div className="p-6 rounded-2xl bg-gradient-to-b from-[#180d11] to-[#0f0709] border border-rose-500/25 shadow-2xl space-y-3 max-w-md mx-auto">
-                  <p className="font-serif text-lg text-rose-100 italic">
-                    {lyricsExcerpt}
-                  </p>
-                  <p className="text-xs text-neutral-400 font-light italic leading-relaxed">
-                    "{songStory}"
-                  </p>
-                </div>
+                <p className="font-serif text-lg text-rose-100 italic">
+                  {lyricsExcerpt}
+                </p>
+                <p className="text-xs text-neutral-400 font-light italic leading-relaxed">
+                  "{songStory}"
+                </p>
               </motion.div>
             )}
           </motion.div>
@@ -245,7 +332,6 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
         <button
           type="button"
           onClick={() => {
-            restoreGlobalAudio();
             if (onComplete) onComplete();
           }}
           className="inline-flex items-center gap-2 text-xs sm:text-sm text-amber-300/90 font-serif italic tracking-widest hover:text-amber-200 transition-colors cursor-pointer"
