@@ -34,7 +34,7 @@ CREATE POLICY "Service role full access on stories"
 ON public.stories FOR ALL 
 USING (auth.role() = 'service_role');
 
--- 2. DRAFTS TABLE
+-- 2. DRAFTS TABLE (Access restricted to service_role via Netlify Functions)
 CREATE TABLE IF NOT EXISTS public.drafts (
     id TEXT PRIMARY KEY,
     user_session_id TEXT NOT NULL,
@@ -49,11 +49,10 @@ CREATE INDEX IF NOT EXISTS idx_drafts_session_template ON public.drafts(user_ses
 -- Enable RLS on Drafts Table
 ALTER TABLE public.drafts ENABLE ROW LEVEL SECURITY;
 
--- Allow public session read/write access to their own drafts
-CREATE POLICY "Allow public draft access by session" 
+-- Service role full access on drafts
+CREATE POLICY "Service role full access on drafts" 
 ON public.drafts FOR ALL 
-USING (true)
-WITH CHECK (true);
+USING (auth.role() = 'service_role');
 
 -- 3. MEDIA ASSETS TABLE
 CREATE TABLE IF NOT EXISTS public.media_assets (
@@ -91,7 +90,7 @@ CREATE POLICY "Public Access for lovecrafted-media"
 ON storage.objects FOR SELECT 
 USING (bucket_id = 'lovecrafted-media');
 
--- Allow upload access to lovecrafted-media bucket
-CREATE POLICY "Allow uploads to lovecrafted-media" 
+-- Allow service_role upload access to lovecrafted-media bucket
+CREATE POLICY "Service Role Uploads for lovecrafted-media" 
 ON storage.objects FOR INSERT 
 WITH CHECK (bucket_id = 'lovecrafted-media');
