@@ -4,6 +4,7 @@ import untilForeverConfig from "./template.config";
 import Chapter1Invitation from "./components/Chapter1Invitation";
 import Chapter2HandwrittenLetter from "./components/Chapter2HandwrittenLetter";
 import Chapter3KeepsakeTable from "./components/Chapter3KeepsakeTable";
+import Chapter4MemoryBox from "./components/Chapter4MemoryBox";
 
 /**
  * UntilForeverTemplate.jsx
@@ -50,8 +51,16 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
         />
       )}
 
-      {/* CHAPTER 4+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
-      {currentChapter > 3 && (
+      {/* CHAPTER 4: THE VINTAGE WOODEN MEMORY BOX */}
+      {currentChapter === 4 && (
+        <Chapter4MemoryBox
+          content={activeContent}
+          onComplete={() => setCurrentChapter(5)}
+        />
+      )}
+
+      {/* CHAPTER 5+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
+      {currentChapter > 4 && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fadeIn space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
             Chapter {currentChapter} Active
