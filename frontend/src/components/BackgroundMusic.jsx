@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Volume2, VolumeX, Disc } from "lucide-react";
+import { VolumeX, Disc } from "lucide-react";
 
 const DEFAULT_AUDIO_SRC = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3";
 
@@ -91,20 +91,35 @@ export default function BackgroundMusic() {
         type="button"
         onClick={toggleMusic}
         title={isPlaying ? "Mute Background Music" : "Play Background Music"}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 text-neutral-400 hover:text-white hover:border-white/20 backdrop-blur-md transition-all duration-300 text-[11px] tracking-wide font-sans shadow-lg cursor-pointer group"
+        className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer group text-[11px] font-sans tracking-wide ${
+          isPlaying
+            ? "bg-black/60 border border-rose-500/30 hover:border-rose-400/60 text-white shadow-xl shadow-rose-950/30 backdrop-blur-xl"
+            : "bg-black/40 border border-white/10 hover:border-white/20 text-neutral-400 hover:text-neutral-200 shadow-md backdrop-blur-lg"
+        }`}
       >
+        {/* Disc Icon */}
         <Disc
-          className={`w-3.5 h-3.5 text-neutral-400 group-hover:text-rose-300 transition-colors ${
-            isPlaying ? "animate-spin [animation-duration:4s]" : ""
+          className={`w-3.5 h-3.5 transition-colors ${
+            isPlaying
+              ? "text-rose-400 group-hover:text-rose-300 animate-spin [animation-duration:5s]"
+              : "text-neutral-500 group-hover:text-neutral-400"
           }`}
         />
-        <span className="font-light opacity-80 group-hover:opacity-100">
-          {isPlaying ? "Sound On" : "Sound Off"}
+
+        {/* Label */}
+        <span className="font-light opacity-90 group-hover:opacity-100 select-none">
+          {isPlaying ? "Background Music" : "Muted"}
         </span>
+
+        {/* Dynamic Indicator: Animated 3-Bar Equalizer when playing, Muted Icon when paused */}
         {isPlaying ? (
-          <Volume2 className="w-3 h-3 text-rose-300/80" />
+          <div className="flex items-end gap-0.5 h-3 shrink-0 px-0.5" aria-hidden="true">
+            <span className="w-0.5 h-2.5 bg-rose-400 rounded-full animate-bounce [animation-duration:0.8s]" />
+            <span className="w-0.5 h-3.5 bg-pink-300 rounded-full animate-bounce [animation-duration:1.1s] [animation-delay:0.2s]" />
+            <span className="w-0.5 h-2 bg-rose-400 rounded-full animate-bounce [animation-duration:0.9s] [animation-delay:0.4s]" />
+          </div>
         ) : (
-          <VolumeX className="w-3 h-3 text-neutral-500" />
+          <VolumeX className="w-3 h-3 text-neutral-500 group-hover:text-neutral-400 shrink-0" />
         )}
       </button>
     </div>
