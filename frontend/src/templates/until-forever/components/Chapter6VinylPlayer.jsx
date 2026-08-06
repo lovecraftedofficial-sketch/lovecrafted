@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Disc, Music, Sparkles } from "lucide-react";
-import { playGlobalAudio, pauseGlobalAudio } from "@/components/BackgroundMusic";
+import { Heart, Disc, Music } from "lucide-react";
+import { duckGlobalAudio, restoreGlobalAudio } from "@/components/BackgroundMusic";
+import AudioPlayerProvider from "@/components/AudioPlayerProvider";
 
 /**
  * Micro Sound Synthesizer for Vinyl Record Needle Drop & Crackle
@@ -67,6 +68,13 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
   // Stages: "sleeve" | "turntable" | "playing"
   const [stage, setStage] = useState("sleeve");
 
+  // Restore global ambience when leaving Chapter 6
+  useEffect(() => {
+    return () => {
+      restoreGlobalAudio();
+    };
+  }, []);
+
   // Slide vinyl from sleeve onto turntable
   const handlePlaceVinyl = () => {
     if (stage !== "sleeve") return;
@@ -80,9 +88,8 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
     playVinylFxSound("needleDrop");
     playVinylFxSound("crackle");
 
-    try {
-      playGlobalAudio(bgMusicUrl);
-    } catch {}
+    // Duck global background ambience so Our Song takes precedence cleanly
+    duckGlobalAudio();
 
     setStage("playing");
   };
@@ -174,12 +181,10 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
                   }}
                   className="w-full h-full rounded-full bg-gradient-to-tr from-neutral-950 via-neutral-900 to-neutral-950 border-4 border-amber-900/40 shadow-2xl flex items-center justify-center relative overflow-hidden"
                 >
-                  {/* Vinyl Grooves Rings */}
                   <div className="absolute inset-3 rounded-full border border-neutral-800 pointer-events-none" />
                   <div className="absolute inset-7 rounded-full border border-neutral-800 pointer-events-none" />
                   <div className="absolute inset-12 rounded-full border border-neutral-800 pointer-events-none" />
 
-                  {/* Center Record Label */}
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-rose-950 to-amber-900 border-2 border-amber-400/50 flex flex-col items-center justify-center text-center p-1 z-10">
                     <Music size={16} className="text-amber-300" />
                     <span className="text-[8px] text-rose-100 font-mono italic truncate max-w-[50px]">
@@ -211,20 +216,24 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
               </div>
             </div>
 
-            {/* Song Memory Note & Lyrics Excerpt */}
+            {/* Provider-Aware Music Player Component (Spotify, YouTube, Apple Music, MP3) */}
             {stage === "playing" && (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1 }}
-                className="p-6 rounded-2xl bg-gradient-to-b from-[#180d11] to-[#0f0709] border border-rose-500/25 shadow-2xl text-center space-y-3 max-w-md"
+                className="w-full space-y-4 text-center"
               >
-                <p className="font-serif text-lg text-rose-100 italic">
-                  {lyricsExcerpt}
-                </p>
-                <p className="text-xs text-neutral-400 font-light italic leading-relaxed">
-                  "{songStory}"
-                </p>
+                <AudioPlayerProvider url={bgMusicUrl} title={songTitle} />
+
+                <div className="p-6 rounded-2xl bg-gradient-to-b from-[#180d11] to-[#0f0709] border border-rose-500/25 shadow-2xl space-y-3 max-w-md mx-auto">
+                  <p className="font-serif text-lg text-rose-100 italic">
+                    {lyricsExcerpt}
+                  </p>
+                  <p className="text-xs text-neutral-400 font-light italic leading-relaxed">
+                    "{songStory}"
+                  </p>
+                </div>
               </motion.div>
             )}
           </motion.div>
@@ -236,6 +245,7 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
         <button
           type="button"
           onClick={() => {
+            restoreGlobalAudio();
             if (onComplete) onComplete();
           }}
           className="inline-flex items-center gap-2 text-xs sm:text-sm text-amber-300/90 font-serif italic tracking-widest hover:text-amber-200 transition-colors cursor-pointer"
