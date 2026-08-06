@@ -21,21 +21,33 @@ exports.handler = async (event, context) => {
         };
     }
 
+    // Defensive variable reading with .trim()
+    const key_id = (process.env.RAZORPAY_KEY_ID || "").trim();
+    const key_secret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
+
+    // Safe diagnostics metadata (NEVER exposing full secret)
+    const diagnostics = {
+        keyId: key_id,
+        keyIdLength: key_id.length,
+        secretLength: key_secret.length,
+        keyIdEndsWith: key_id ? key_id.slice(-4) : "",
+        secretEndsWith: key_secret ? key_secret.slice(-4) : "",
+    };
+
+    console.log("Razorpay Environment Diagnostics:", diagnostics);
+
+    if (!key_id || !key_secret) {
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+                error: "Razorpay credentials missing",
+                diagnostics,
+            }),
+        };
+    }
+
     try {
-        const key_id = process.env.RAZORPAY_KEY_ID;
-        const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-        if (!key_id || !key_secret) {
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({
-                    error: "Razorpay credentials not configured on server",
-                    isConfigured: false,
-                }),
-            };
-        }
-
         const body = JSON.parse(event.body || "{}");
         const amount = body.amount || 1999;
         const templateName = body.templateName || "LoveCrafted Keepsake";
@@ -68,16 +80,27 @@ exports.handler = async (event, context) => {
                 amount: order.amount,
                 currency: order.currency,
                 keyId: key_id,
+                diagnostics,
             }),
         };
     } catch (err) {
-        console.error("Razorpay order creation error:", err);
+        const errorLog = {
+            statusCode: err.statusCode || null,
+            error: err.error || null,
+            message: err.message || null,
+            stack: err.stack || null,
+        };
+
+        console.error("Razorpay order creation error:", errorLog);
+
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({
                 error: err.message || "Failed to create Razorpay Order",
-            }),
+                diagnostics,
+                razorpayError: errorLog,
+            }, null, 2),
         };
     }
 };
