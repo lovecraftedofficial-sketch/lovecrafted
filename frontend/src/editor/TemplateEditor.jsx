@@ -15,20 +15,14 @@ import {
   Mail,
   MessageSquare,
   Music,
-  Star,
   LayoutGrid,
-  CheckCircle2,
-  Circle,
-  ChevronDown,
-  ChevronUp,
   Volume2,
   Lock,
   Sun,
   BookOpen,
   Compass,
   Gift,
-  Palette,
-  Upload
+  Palette
 } from "lucide-react";
 import FieldRenderer from "@/editor/FieldRenderer";
 import TemplateRenderer from "@/components/TemplateRenderer";
@@ -125,6 +119,11 @@ const CHAPTER_SECTIONS = [
   },
 ];
 
+// Memoized Live Preview Wrapper to avoid synchronous main thread blocking
+const MemoizedLivePreview = React.memo(function MemoizedLivePreview({ slug, content }) {
+  return <TemplateRenderer templateSlug={slug} content={content} />;
+});
+
 export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
   const config = templateEntry?.config || {};
   const slug = config.slug || "until-forever";
@@ -152,14 +151,24 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
     return JSON.parse(JSON.stringify(defaultDataFromSchema || {}));
   }, [slug, siteId, defaultDataFromSchema]);
 
+  // Form State & Debounced Live Preview State (120ms)
   const [content, setContent] = useState(initialContent);
+  const [debouncedContent, setDebouncedContent] = useState(initialContent);
+
   const [mobileMode, setMobileMode] = useState("edit");
   const [savedAt, setSavedAt] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState("all");
-
-  // State for Custom Reset Modal Popup
   const [showResetModal, setShowResetModal] = useState(false);
+
+  // Debounce live preview updates by 120ms for 60+ FPS buttery smooth typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedContent(content);
+    }, 120);
+
+    return () => clearTimeout(handler);
+  }, [content]);
 
   const updateField = useCallback((key, value) => {
     setContent((prev) => ({ ...prev, [key]: value }));
@@ -179,7 +188,9 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
   }, [content, slug, siteId]);
 
   const handleConfirmReset = () => {
-    setContent(JSON.parse(JSON.stringify(defaultDataFromSchema || {})));
+    const defaults = JSON.parse(JSON.stringify(defaultDataFromSchema || {}));
+    setContent(defaults);
+    setDebouncedContent(defaults);
     try {
       localStorage.removeItem(DRAFT_KEY(slug, siteId));
     } catch {
@@ -365,7 +376,7 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
         {/* Left Side Flagship Chapter Editing Panel */}
         <aside
           data-testid={EDITOR.fieldsPanel}
-          className={`border-r border-rose-500/15 bg-[#0e0509] p-4 md:p-6 space-y-6 overflow-y-auto h-[calc(100vh-65px)] ${
+          className={`border-r border-rose-500/15 bg-[#0e0509] p-4 md:p-6 space-y-6 overflow-y-auto overscroll-contain h-[calc(100vh-65px)] ${
             mobileMode === "edit" ? "block" : "hidden md:block"
           }`}
         >
@@ -429,12 +440,12 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
         {/* Right Side Sticky Live Preview */}
         <section
           data-testid={EDITOR.previewFrame}
-          className={`h-[calc(100vh-65px)] overflow-y-auto bg-black relative sticky top-16 ${
+          className={`h-[calc(100vh-65px)] overflow-y-auto overscroll-contain bg-black relative sticky top-16 ${
             mobileMode === "preview" ? "block" : "hidden md:block"
           }`}
         >
           <div className="w-full min-h-full">
-            <TemplateRenderer templateSlug={slug} content={content} />
+            <MemoizedLivePreview slug={slug} content={debouncedContent} />
           </div>
         </section>
       </div>

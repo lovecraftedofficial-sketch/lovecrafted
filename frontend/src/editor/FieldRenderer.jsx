@@ -37,7 +37,7 @@ const GUIDED_PLACEHOLDERS = {
     loveNote: "You make ordinary days feel special...",
 };
 
-export default function FieldRenderer({ field, value, onChange }) {
+function FieldRenderer({ field, value, onChange }) {
     const Comp = registry[field.type] || registry.text;
 
     const guidedPlaceholder =
@@ -67,3 +67,6 @@ export default function FieldRenderer({ field, value, onChange }) {
         </div>
     );
 }
+
+// Wrap FieldRenderer in React.memo to prevent unnecessary re-renders of all fields on every keystroke
+export default React.memo(FieldRenderer);
