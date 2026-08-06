@@ -9,10 +9,8 @@ import {
     Lock,
     QrCode,
     AlertCircle,
-    ExternalLink,
     Check,
     Loader2,
-    Sparkles,
     RotateCcw,
     CreditCard,
     MessageCircle,
@@ -21,6 +19,8 @@ import {
 import emailjs from "@emailjs/browser";
 import { getTemplate } from "@/data/templateRegistry";
 import { processRazorpayPayment } from "@/lib/paymentService";
+import { sanitizeAndUploadAllStoryMedia } from "@/lib/mediaUploadService";
+import { saveStoryToDatabase } from "@/lib/storyStorageService";
 
 const EMAILJS_SERVICE_ID = process.env.REACT_APP_EMAILJS_SERVICE_ID || "service_lovecrafted";
 const EMAILJS_TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID || "template_order";
@@ -30,9 +30,9 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     const OWNER_UPI_ID = "8618379301@pz";
     const OWNER_EMAIL = "lovecrafted.official@gmail.com";
 
-    const templateEntry = getTemplate(templateSlug || "sunset-love");
-    const priceAmount = templateEntry?.config?.price || 1999;
-    const tierName = templateEntry?.config?.tier || "Premium";
+    const templateEntry = getTemplate(templateSlug || "until-forever");
+    const priceAmount = templateEntry?.config?.price || 4999;
+    const tierName = templateEntry?.config?.tier || "Ultra-Luxury Flagship";
     const priceFormatted = priceAmount.toLocaleString("en-IN");
 
     const [senderName, setSenderName] = useState("");
@@ -42,12 +42,11 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
 
     // Step state: "form" | "payment" | "payment-failed" | "success" | "opening-transition"
     const [step, setStep] = useState("form");
-    const [transitionStage, setTransitionStage] = useState("preparing"); // "preparing" | "opening"
+    const [transitionStage, setTransitionStage] = useState("preparing");
     const [paymentErrorMessage, setPaymentErrorMessage] = useState("");
     const [generatedSlug, setGeneratedSlug] = useState("");
     const [copiedLink, setCopiedLink] = useState(false);
     const [showQrCode, setShowQrCode] = useState(false);
-    const [paymentRecord, setPaymentRecord] = useState(null);
 
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
@@ -66,32 +65,12 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         setStep("payment");
     };
 
-    // Safely encode content into URL string
-    let encodedData = "";
-    try {
-        const jsonStr = JSON.stringify(customContent || {});
-        const bytes = new TextEncoder().encode(jsonStr);
-        let binaryStr = "";
-        for (let i = 0; i < bytes.length; i++) {
-            binaryStr += String.fromCharCode(bytes[i]);
-        }
-        encodedData = encodeURIComponent(btoa(binaryStr));
-    } catch {
-        try {
-            encodedData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(customContent || {})))));
-        } catch {
-            encodedData = "";
-        }
-    }
-
     const activeSlug = generatedSlug || "our-anniversary";
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
 
-    // Clean Short URL for display (Zero query params or tokens!)
+    // Clean Permanent Public Story URL (Zero Base64 parameter!)
     const cleanDisplayUrl = `lovecrafted.in/story/${activeSlug}`;
-
-    // Active Public Target URL
-    const publicLiveLink = `${baseUrl}/story/${activeSlug}?slug=${templateSlug || "sunset-love"}&active=true&d=${encodedData}`;
+    const publicLiveLink = `${baseUrl}/story/${activeSlug}?slug=${templateSlug || "until-forever"}&active=true`;
 
     const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`I created a special romantic keepsake website for you! Open your surprise here: ${publicLiveLink}`)}`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(publicLiveLink)}`;
@@ -117,24 +96,35 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         }, 1600);
     };
 
-    // Trigger Razorpay Payment Checkout
+    // Trigger Razorpay Payment Checkout & Permanent Cloud Storage Pipeline
     const handleStartRazorpayPayment = () => {
         setIsProcessingPayment(true);
         setPaymentErrorMessage("");
 
         processRazorpayPayment({
-            templateSlug: templateSlug || "sunset-love",
+            templateSlug: templateSlug || "until-forever",
             templateName: templateEntry?.config?.name || draftTitle || "Website",
             tier: tierName,
             customerName: senderName,
             customerEmail: "customer@example.com",
             customerPhone: whatsappNumber,
-            onSuccess: (paymentData) => {
+            onSuccess: async (paymentData) => {
+                // Step 1: Upload all local Blob audio & images to permanent HTTPS storage
+                const cleanContent = await sanitizeAndUploadAllStoryMedia(customContent);
+
+                // Step 2: Save entire story as permanent database record with story ID
+                const permanentStoryId = await saveStoryToDatabase({
+                    storyId: activeSlug,
+                    templateSlug: templateSlug || "until-forever",
+                    title: draftTitle || "Until Forever Keepsake",
+                    content: cleanContent,
+                    customSlug: activeSlug,
+                });
+
                 setIsProcessingPayment(false);
-                setPaymentRecord(paymentData);
                 setStep("success");
 
-                // Update local storage gifts registry to Paid & Published with invoice ref
+                // Update local storage gifts registry
                 try {
                     const storedGifts = localStorage.getItem("lws:user_gifts");
                     let giftsList = storedGifts ? JSON.parse(storedGifts) : [];
@@ -146,16 +136,14 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                 paymentStatus: "paid",
                                 invoiceRef: paymentData.invoiceRef,
                                 paymentId: paymentData.paymentId,
-                                slug: activeSlug,
+                                slug: permanentStoryId,
                                 lastEdited: "Just now",
                             };
                         }
                         return g;
                     });
                     localStorage.setItem("lws:user_gifts", JSON.stringify(updatedGifts));
-                } catch {
-                    /* ignore */
-                }
+                } catch {}
 
                 // Send background notification email
                 try {
@@ -177,9 +165,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                         },
                         EMAILJS_PUBLIC_KEY
                     ).catch(() => {});
-                } catch {
-                    /* ignore */
-                }
+                } catch {}
             },
             onFailure: (errMsg) => {
                 setIsProcessingPayment(false);
@@ -235,7 +221,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                     {tierName} Tier Template
                                 </span>
                                 <span className="text-white font-serif text-base font-bold">
-                                    {templateEntry?.config?.name || "Sunset Love"}
+                                    {templateEntry?.config?.name || "Until Forever"}
                                 </span>
                             </div>
                             <span className="font-bold text-amber-300 text-lg">₹{priceFormatted}</span>
@@ -310,7 +296,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                     Complete Payment to Publish
                                 </h4>
                                 <p className="text-xs text-neutral-400 mt-1">
-                                    Instant 1-click publishing upon payment verification.
+                                    Instant cloud media upload & database story publishing.
                                 </p>
                             </div>
 
@@ -320,7 +306,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                                     <span className="font-semibold text-white">{draftTitle || "Love Story"}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-neutral-400">Custom Slug:</span>
+                                    <span className="text-neutral-400">Permanent Link:</span>
                                     <span className="font-mono text-rose-300">/story/{activeSlug}</span>
                                 </div>
                                 <div className="flex justify-between border-t border-white/5 pt-1 mt-1 font-bold">
@@ -337,7 +323,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             >
                                 {isProcessingPayment ? (
                                     <>
-                                        <Loader2 size={16} className="animate-spin" /> Opening Razorpay Checkout...
+                                        <Loader2 size={16} className="animate-spin" /> Uploading Media & Publishing...
                                     </>
                                 ) : (
                                     <>
@@ -369,29 +355,26 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </div>
                 )}
 
-                {/* STEP 3: REDESIGNED PREMIUM PAYMENT SUCCESS SCREEN (ZERO SCROLL, CLEAN LUXURY EXPERIENCE) */}
+                {/* STEP 3: REDESIGNED PREMIUM PAYMENT SUCCESS SCREEN */}
                 {step === "success" && (
                     <div className="space-y-4 text-center animate-fadeIn py-1">
-                        {/* Romantic Animated Icon */}
                         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-500/20 to-pink-500/30 border border-rose-400/40 text-rose-300 flex items-center justify-center mx-auto shadow-inner">
                             <Heart size={28} className="fill-rose-500 text-rose-400 animate-pulse" />
                         </div>
 
-                        {/* Title & Short Emotional Subtitle */}
                         <div className="space-y-1">
                             <h3 className="font-display text-2xl font-bold text-white tracking-tight">
                                 ❤️ Your Love Story is Live!
                             </h3>
                             <p className="text-neutral-400 text-xs max-w-xs mx-auto leading-relaxed">
-                                Your keepsake has been published successfully and is ready to be shared.
+                                Your keepsake has been stored permanently and is ready to be shared.
                             </p>
                         </div>
 
-                        {/* Clean Link Card (Zero technical params, pure short URL) */}
                         <div className="bg-black/60 border border-rose-500/30 p-3.5 rounded-2xl space-y-2 text-left shadow-lg">
                             <div className="flex items-center justify-between">
                                 <span className="text-[10px] uppercase tracking-wider text-rose-300 font-semibold flex items-center gap-1">
-                                    <Globe size={12} className="text-rose-400" /> Your Private Link
+                                    <Globe size={12} className="text-rose-400" /> Permanent Story URL
                                 </span>
                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                     ● Live
@@ -420,7 +403,6 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
                         </div>
 
-                        {/* "What's Next?" Section */}
                         <div className="bg-neutral-900/70 border border-white/5 p-3 rounded-2xl text-left text-xs text-neutral-300 space-y-1.5">
                             <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block mb-1">
                                 What's Next?
@@ -428,20 +410,19 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             <div className="grid grid-cols-1 gap-1 text-[11px]">
                                 <div className="flex items-center gap-2 text-neutral-300">
                                     <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                                    <span>Share the link with your partner</span>
+                                    <span>Share the permanent link with your partner</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-neutral-300">
                                     <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                                    <span>Copy your private keepsake link</span>
+                                    <span>Cloud media storage active (Zero Blob URLs)</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-neutral-300">
                                     <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                                    <span>Open & preview your live gift</span>
+                                    <span>Open & preview your live gift on any phone</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Expandable QR Code View */}
                         {showQrCode && (
                             <div className="p-3 rounded-2xl bg-black/80 border border-white/10 text-center space-y-2 animate-fadeIn">
                                 <div className="bg-white p-2 rounded-xl inline-block mx-auto shadow-2xl">
@@ -453,7 +434,6 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                             </div>
                         )}
 
-                        {/* Primary & Secondary Action Buttons */}
                         <div className="space-y-2 pt-1">
                             <button
                                 type="button"
@@ -485,7 +465,6 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                     </div>
                 )}
 
-                {/* STEP 4: 1.5s TRANSITION OVERLAY */}
                 {step === "opening-transition" && (
                     <div className="py-12 space-y-4 text-center animate-fadeIn">
                         <div className="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-inner">

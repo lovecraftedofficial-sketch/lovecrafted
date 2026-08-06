@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import TemplateRenderer from "@/components/TemplateRenderer";
 import UnboxingIntro from "@/components/UnboxingIntro";
 import { getTemplate } from "@/data/templateRegistry";
 import { Heart, Lock, ArrowLeft } from "lucide-react";
+import { fetchStoryFromDatabase } from "@/lib/storyStorageService";
 
 export default function ViewWebsitePage() {
     const { shareId, slug: storySlug } = useParams();
@@ -11,6 +12,18 @@ export default function ViewWebsitePage() {
 
     const activeSlug = storySlug || shareId || searchParams.get("slug") || "until-forever";
     const encodedData = searchParams.get("d");
+    const [dbStoryRecord, setDbStoryRecord] = useState(null);
+
+    // Fetch story payload from permanent database storage
+    useEffect(() => {
+        let isMounted = true;
+        fetchStoryFromDatabase(activeSlug).then((record) => {
+            if (isMounted && record) {
+                setDbStoryRecord(record);
+            }
+        });
+        return () => { isMounted = false; };
+    }, [activeSlug]);
 
     // Look up gift in user_gifts registry
     const targetGift = useMemo(() => {
@@ -26,19 +39,24 @@ export default function ViewWebsitePage() {
         return null;
     }, [activeSlug]);
 
-    const templateSlug = targetGift?.templateSlug || searchParams.get("slug") || storySlug || "until-forever";
+    const templateSlug = dbStoryRecord?.templateSlug || targetGift?.templateSlug || searchParams.get("slug") || storySlug || "until-forever";
     const entry = useMemo(() => getTemplate(templateSlug), [templateSlug]);
 
     // Published vs Private Draft Security Check
     const isPubliclyViewable = useMemo(() => {
         if (searchParams.get("active") === "true" || searchParams.get("verified") === "1" || searchParams.get("v") === "1") return true;
-        if (targetGift && targetGift.status.toLowerCase() === "published") return true;
+        if (dbStoryRecord || (targetGift && targetGift.status.toLowerCase() === "published")) return true;
         if (encodedData || storySlug || templateSlug === "until-forever") return true; // Public story links
         return false;
-    }, [searchParams, targetGift, encodedData, storySlug, templateSlug]);
+    }, [searchParams, targetGift, dbStoryRecord, encodedData, storySlug, templateSlug]);
 
     const content = useMemo(() => {
-        // First try decoding from URL parameter
+        // First priority: Database story record payload
+        if (dbStoryRecord && dbStoryRecord.content) {
+            return dbStoryRecord.content;
+        }
+
+        // Second priority: Decoded URL parameter
         if (encodedData) {
             try {
                 const cleanEncoded = decodeURIComponent(encodedData);
@@ -59,7 +77,7 @@ export default function ViewWebsitePage() {
             }
         }
 
-        // Try local draft lookup
+        // Third priority: Local draft lookup
         try {
             const draftRaw = localStorage.getItem(`lws:draft:${templateSlug}:demo`);
             if (draftRaw) {
@@ -71,7 +89,7 @@ export default function ViewWebsitePage() {
 
         // Fallback to default demo data for template
         return entry?.config?.demoData || {};
-    }, [encodedData, templateSlug, entry]);
+    }, [dbStoryRecord, encodedData, templateSlug, entry]);
 
     // If website is NOT published or pending owner activation, render 404 / Private Draft security screen
     if (!isPubliclyViewable && targetGift && targetGift.status.toLowerCase() !== "published") {
