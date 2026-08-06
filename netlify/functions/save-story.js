@@ -1,14 +1,10 @@
 /**
- * Production Netlify Serverless Story Database Saver
- * --------------------------------------------------
- * Saves complete keepsake story records to production database.
+ * Production Netlify Serverless Story Saver for Supabase
+ * Project URL: https://jkszpflktmicbwfkowqx.supabase.co
  */
 
-const { query } = require("./lib/db");
+const { getSupabaseClient } = require("./lib/supabase");
 const { generateSecureStoryId } = require("./lib/security");
-
-// Fallback in-memory map if DB connection string not supplied in env
-const memoryDb = {};
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -19,56 +15,50 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || "{}");
     const { storyId, templateSlug, title, content, ownerPhone, paymentId, invoiceRef } = body;
 
-    // Generate cryptographically secure story ID if not provided
     const finalStoryId = storyId && storyId !== "demo" ? storyId : generateSecureStoryId();
 
     const storyRecord = {
-      storyId: finalStoryId,
-      templateSlug: templateSlug || "until-forever",
+      id: finalStoryId,
+      template_slug: templateSlug || "until-forever",
       title: title || "Until Forever Keepsake",
       content: content || {},
-      ownerPhone: ownerPhone || null,
-      paymentId: paymentId || null,
-      invoiceRef: invoiceRef || null,
-      status: "Published",
-      createdAt: new Date().toISOString(),
+      owner_phone: ownerPhone || null,
+      payment_id: paymentId || null,
+      invoice_ref: invoiceRef || null,
+      status: "published",
+      updated_at: new Date().toISOString(),
     };
 
-    // Attempt Production Database Insert
-    const dbResult = await query(
-      `INSERT INTO stories (id, template_slug, title, content, owner_phone, payment_id, invoice_ref, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (id) DO UPDATE
-       SET content = EXCLUDED.content, title = EXCLUDED.title, updated_at = NOW()
-       RETURNING id;`,
-      [
-        storyRecord.storyId,
-        storyRecord.templateSlug,
-        storyRecord.title,
-        JSON.stringify(storyRecord.content),
-        storyRecord.ownerPhone,
-        storyRecord.paymentId,
-        storyRecord.invoiceRef,
-        storyRecord.status,
-      ]
-    );
+    const supabase = getSupabaseClient();
 
-    if (!dbResult) {
-      // In-memory fallback if DATABASE_URL not set
-      memoryDb[finalStoryId] = storyRecord;
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("stories")
+        .upsert(storyRecord, { onConflict: "id" })
+        .select("id");
+
+      if (error) {
+        console.error("[save-story Supabase DB Error]", error);
+        throw error;
+      }
+
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({
+          success: true,
+          storyId: finalStoryId,
+          persistedToSupabase: true,
+        }),
+      };
     }
 
     return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        success: true,
-        storyId: finalStoryId,
-        persistedToDb: !!dbResult,
-      }),
+      statusCode: 500,
+      body: JSON.stringify({ error: "SUPABASE_SERVICE_ROLE_KEY environment variable is not configured." }),
     };
   } catch (err) {
     console.error("[save-story error]", err);

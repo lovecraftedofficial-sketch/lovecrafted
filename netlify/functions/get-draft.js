@@ -1,10 +1,9 @@
 /**
- * Production Netlify Serverless Draft Retriever
- * --------------------------------------------
- * Retrieves creator draft payload by userSessionId and templateSlug.
+ * Production Netlify Serverless Draft Retriever for Supabase
+ * Project URL: https://jkszpflktmicbwfkowqx.supabase.co
  */
 
-const { query } = require("./lib/db");
+const { getSupabaseClient } = require("./lib/supabase");
 
 exports.handler = async (event) => {
   const userSessionId = event.queryStringParameters?.userSessionId;
@@ -18,13 +17,23 @@ exports.handler = async (event) => {
   }
 
   try {
-    const dbResult = await query(
-      `SELECT content, updated_at FROM drafts WHERE user_session_id = $1 AND template_slug = $2 LIMIT 1;`,
-      [userSessionId, templateSlug]
-    );
+    const supabase = getSupabaseClient();
 
-    if (dbResult && dbResult.rows && dbResult.rows.length > 0) {
-      const row = dbResult.rows[0];
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("drafts")
+        .select("content, updated_at")
+        .eq("user_session_id", userSessionId)
+        .eq("template_slug", templateSlug)
+        .single();
+
+      if (error || !data) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ error: "Draft not found in Supabase database" }),
+        };
+      }
+
       return {
         statusCode: 200,
         headers: {
@@ -33,15 +42,16 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify({
           success: true,
-          content: typeof row.content === "string" ? JSON.parse(row.content) : row.content,
-          updatedAt: row.updated_at,
+          content: typeof data.content === "string" ? JSON.parse(data.content) : data.content,
+          updatedAt: data.updated_at,
+          source: "Supabase PostgreSQL",
         }),
       };
     }
 
     return {
-      statusCode: 404,
-      body: JSON.stringify({ error: "Draft not found" }),
+      statusCode: 500,
+      body: JSON.stringify({ error: "SUPABASE_SERVICE_ROLE_KEY environment variable is not configured." }),
     };
   } catch (err) {
     console.error("[get-draft error]", err);

@@ -1,10 +1,9 @@
 /**
- * Production Netlify Serverless Story Database Retriever
- * ------------------------------------------------------
- * Retrieves complete published story payloads by storyId from production database.
+ * Production Netlify Serverless Story Retriever for Supabase
+ * Project URL: https://jkszpflktmicbwfkowqx.supabase.co
  */
 
-const { query } = require("./lib/db");
+const { getSupabaseClient } = require("./lib/supabase");
 
 exports.handler = async (event) => {
   const storyId = event.queryStringParameters?.storyId;
@@ -17,13 +16,22 @@ exports.handler = async (event) => {
   }
 
   try {
-    const dbResult = await query(
-      `SELECT id, template_slug, title, content, status, created_at FROM stories WHERE id = $1 LIMIT 1;`,
-      [storyId]
-    );
+    const supabase = getSupabaseClient();
 
-    if (dbResult && dbResult.rows && dbResult.rows.length > 0) {
-      const row = dbResult.rows[0];
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("stories")
+        .select("id, template_slug, title, content, status, created_at")
+        .eq("id", storyId)
+        .single();
+
+      if (error || !data) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ error: "Story not found in Supabase database" }),
+        };
+      }
+
       return {
         statusCode: 200,
         headers: {
@@ -32,20 +40,20 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify({
           success: true,
-          storyId: row.id,
-          templateSlug: row.template_slug,
-          title: row.title,
-          content: typeof row.content === "string" ? JSON.parse(row.content) : row.content,
-          status: row.status,
-          createdAt: row.created_at,
-          source: "database",
+          storyId: data.id,
+          templateSlug: data.template_slug,
+          title: data.title,
+          content: typeof data.content === "string" ? JSON.parse(data.content) : data.content,
+          status: data.status,
+          createdAt: data.created_at,
+          source: "Supabase PostgreSQL",
         }),
       };
     }
 
     return {
-      statusCode: 404,
-      body: JSON.stringify({ error: "Story not found in database" }),
+      statusCode: 500,
+      body: JSON.stringify({ error: "SUPABASE_SERVICE_ROLE_KEY environment variable is not configured." }),
     };
   } catch (err) {
     console.error("[get-story error]", err);
