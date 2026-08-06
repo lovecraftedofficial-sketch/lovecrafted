@@ -10,6 +10,7 @@ import Chapter6VinylPlayer from "./components/Chapter6VinylPlayer";
 import Chapter7BookOfReasons from "./components/Chapter7BookOfReasons";
 import Chapter8StarlightPlanetarium from "./components/Chapter8StarlightPlanetarium";
 import Chapter9SeasonsWeShared from "./components/Chapter9SeasonsWeShared";
+import Chapter10OpenWhen from "./components/Chapter10OpenWhen";
 
 /**
  * UntilForeverTemplate.jsx
@@ -104,8 +105,16 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
         />
       )}
 
-      {/* CHAPTER 10+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
-      {currentChapter > 9 && (
+      {/* CHAPTER 10: OPEN WHEN... (SACRED COMFORT ENVELOPES) */}
+      {currentChapter === 10 && (
+        <Chapter10OpenWhen
+          content={activeContent}
+          onComplete={() => setCurrentChapter(11)}
+        />
+      )}
+
+      {/* CHAPTER 11+: CONTINUATION PLACEHOLDER (Built Chapter-by-Chapter) */}
+      {currentChapter > 10 && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-fadeIn space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
             Chapter {currentChapter} Active
