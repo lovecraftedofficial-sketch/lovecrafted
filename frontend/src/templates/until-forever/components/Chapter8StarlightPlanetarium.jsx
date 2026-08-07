@@ -122,7 +122,7 @@ export default function Chapter8StarlightPlanetarium({ content = {}, onComplete 
   }, [activeConstellationIndex, isAwakened, currentConstellation.locked]);
 
   return (
-    <div className="relative min-h-screen bg-[#030208] text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-hidden select-none font-serif">
+    <div className="relative min-h-screen bg-[#030208] text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-x-clip select-none font-serif">
       {/* Soft Breathing Night Sky Glow */}
       <motion.div
         animate={{

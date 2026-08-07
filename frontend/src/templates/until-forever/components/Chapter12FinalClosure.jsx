@@ -28,7 +28,7 @@ export default function Chapter12FinalClosure({ content = {} }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#000000] text-rose-100 flex flex-col items-center justify-center p-6 select-none font-serif overflow-hidden">
+    <div className="relative min-h-screen bg-[#000000] text-rose-100 flex flex-col items-center justify-center p-6 select-none font-serif overflow-x-clip">
       {/* SOFT FADE TO BLACK OVERLAY */}
       <motion.div
         animate={{ opacity: fadeToBlack ? 1 : 0 }}

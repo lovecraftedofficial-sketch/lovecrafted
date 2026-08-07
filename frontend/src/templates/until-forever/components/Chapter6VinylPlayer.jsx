@@ -138,7 +138,7 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#040103] text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-hidden select-none font-serif">
+    <div className="relative min-h-screen bg-[#040103] text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-x-clip select-none font-serif">
       {/* Hidden HTML Audio for MP3 files */}
       {provider.type === "mp3" && (
         <audio ref={audioRef} src={provider.embedUrl} preload="auto" loop />

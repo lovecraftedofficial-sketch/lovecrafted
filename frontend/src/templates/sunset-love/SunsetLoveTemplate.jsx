@@ -123,7 +123,7 @@ export default function SunsetLoveTemplate(props) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0e060b] text-[#fbf3f5] font-sans selection:bg-rose-500/30 relative overflow-x-hidden pb-28">
+    <div className="min-h-screen bg-[#0e060b] text-[#fbf3f5] font-sans selection:bg-rose-500/30 relative overflow-x-clip pb-28">
       <audio ref={audioRef} src={musicUrl} loop prefetch="auto" />
 
       {/* Floating Hearts Animation Container */}

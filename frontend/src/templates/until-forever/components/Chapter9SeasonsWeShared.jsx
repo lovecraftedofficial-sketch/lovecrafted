@@ -121,7 +121,7 @@ export default function Chapter9SeasonsWeShared({ content = {}, onComplete }) {
 
   return (
     <div
-      className={`relative min-h-screen bg-gradient-to-b ${currentSeason.bgColor} text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-hidden select-none font-serif transition-colors duration-1000`}
+      className={`relative min-h-screen bg-gradient-to-b ${currentSeason.bgColor} text-rose-100 flex flex-col items-center justify-between p-4 sm:p-8 overflow-x-clip select-none font-serif transition-colors duration-1000`}
     >
       {/* Dynamic Seasonal Ambient Glow */}
       <motion.div

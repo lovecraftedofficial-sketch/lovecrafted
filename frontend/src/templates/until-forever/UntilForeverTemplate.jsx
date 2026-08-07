@@ -33,7 +33,7 @@ export default function UntilForeverTemplate({ content = {}, config = {} }) {
   const [currentChapter, setCurrentChapter] = useState(1);
 
   return (
-    <div className="min-h-screen bg-[#040103] text-white selection:bg-rose-500 selection:text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#040103] text-white selection:bg-rose-500 selection:text-white font-sans overflow-x-clip">
       {/* CHAPTER 1: THE INVITATION */}
       {currentChapter === 1 && (
         <Chapter1Invitation

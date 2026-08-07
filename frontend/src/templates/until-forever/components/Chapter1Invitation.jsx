@@ -177,7 +177,7 @@ export default function Chapter1Invitation({ content = {}, onComplete }) {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#040103] text-white flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden select-none font-serif">
+    <div className="relative min-h-screen bg-[#040103] text-white flex flex-col items-center justify-center p-4 sm:p-6 overflow-x-clip select-none font-serif">
       {/* Candlelight Warmth Bloom */}
       <motion.div
         animate={{

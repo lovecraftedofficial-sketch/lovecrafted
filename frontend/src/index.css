@@ -52,6 +52,16 @@
     border-color: hsl(var(--border));
 }
 
+html {
+    overflow-x: clip;
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-x: clip;
+    overscroll-behavior-y: none;
+}
+
 html,
 body {
     background: var(--lws-bg);
@@ -64,6 +74,10 @@ body {
         sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.overflow-x-clip {
+    overflow-x: clip;
 }
 
 body {
