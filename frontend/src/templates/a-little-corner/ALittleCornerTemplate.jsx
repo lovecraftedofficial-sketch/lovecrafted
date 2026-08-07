@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import aLittleCornerConfig from "./template.config";
+import AmbientBackground from "./components/AmbientBackground";
 import Hero from "./components/Hero";
 import TodaysNote from "./components/TodaysNote";
 import CareCorner from "./components/CareCorner";
@@ -37,6 +38,9 @@ export default function ALittleCornerTemplate({ content = {}, config = {} }) {
 
   return (
     <div className="min-h-screen bg-[#16080c] text-white font-sans selection:bg-[#4a0e20] selection:text-white relative overflow-x-clip">
+      {/* 60fps GPU-Accelerated Intimate Ambient Background */}
+      <AmbientBackground />
+
       {/* Sticky Top Comfort Navigation */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-[#16080c]/80 backdrop-blur-md border-b border-[#f7c5d1]/10 px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -61,23 +65,6 @@ export default function ALittleCornerTemplate({ content = {}, config = {} }) {
           </nav>
         </div>
       </header>
-
-      {/* Floating Soft Hearts Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="floating-heart"
-            style={{
-              left: `${15 + i * 15}%`,
-              animationDelay: `${i * 3}s`,
-              animationDuration: `${16 + i * 2}s`
-            }}
-          >
-            <Heart size={16 + (i % 3) * 6} />
-          </div>
-        ))}
-      </div>
 
       {/* Section 1: Hero */}
       <Hero content={activeContent} onNavigate={scrollToSection} />
