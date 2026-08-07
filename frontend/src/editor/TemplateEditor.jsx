@@ -230,13 +230,28 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
     return Math.min(100, Math.round((filledCount / schema.length) * 100));
   }, [schema, content]);
 
+  const isSectionEditor = config.editorType === "sections";
+
+  const sections = useMemo(() => {
+    if (config.editorSections && Array.isArray(config.editorSections)) {
+      return [
+        { id: "all", label: "All Sections", icon: LayoutGrid, keys: [] },
+        ...config.editorSections.map((s) => ({
+          ...s,
+          icon: s.icon || Heart,
+        })),
+      ];
+    }
+    return CHAPTER_SECTIONS;
+  }, [config.editorSections]);
+
   // Filter fields based on active section
   const displayedFields = useMemo(() => {
     if (activeSection === "all") return schema;
-    const currentDef = CHAPTER_SECTIONS.find((s) => s.id === activeSection);
+    const currentDef = sections.find((s) => s.id === activeSection);
     if (!currentDef || !currentDef.keys) return schema;
     return schema.filter((f) => currentDef.keys.includes(f.key));
-  }, [schema, activeSection]);
+  }, [schema, activeSection, sections]);
 
   // Format Save Status Text
   const saveStatusText = useMemo(() => {
@@ -380,17 +395,17 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
             mobileMode === "edit" ? "block" : "hidden md:block"
           }`}
         >
-          {/* Chapter Selector Navigation Tabs */}
+          {/* Section Selector Navigation Tabs */}
           <div className="space-y-3">
             <div className="flex items-center justify-between text-[11px] uppercase tracking-widest text-amber-300/80 font-mono">
-              <span>Chapter Workspaces</span>
-              <span>12 Chapters</span>
+              <span>{isSectionEditor ? "Customize Your Story" : "Chapter Workspaces"}</span>
+              <span>{isSectionEditor ? `${sections.length - 1} Sections` : "12 Chapters"}</span>
             </div>
 
-            {/* Horizontal Scrollable Chapter Selector */}
+            {/* Horizontal Scrollable Section Selector */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none snap-x">
-              {CHAPTER_SECTIONS.map((section) => {
-                const IconComp = section.icon;
+              {sections.map((section) => {
+                const IconComp = section.icon || Heart;
                 const isSelected = activeSection === section.id;
 
                 return (
@@ -416,7 +431,7 @@ export default function TemplateEditor({ templateEntry, siteId = "demo" }) {
           <div className="space-y-5 pt-2">
             <div className="text-xs font-mono uppercase tracking-wider text-rose-300/80 flex items-center justify-between border-b border-rose-500/15 pb-2">
               <span>
-                {CHAPTER_SECTIONS.find((s) => s.id === activeSection)?.label || "Custom Memory Content"}
+                {sections.find((s) => s.id === activeSection)?.label || "Custom Story Content"}
               </span>
               <span className="text-[10px] text-neutral-500 font-normal">
                 {displayedFields.length} field{displayedFields.length === 1 ? "" : "s"}

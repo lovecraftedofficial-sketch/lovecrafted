@@ -30,6 +30,54 @@ const aLittleCornerConfig = {
     "Editorial Polaroid Memory Gallery & Lightbox",
     "Unfolding Parchment Private Love Letter",
   ],
+  editorType: "sections",
+  editorSections: [
+    {
+      id: "hero",
+      label: "Hero",
+      keys: ["partnerName", "senderName", "heroGreeting", "heroHeadline", "heroSubtext", "heroImage", "heroBadge"]
+    },
+    {
+      id: "note",
+      label: "Today's Little Note",
+      keys: ["noteSectionTitle", "noteSectionSubtitle", "noteSignature"]
+    },
+    {
+      id: "care",
+      label: "Little Care Corner",
+      keys: ["careSectionTitle", "careSectionSubtitle", "careItem1", "careItem2", "careItem3", "careItem4", "careItem5", "careItem6"]
+    },
+    {
+      id: "songs",
+      label: "Our Sanctuary Songs",
+      keys: ["songsSectionTitle", "songsSectionSubtitle", "featuredSongTitle", "featuredSongArtist", "featuredSongUrl", "featuredSongCover"]
+    },
+    {
+      id: "reasons",
+      label: "Reasons I Love You",
+      keys: ["reasonsSectionTitle", "reasonsSectionSubtitle", "reason1Title", "reason1Text", "reason2Title", "reason2Text", "reason3Title", "reason3Text", "reason4Title", "reason4Text"]
+    },
+    {
+      id: "openwhen",
+      label: "Open When...",
+      keys: ["openSectionTitle", "openSectionSubtitle", "open1Title", "open1Text", "open2Title", "open2Text", "open3Title", "open3Text"]
+    },
+    {
+      id: "gallery",
+      label: "Memory Gallery",
+      keys: ["gallerySectionTitle", "gallerySectionSubtitle", "photo1Url", "photo1Title", "photo1Date", "photo2Url", "photo2Title", "photo2Date"]
+    },
+    {
+      id: "letter",
+      label: "Private Letter",
+      keys: ["letterSectionTitle", "letterHeading", "letterBody", "letterSignature"]
+    },
+    {
+      id: "ending",
+      label: "Ending",
+      keys: ["endingMessage", "endingCoda", "bgMusicUrl"]
+    }
+  ],
   editableSchema: [
     // SECTION 1: HERO
     { key: "partnerName", label: "Partner Name / Beloved", type: "text", defaultValue: "Ananya" },
