@@ -10,8 +10,17 @@ import auroraSampleConfig from "@/templates/aurora-sample/template.config";
 import SunsetLoveTemplate from "../templates/sunset-love/SunsetLoveTemplate";
 import UntilForeverTemplate from "../templates/until-forever/UntilForeverTemplate";
 import untilForeverConfig from "../templates/until-forever/template.config";
+import ALittleCornerTemplate from "../templates/a-little-corner/ALittleCornerTemplate";
+import aLittleCornerConfig from "../templates/a-little-corner/template.config";
 
 export const templateRegistry = {
+  // A Little Corner Intimate Comfort Entry
+  "a-little-corner": {
+    component: ALittleCornerTemplate,
+    comingSoon: false,
+    config: aLittleCornerConfig,
+  },
+
   // Until Forever Flagship Experience Entry
   "until-forever": {
     component: UntilForeverTemplate,
