@@ -18,7 +18,7 @@ const untilForeverConfig = {
   description:
     "LoveCrafted's flagship 12-chapter interactive love story experience. Featuring wax-sealed handwritten letters, scattered 3D scrapbook polaroids, situational voice memory cards, interactive starry night sky, vinyl song player, live relationship counter, and cinematic movie credits.",
   coverImage:
-    "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80",
+    "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1600&q=80",
   features: [
     "12-Chapter Interactive Cinematic Story Arc",
     "Tactile Wax-Sealed 3D Invitation Envelope",

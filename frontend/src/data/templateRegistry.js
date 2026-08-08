@@ -201,7 +201,7 @@ export const templateRegistry = {
       description:
         "A regal, gold-and-burgundy love story with couple gallery, relationship timeline, a royal letter, and quotes.",
       coverImage:
-        "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1509927079599-421242923f07?auto=format&fit=crop&w=1600&q=80",
       features: ["Couple gallery", "Timeline", "Royal letter", "Quotes"],
       editableSchema: [],
       demoData: {},

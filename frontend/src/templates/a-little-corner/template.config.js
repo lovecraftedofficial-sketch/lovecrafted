@@ -18,7 +18,7 @@ const aLittleCornerConfig = {
   description:
     "A deeply personal, comforting, and intimate digital safe haven for the person you love. Featuring a random love note generator (50+ editable notes), daily self-care checklist, song player with Spotify support, interactive reasons flip cards, open-when comfort cards, polaroid gallery, and an unwrap envelope letter.",
   coverImage:
-    "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80",
+    "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1600&q=80",
   features: [
     "Deeply Personal Intimate Comfort Experience",
     "Single-Page Natural Document Scrolling",

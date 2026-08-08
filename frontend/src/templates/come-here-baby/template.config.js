@@ -22,7 +22,7 @@ const comeHereBabyConfig = {
   description:
     "A cute, deeply romantic, nurturing, and emotionally comforting digital gift made by a boyfriend for his girlfriend when she is tired, exhausted, moody, sad, overwhelmed, or having a difficult day. Features a random love-note generator, pamper checklist, Spotify music player, things I love cards, 10 WhatsApp request actions, love jar, open-when notes, and a private letter.",
   coverImage:
-    "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80",
+    "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1600&q=80",
   features: [
     "Deeply Personal Cute & Nurturing Comfort Experience",
     "60fps Ambient Floating Hearts, Petals & Bokeh Sparkles",
