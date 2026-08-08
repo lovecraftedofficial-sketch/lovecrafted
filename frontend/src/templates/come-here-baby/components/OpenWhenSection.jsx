@@ -8,12 +8,11 @@ export default function OpenWhenSection({ content = {} }) {
 
   const cards = [
     { title: "Open when you're tired...", note: content.openTired || "Hey baby. Take off your shoes, lie down, and let your body rest. You've done enough for today. I'm so proud of how hard you try every day." },
-    { title: "Open when you're hurting...", note: content.openHurting || "If your body or heart is hurting today, I wish I could hold your hand and carry it for you. Just lie still, breathe slowly, and let me pamper you." },
-    { title: "Open when you're angry...", note: content.openAngry || "You're allowed to be mad at the world today! Vent to me all you want. I won't get defensive, I'm on your team forever." },
-    { title: "Open when you feel like crying...", note: content.openCrying || "If you're reading this while crying, let the tears come. You don't have to hide them from me. I wish I could sit beside you right now, hold your hand, and stay until you feel lighter. Just breathe, baby. I'm here." },
+    { title: "Open when you're sad...", note: content.openSad || "If you're feeling sad right now, come sit beside me. You don't have to explain why. I'll just hold your hand until it feels lighter." },
     { title: "Open when you miss me...", note: content.openMiss || "Close your eyes for three seconds. I am thinking of you right at this exact moment. My arms are wrapped right around you." },
+    { title: "Open when you're angry...", note: content.openAngry || "You're allowed to be mad at the world today! Vent to me all you want. I won't get defensive, I'm on your team forever." },
     { title: "Open when you need reassurance...", note: content.openReassurance || "You are safe, you are cherished, and nothing you do or feel today will ever change how deeply I love you." },
-    { title: "Open when you just want to feel loved...", note: content.openLoved || "You are my favorite human in the entire universe. Thank you for being my girl." },
+    { title: "Open when you need a little love...", note: content.openLoved || "You are my favorite human in the entire universe. Thank you for being my girl." },
   ];
 
   const [openIdx, setOpenIdx] = useState(null);

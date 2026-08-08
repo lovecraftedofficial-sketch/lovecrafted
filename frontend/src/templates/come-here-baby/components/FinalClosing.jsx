@@ -2,11 +2,11 @@ import React from "react";
 import { Heart } from "lucide-react";
 
 export default function FinalClosing({ content = {} }) {
-  const finalTitle = content.finalTitle || "Okay baby, that's enough for today. ❤️";
-  const finalLine1 = content.finalLine1 || "Go rest now.";
-  const finalLine2 = content.finalLine2 || "Take care of yourself for me.";
-  const finalLine3 = content.finalLine3 || "And remember...\nYou are loved.\nYou are safe.\nYou are precious to me.";
-  const finalLine4 = content.finalLine4 || "I'll be right here whenever you need me.";
+  const finalTitle = content.finalTitle || "Okay baby, now go get some rest. ❤️";
+  const finalLine1 = content.finalLine1 || "Take care of yourself for me.";
+  const finalLine2 = content.finalLine2 || "And remember...";
+  const finalLine3 = content.finalLine3 || "You are loved.\nYou are precious to me.";
+  const finalLine4 = content.finalLine4 || "And I'm right here whenever you need me.";
   const finalCoda = content.finalCoda || "Made with all my love, just for you. ❤️";
 
   return (
@@ -21,7 +21,7 @@ export default function FinalClosing({ content = {} }) {
 
           <div className="space-y-2 text-[#f8b3c3]/90 font-serif text-lg sm:text-xl italic leading-relaxed whitespace-pre-line pt-2">
             <p>{finalLine1}</p>
-            <p>{finalLine2}</p>
+            <p className="text-white/80">{finalLine2}</p>
             <p className="text-white font-medium pt-2">{finalLine3}</p>
             <p className="pt-2">{finalLine4}</p>
           </div>

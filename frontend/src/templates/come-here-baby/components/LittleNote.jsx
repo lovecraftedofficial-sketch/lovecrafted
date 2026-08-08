@@ -7,14 +7,14 @@ export default function LittleNote({ content = {} }) {
   const notesSubtitle = content.notesSubtitle || "Whenever you need a tiny reminder that you're loved.";
 
   const notesList = [
-    content.note1 || "Baby, you don't have to do everything today. Rest a little. I'll still be proud of you. ❤️",
-    content.note2 || "You're allowed to be grumpy today. I still think you're the cutest.",
-    content.note3 || "Drink some water for me, okay? Yes, that's an order from your boyfriend. 🤭❤️",
-    content.note4 || "If today hurts a little more than usual, come sit here with me for a while.",
-    content.note5 || "You don't have to pretend you're okay with me.",
-    content.note6 || "Even on your most tired days, you're still my favorite person.",
-    content.note7 || "Nothing about one difficult day can make me love you less.",
-    content.note8 || "Come back here whenever you need a little extra love.",
+    content.note1 || "Drink some water for me, okay? ❤️",
+    content.note2 || "Today you get to be a little lazy. I won't complain.",
+    content.note3 || "Even your grumpy face is cute.",
+    content.note4 || "You don't have to pretend you're okay with me.",
+    content.note5 || "I'm proud of you, baby.",
+    content.note6 || "If today hurts a little more than usual, come sit here with me for a while.",
+    content.note7 || "Even on your most tired days, you're still my favorite person.",
+    content.note8 || "Nothing about one difficult day can make me love you less.",
   ];
 
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -29,7 +29,7 @@ export default function LittleNote({ content = {} }) {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3d0a18] border border-[#f8b3c3]/20 text-xs tracking-widest text-[#f8b3c3]">
             <Heart size={12} className="fill-[#f8b3c3]" />
-            <span>Random Whisper of Love</span>
+            <span>Whisper of Love</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-serif text-white font-medium">
             {notesTitle}

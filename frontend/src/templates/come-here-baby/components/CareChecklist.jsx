@@ -7,12 +7,12 @@ export default function CareChecklist({ content = {} }) {
   const careSubtitle = content.careSubtitle || "Just a few tiny things before you go back to being my adorable little grump. 🥺❤️";
 
   const items = [
-    content.careItem1 || "💧 Drink some water for me",
-    content.careItem2 || "🍫 Have something you like",
-    content.careItem3 || "🛌 Get some proper rest",
-    content.careItem4 || "🫂 Take your virtual hug",
+    content.careItem1 || "💧 Drink some water",
+    content.careItem2 || "🍫 Have something yummy",
+    content.careItem3 || "🛌 Get some rest",
+    content.careItem4 || "🫂 Take a hug",
     content.careItem5 || "🌸 Take a little break",
-    content.careItem6 || "🥺 Don't be too hard on yourself",
+    content.careItem6 || "❤️ Let me spoil you today",
   ];
 
   const todayKey = `fmb_care_${new Date().toISOString().slice(0, 10)}`;
