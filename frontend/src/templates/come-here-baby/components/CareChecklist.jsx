@@ -3,20 +3,19 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Heart, Sparkles } from "lucide-react";
 
 export default function CareChecklist({ content = {} }) {
-  const careSectionTitle = content.careSectionTitle || "Today, let me worry about the little things.";
-  const careSectionSubtitle = content.careSectionSubtitle || "Tick them off as you go. No rush, no pressure.";
+  const careTitle = content.careTitle || "Okay Baby, Let Me Take Care of You";
+  const careSubtitle = content.careSubtitle || "Just a few tiny things before you go back to being my adorable little grump. 🥺❤️";
 
   const items = [
-    content.careItem1 || "💧 Drink some warm water",
-    content.careItem2 || "🍫 Have something sweet you love",
-    content.careItem3 || "🛏 Get under your softest blanket",
-    content.careItem4 || "🔥 Keep your tummy warm",
-    content.careItem5 || "🍲 Eat a warm, comforting meal",
-    content.careItem6 || "😴 Rest without feeling guilty for a second",
-    content.careItem7 || "🫂 Come get your extra cuddles",
+    content.careItem1 || "💧 Drink some water for me",
+    content.careItem2 || "🍫 Have something you like",
+    content.careItem3 || "🛌 Get some proper rest",
+    content.careItem4 || "🫂 Take your virtual hug",
+    content.careItem5 || "🌸 Take a little break",
+    content.careItem6 || "🥺 Don't be too hard on yourself",
   ];
 
-  const todayKey = `chb_care_${new Date().toISOString().slice(0, 10)}`;
+  const todayKey = `fmb_care_${new Date().toISOString().slice(0, 10)}`;
 
   const [checked, setChecked] = useState(() => {
     try {
@@ -49,20 +48,20 @@ export default function CareChecklist({ content = {} }) {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3d0a18] border border-[#f8b3c3]/20 text-xs tracking-widest text-[#f8b3c3]">
             <Heart size={12} className="fill-[#f8b3c3]" />
-            <span>Gentle Spoiling</span>
+            <span>Pamper Corner</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-serif text-white font-medium">
-            {careSectionTitle}
+            {careTitle}
           </h2>
           <p className="text-sm sm:text-base text-[#f8b3c3]/70 max-w-lg mx-auto font-light">
-            {careSectionSubtitle}
+            {careSubtitle}
           </p>
         </div>
 
-        {/* Baby Care Progress Indicator */}
+        {/* Care Progress Indicator */}
         <div className="max-w-md mx-auto space-y-2 text-left">
           <div className="flex justify-between text-xs text-[#f8b3c3]/80 font-mono">
-            <span>Baby care: {progressPercent}% {progressPercent === 100 ? "♡" : ""}</span>
+            <span>Pampering: {progressPercent}% {progressPercent === 100 ? "❤️" : ""}</span>
             <span>{completedCount} of {items.length} done</span>
           </div>
           <div className="h-3.5 w-full bg-[#2a0c15] rounded-full overflow-hidden border border-[#f8b3c3]/20">
@@ -111,7 +110,7 @@ export default function CareChecklist({ content = {} }) {
             className="p-5 rounded-2xl bg-[#3d0a18]/60 border border-[#f8b3c3]/40 text-sm font-serif italic text-white flex items-center justify-center gap-2"
           >
             <Sparkles size={18} className="text-[#f8b3c3]" />
-            <span>Baby care 100% complete! You are so deeply loved and pampered today. ♡</span>
+            <span>Good baby. ❤️ That's my girl! See? I'm taking care of you even from here.</span>
           </motion.div>
         )}
       </div>

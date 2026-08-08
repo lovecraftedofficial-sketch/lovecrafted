@@ -2,17 +2,15 @@ import React from "react";
 import comeHereBabyConfig from "./template.config";
 import AmbientBackground from "./components/AmbientBackground";
 import Hero from "./components/Hero";
-import MoodSelector from "./components/MoodSelector";
+import LittleNote from "./components/LittleNote";
 import CareChecklist from "./components/CareChecklist";
-import MoodyReassurance from "./components/MoodyReassurance";
-import PickYourNeed from "./components/PickYourNeed";
-import ThingsILove from "./components/ThingsILove";
-import TakePainAway from "./components/TakePainAway";
-import ComfortBox from "./components/ComfortBox";
-import PrivateLetter from "./components/PrivateLetter";
-import WhenCrying from "./components/WhenCrying";
 import OurPlaylist from "./components/OurPlaylist";
-import FinalMessage from "./components/FinalMessage";
+import ThingsILove from "./components/ThingsILove";
+import TellMeWhatYouNeed from "./components/TellMeWhatYouNeed";
+import LoveJar from "./components/LoveJar";
+import OpenWhenSection from "./components/OpenWhenSection";
+import PrivateLetter from "./components/PrivateLetter";
+import FinalClosing from "./components/FinalClosing";
 import { Heart } from "lucide-react";
 
 export default function ComeHereBabyTemplate({ content = {}, config = {} }) {
@@ -23,15 +21,14 @@ export default function ComeHereBabyTemplate({ content = {}, config = {} }) {
 
   const navItems = [
     { id: "hero", label: "Home" },
-    { id: "mood", label: "Mood" },
+    { id: "notes", label: "Note" },
     { id: "care", label: "Care" },
-    { id: "moody", label: "Moody" },
-    { id: "needs", label: "Needs" },
+    { id: "songs", label: "Songs" },
     { id: "things", label: "Love" },
-    { id: "pain", label: "Comfort" },
-    { id: "box", label: "Box" },
+    { id: "needs", label: "Needs" },
+    { id: "jar", label: "Love Jar" },
+    { id: "openwhen", label: "Open When" },
     { id: "letter", label: "Letter" },
-    { id: "playlist", label: "Songs" },
   ];
 
   const scrollToSection = (id) => {
@@ -46,7 +43,7 @@ export default function ComeHereBabyTemplate({ content = {}, config = {} }) {
       {/* 60fps Ambient Background Atmosphere */}
       <AmbientBackground />
 
-      {/* Sticky Top Comfort Navigation */}
+      {/* Sticky Top Navigation */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-[#1c080e]/85 backdrop-blur-md border-b border-[#f8b3c3]/10 px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button
@@ -54,7 +51,7 @@ export default function ComeHereBabyTemplate({ content = {}, config = {} }) {
             className="flex items-center gap-2 text-sm font-serif font-medium text-white cursor-pointer"
           >
             <Heart size={16} className="fill-[#f8b3c3] text-[#f8b3c3]" />
-            <span>Come Here, Baby</span>
+            <span>For My Baby</span>
           </button>
 
           <nav className="hidden md:flex items-center gap-5">
@@ -71,19 +68,17 @@ export default function ComeHereBabyTemplate({ content = {}, config = {} }) {
         </div>
       </header>
 
-      {/* 12 Sections */}
+      {/* 10 Sections */}
       <Hero content={activeContent} onNavigate={scrollToSection} />
-      <MoodSelector content={activeContent} />
+      <LittleNote content={activeContent} />
       <CareChecklist content={activeContent} />
-      <MoodyReassurance content={activeContent} />
-      <PickYourNeed content={activeContent} />
-      <ThingsILove content={activeContent} />
-      <TakePainAway content={activeContent} />
-      <ComfortBox content={activeContent} />
-      <PrivateLetter content={activeContent} />
-      <WhenCrying content={activeContent} />
       <OurPlaylist content={activeContent} />
-      <FinalMessage content={activeContent} />
+      <ThingsILove content={activeContent} />
+      <TellMeWhatYouNeed content={activeContent} />
+      <LoveJar content={activeContent} />
+      <OpenWhenSection content={activeContent} />
+      <PrivateLetter content={activeContent} />
+      <FinalClosing content={activeContent} />
     </div>
   );
 }
