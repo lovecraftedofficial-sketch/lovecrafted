@@ -1,21 +1,59 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Sparkles, X } from "lucide-react";
+import { Gift, AlertCircle } from "lucide-react";
 
 export default function ComfortBox({ content = {} }) {
   const boxSectionTitle = content.boxSectionTitle || "Your Little Virtual Comfort Box";
-  const boxSectionSubtitle = content.boxSectionSubtitle || "Open any gift inside whenever you need a boost.";
+  const boxSectionSubtitle = content.boxSectionSubtitle || "Tap any gift below to send an instant WhatsApp request to my phone.";
+
+  const [toastError, setToastError] = useState(null);
 
   const gifts = [
-    { icon: "🍫", label: "Chocolate", msg: content.boxChocolateMsg || "🍫 Emergency chocolate delivered right to your heart. No questions asked." },
-    { icon: "🧸", label: "Cuddle", msg: content.boxCuddleMsg || "🧸 Come here. You're not escaping this long, tight hug." },
-    { icon: "💋", label: "Kiss", msg: content.boxKissMsg || "💋 One forehead kiss, two cheek kisses, and a long one on your head." },
-    { icon: "😂", label: "Bad Joke", msg: content.boxJokeMsg || "😂 Why did the blanket go to school? Because it wanted to be a little smarter! (Okay bad joke, but smile for me?)" },
-    { icon: "💌", label: "Love Note", msg: content.boxNoteMsg || "💌 Reminder: You are the best thing that ever happened to me." },
-    { icon: "🫂", label: "Big Hug", msg: content.boxHugMsg || "🫂 Squeezing you tight until all the tension melts out of your shoulders." },
+    {
+      icon: "🍫",
+      label: "Chocolate",
+      reqText: content.boxChocolateReq || "Baby, mujhe chocolate chahiye 🥺🍫 Please pamper me a little.",
+    },
+    {
+      icon: "🧸",
+      label: "Cuddle",
+      reqText: content.boxCuddleReq || "I need my cuddle right now 🥺🧸 Come here and hold me.",
+    },
+    {
+      icon: "💋",
+      label: "Kiss",
+      reqText: content.boxKissReq || "I need a kiss from you 🥺💋 Please come here.",
+    },
+    {
+      icon: "😂",
+      label: "Bad Joke",
+      reqText: content.boxJokeReq || "I'm having a bad day 😭😂 Make me laugh with your worst joke.",
+    },
+    {
+      icon: "💌",
+      label: "Love Note",
+      reqText: content.boxNoteReq || "I need a little love note from you 🥺💌 Tell me something sweet.",
+    },
+    {
+      icon: "🫂",
+      label: "Big Hug",
+      reqText: content.boxHugReq || "I need a really big hug right now 🥺🫂 Don't let go.",
+    },
   ];
 
-  const [activeGift, setActiveGift] = useState(null);
+  const handleGiftClick = (gift) => {
+    const rawPhone = content.whatsappPhoneNumber || content.partnerWhatsAppNumber || content.phoneNumber;
+    const cleanPhone = rawPhone ? String(rawPhone).replace(/\D/g, "") : "";
+
+    if (!cleanPhone || cleanPhone.length < 7) {
+      setToastError("Add your WhatsApp number in customization settings first.");
+      setTimeout(() => setToastError(null), 4000);
+      return;
+    }
+
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(gift.reqText)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <section id="comfortbox" className="relative min-h-screen bg-[#1c080e] text-[#f8b3c3] flex flex-col items-center justify-center p-6 sm:p-12 overflow-x-clip font-sans">
@@ -33,14 +71,29 @@ export default function ComfortBox({ content = {} }) {
           </p>
         </div>
 
-        {/* Gift Grid */}
+        {/* Missing Phone Number Toast Error Banner */}
+        <AnimatePresence>
+          {toastError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="max-w-md mx-auto p-4 rounded-2xl bg-[#3d0a18] border border-[#f8b3c3]/50 text-white text-xs font-serif flex items-center justify-center gap-2 shadow-xl"
+            >
+              <AlertCircle size={16} className="text-[#f8b3c3] shrink-0" />
+              <span>{toastError}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Gift Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
           {gifts.map((g, idx) => (
             <motion.button
               key={idx}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setActiveGift(g)}
+              onClick={() => handleGiftClick(g)}
               className="p-6 rounded-3xl bg-[#2a0c15] border border-[#f8b3c3]/20 hover:border-[#f8b3c3]/40 shadow-xl space-y-2 text-center cursor-pointer transition-all"
             >
               <div className="text-4xl">{g.icon}</div>
@@ -49,39 +102,6 @@ export default function ComfortBox({ content = {} }) {
           ))}
         </div>
       </div>
-
-      {/* Gift Unseal Modal */}
-      <AnimatePresence>
-        {activeGift && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActiveGift(null)}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 10 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 10 }}
-              onClick={(e) => e.stopPropagation()}
-              className="max-w-md w-full bg-[#2a0c15] p-8 rounded-[2.5rem] border border-[#f8b3c3]/40 shadow-2xl space-y-4 text-center relative"
-            >
-              <button
-                onClick={() => setActiveGift(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/40 text-[#f8b3c3] hover:text-white cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-              <div className="text-5xl">{activeGift.icon}</div>
-              <h3 className="text-xl font-serif text-white">{activeGift.label} Delivered</h3>
-              <p className="text-base font-serif italic text-[#f8b3c3] leading-relaxed pt-1">
-                “{activeGift.msg}”
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

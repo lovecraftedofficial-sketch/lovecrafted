@@ -16,17 +16,17 @@ const comeHereBabyConfig = {
   price: 2999,
   currency: "INR",
   description:
-    "A cute, deeply romantic, and emotionally comforting digital haven created for the girl you love on difficult or low-energy days. Features interactive mood responses, care checklist, mood-swing reassurance cards, virtual comfort box, 'if I could take the pain away' centerpiece, and an intimate love letter.",
+    "A cute, deeply romantic, and emotionally comforting digital haven created for the girl you love on difficult or low-energy days. Features interactive WhatsApp request gift cards, mood responses, care checklist, mood-swing reassurance cards, 'if I could take the pain away' centerpiece, and an intimate love letter.",
   coverImage:
     "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80",
   features: [
     "Deeply Personal Cute & Romantic Comfort Experience",
     "60fps Floating Hearts, Petals, Bokeh & Star Sparkles",
+    "WhatsApp Direct Comfort Gift Request Cards (Chocolate, Hugs, Kisses)",
     "Interactive Mood Selector with Instant Loving Responses",
     "Playful 'Baby Care' Checklist with Progress Tracking",
     "Tactile 'Allowed to be Moody' Reassurance Cards",
     "Pick What You Need Choice Cards (Cuddles, Kisses, Quiet)",
-    "Interactive Virtual Comfort Box (Chocolate, Hugs, Jokes)",
     "Emotional Centerpiece: 'If I Could Take The Pain Away'",
     "Unfolding Parchment Love Letter & Comfort Playlist",
   ],
@@ -70,7 +70,17 @@ const comeHereBabyConfig = {
     {
       id: "comfortbox",
       label: "8. Comfort Box",
-      keys: ["boxSectionTitle", "boxSectionSubtitle", "boxChocolateMsg", "boxCuddleMsg", "boxKissMsg", "boxJokeMsg", "boxNoteMsg", "boxHugMsg"]
+      keys: [
+        "boxSectionTitle",
+        "boxSectionSubtitle",
+        "whatsappPhoneNumber",
+        "boxChocolateReq",
+        "boxCuddleReq",
+        "boxKissReq",
+        "boxJokeReq",
+        "boxNoteReq",
+        "boxHugReq"
+      ]
     },
     {
       id: "letter",
@@ -173,15 +183,16 @@ const comeHereBabyConfig = {
     { key: "painSubheading", label: "Pain Subheading", type: "text", defaultValue: "I would. Without a single second of hesitation." },
     { key: "painParagraph", label: "Pain Heartfelt Paragraph", type: "textarea", defaultValue: "If I could trade places with you for a day, I would do it without thinking twice. I hate knowing you're hurting and not being able to simply take it away. So until I can, let me be here. Let me listen. Let me hold you. Let me remind you that you don't have to carry the hard parts alone." },
 
-    // SECTION 8: COMFORT BOX
+    // SECTION 8: COMFORT BOX (WHATSAPP REQUEST ACTIONS)
     { key: "boxSectionTitle", label: "Comfort Box Title", type: "text", defaultValue: "Your Little Virtual Comfort Box" },
-    { key: "boxSectionSubtitle", label: "Comfort Box Subtitle", type: "text", defaultValue: "Open any gift inside whenever you need a boost." },
-    { key: "boxChocolateMsg", label: "Chocolate Message", type: "textarea", defaultValue: "🍫 Emergency chocolate delivered right to your heart. No questions asked." },
-    { key: "boxCuddleMsg", label: "Cuddle Message", type: "textarea", defaultValue: "🧸 Come here. You're not escaping this long, tight hug." },
-    { key: "boxKissMsg", label: "Kiss Message", type: "textarea", defaultValue: "💋 One forehead kiss, two cheek kisses, and a long one on your head." },
-    { key: "boxJokeMsg", label: "Joke Message", type: "textarea", defaultValue: "😂 Why did the blanket go to school? Because it wanted to be a little smarter! (Okay bad joke, but smile for me?)" },
-    { key: "boxNoteMsg", label: "Note Message", type: "textarea", defaultValue: "💌 Reminder: You are the best thing that ever happened to me." },
-    { key: "boxHugMsg", label: "Hug Message", type: "textarea", defaultValue: "🫂 Squeezing you tight until all the tension melts out of your shoulders." },
+    { key: "boxSectionSubtitle", label: "Comfort Box Subtitle", type: "text", defaultValue: "Tap any gift below to send an instant WhatsApp request to my phone." },
+    { key: "whatsappPhoneNumber", label: "Partner WhatsApp Number", type: "text", defaultValue: "919876543210", placeholder: "e.g. 919876543210", helpText: "Include country code, without + or spaces. Example: 919876543210" },
+    { key: "boxChocolateReq", label: "Chocolate WhatsApp Request Message", type: "textarea", defaultValue: "Baby, mujhe chocolate chahiye 🥺🍫 Please pamper me a little." },
+    { key: "boxCuddleReq", label: "Cuddle WhatsApp Request Message", type: "textarea", defaultValue: "I need my cuddle right now 🥺🧸 Come here and hold me." },
+    { key: "boxKissReq", label: "Kiss WhatsApp Request Message", type: "textarea", defaultValue: "I need a kiss from you 🥺💋 Please come here." },
+    { key: "boxJokeReq", label: "Bad Joke WhatsApp Request Message", type: "textarea", defaultValue: "I'm having a bad day 😭😂 Make me laugh with your worst joke." },
+    { key: "boxNoteReq", label: "Love Note WhatsApp Request Message", type: "textarea", defaultValue: "I need a little love note from you 🥺💌 Tell me something sweet." },
+    { key: "boxHugReq", label: "Big Hug WhatsApp Request Message", type: "textarea", defaultValue: "I need a really big hug right now 🥺🫂 Don't let go." },
 
     // SECTION 9: PRIVATE LETTER
     { key: "letterSectionTitle", label: "Private Letter Title", type: "text", defaultValue: "One Thing I Need You To Know" },
@@ -290,13 +301,14 @@ const comeHereBabyConfig = {
     painParagraph: "If I could trade places with you for a day, I would do it without thinking twice. I hate knowing you're hurting and not being able to simply take it away. So until I can, let me be here. Let me listen. Let me hold you. Let me remind you that you don't have to carry the hard parts alone.",
 
     boxSectionTitle: "Your Little Virtual Comfort Box",
-    boxSectionSubtitle: "Open any gift inside whenever you need a boost.",
-    boxChocolateMsg: "🍫 Emergency chocolate delivered right to your heart. No questions asked.",
-    boxCuddleMsg: "🧸 Come here. You're not escaping this long, tight hug.",
-    boxKissMsg: "💋 One forehead kiss, two cheek kisses, and a long one on your head.",
-    boxJokeMsg: "😂 Why did the blanket go to school? Because it wanted to be a little smarter! (Okay bad joke, but smile for me?)",
-    boxNoteMsg: "💌 Reminder: You are the best thing that ever happened to me.",
-    boxHugMsg: "🫂 Squeezing you tight until all the tension melts out of your shoulders.",
+    boxSectionSubtitle: "Tap any gift below to send an instant WhatsApp request to my phone.",
+    whatsappPhoneNumber: "919876543210",
+    boxChocolateReq: "Baby, mujhe chocolate chahiye 🥺🍫 Please pamper me a little.",
+    boxCuddleReq: "I need my cuddle right now 🥺🧸 Come here and hold me.",
+    boxKissReq: "I need a kiss from you 🥺💋 Please come here.",
+    boxJokeReq: "I'm having a bad day 😭😂 Make me laugh with your worst joke.",
+    boxNoteReq: "I need a little love note from you 🥺💌 Tell me something sweet.",
+    boxHugReq: "I need a really big hug right now 🥺🫂 Don't let go.",
 
     letterSectionTitle: "One Thing I Need You To Know",
     letterHeading: "My Dearest Ananya,",
