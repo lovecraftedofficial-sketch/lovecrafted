@@ -24,6 +24,7 @@ import {
 import { DASHBOARD } from "@/constants/testIds";
 import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
 import { getOccasionBySlug } from "@/constants/occasions";
+import { getGiftTitle } from "@/lib/giftTitleUtils";
 import PublishModal from "@/components/PublishModal";
 import ShareModal from "@/components/ShareModal";
 
@@ -41,19 +42,24 @@ export default function DashboardPage() {
                 /* ignore */
             }
         }
-        // Fallback default starter drafts
-        return shippable.slice(0, 3).map((t, i) => ({
-            id: `gift-${t.config.slug}-${i}`,
-            title: i === 0 ? "Anniversary Memory Website" : i === 1 ? "Special Proposal Keepsake" : "Our Love Story",
-            templateSlug: t.config.slug,
-            occasionSlug: (t.config.occasions && t.config.occasions[0]) || t.config.category.toLowerCase(),
-            status: i === 0 ? "Published" : "Draft",
-            paymentStatus: i === 0 ? "paid" : "unpaid",
-            invoiceRef: i === 0 ? "INV-LC-8921" : null,
-            slug: i === 0 ? "our-anniversary" : `story-${i}`,
-            lastEdited: i === 0 ? "2 hours ago" : "Yesterday",
-            createdAt: new Date().toISOString(),
-        }));
+        // Fallback default starter drafts using sensible title generation
+        return shippable.slice(0, 3).map((t, i) => {
+            const giftObj = {
+                id: `gift-${t.config.slug}-${i}`,
+                templateSlug: t.config.slug,
+                occasionSlug: (t.config.occasions && t.config.occasions[0]) || t.config.category.toLowerCase(),
+                status: i === 0 ? "Published" : "Draft",
+                paymentStatus: i === 0 ? "paid" : "unpaid",
+                invoiceRef: i === 0 ? "INV-LC-8921" : null,
+                slug: i === 0 ? "our-anniversary" : `story-${i}`,
+                lastEdited: i === 0 ? "2 hours ago" : "Yesterday",
+                createdAt: new Date().toISOString(),
+            };
+            return {
+                ...giftObj,
+                title: getGiftTitle(giftObj),
+            };
+        });
     });
 
     const [filterTab, setFilterTab] = useState("all"); // 'all' | 'draft' | 'published'
@@ -331,7 +337,7 @@ export default function DashboardPage() {
                                 <div className="p-5 flex-1 flex flex-col space-y-4">
                                     <div>
                                         <h3 className="font-serif text-lg font-bold text-white group-hover:text-rose-200 transition-colors">
-                                            {gift.title}
+                                            {getGiftTitle(gift)}
                                         </h3>
                                         <p className="text-xs text-neutral-400 mt-1">
                                             Template: <strong className="text-neutral-300 font-medium">{templateEntry?.config?.name || gift.templateSlug}</strong>

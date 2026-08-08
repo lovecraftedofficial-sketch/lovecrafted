@@ -40,7 +40,8 @@ export default function ImageFieldEditor({ field, value, onChange }) {
             alert(res.error);
             return;
         }
-        setNext(res.value);
+        const url = res.value?.url || res.value;
+        setNext(url);
     };
 
     const onRemove = () => setNext(null);

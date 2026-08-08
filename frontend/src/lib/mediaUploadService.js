@@ -12,30 +12,35 @@
 export async function uploadMediaAsset(fileOrBlobUrl, assetType = "audio") {
   if (!fileOrBlobUrl) return "";
 
+  // Normalize legacy object wrapper format ({ kind: "local", url: "..." }) to clean string URL
+  const targetAsset = (typeof fileOrBlobUrl === "object" && fileOrBlobUrl?.url)
+    ? fileOrBlobUrl.url
+    : fileOrBlobUrl;
+
   // If already a permanent HTTPS / public asset URL, no upload needed
   if (
-    typeof fileOrBlobUrl === "string" &&
-    !fileOrBlobUrl.startsWith("blob:") &&
-    !fileOrBlobUrl.startsWith("data:")
+    typeof targetAsset === "string" &&
+    !targetAsset.startsWith("blob:") &&
+    !targetAsset.startsWith("data:")
   ) {
-    return fileOrBlobUrl;
+    return targetAsset;
   }
 
   try {
     let blob;
     let filename = `asset-${Date.now()}.${assetType === "audio" ? "mp3" : "jpg"}`;
 
-    if (fileOrBlobUrl instanceof File || fileOrBlobUrl instanceof Blob) {
-      blob = fileOrBlobUrl;
-      if (fileOrBlobUrl.name) filename = fileOrBlobUrl.name;
-    } else if (typeof fileOrBlobUrl === "string" && fileOrBlobUrl.startsWith("blob:")) {
-      const response = await fetch(fileOrBlobUrl);
+    if (targetAsset instanceof File || targetAsset instanceof Blob) {
+      blob = targetAsset;
+      if (targetAsset.name) filename = targetAsset.name;
+    } else if (typeof targetAsset === "string" && targetAsset.startsWith("blob:")) {
+      const response = await fetch(targetAsset);
       blob = await response.blob();
-    } else if (typeof fileOrBlobUrl === "string" && fileOrBlobUrl.startsWith("data:")) {
-      const res = await fetch(fileOrBlobUrl);
+    } else if (typeof targetAsset === "string" && targetAsset.startsWith("data:")) {
+      const res = await fetch(targetAsset);
       blob = await res.blob();
     } else {
-      return fileOrBlobUrl;
+      return targetAsset;
     }
 
     // Convert Blob to Base64 payload for serverless upload API
@@ -68,7 +73,7 @@ export async function uploadMediaAsset(fileOrBlobUrl, assetType = "audio") {
   }
 
   // Fallback: Return asset or persistent data URL if upload endpoint unavailable locally
-  return fileOrBlobUrl;
+  return targetAsset;
 }
 
 /**

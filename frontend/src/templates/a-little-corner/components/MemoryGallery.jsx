@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, X } from "lucide-react";
+import { resolveImage } from "@/editor/utils/imageUtils";
 
 export default function MemoryGallery({ content = {} }) {
   const gallerySectionTitle = content.gallerySectionTitle || "Our Treasured Moments";
@@ -8,17 +9,17 @@ export default function MemoryGallery({ content = {} }) {
 
   const photos = [
     {
-      url: content.photo1Url || "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80",
+      url: resolveImage(content.photo1Url || "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80"),
       title: content.photo1Title || "Sunset Walk",
       date: content.photo1Date || "October 14, 2025"
     },
     {
-      url: content.photo2Url || "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+      url: resolveImage(content.photo2Url || "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80"),
       title: content.photo2Title || "Coffee Afternoon",
       date: content.photo2Date || "November 02, 2025"
     },
     {
-      url: content.photo3Url || "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=800&q=80",
+      url: resolveImage(content.photo3Url || "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=800&q=80"),
       title: content.photo3Title || "Starry Night",
       date: content.photo3Date || "December 24, 2025"
     }

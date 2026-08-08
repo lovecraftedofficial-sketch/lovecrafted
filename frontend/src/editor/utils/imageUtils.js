@@ -153,7 +153,10 @@ export function revokeLocalImage(value) {
 export function resolveImage(value) {
     if (!value) return DEFAULT_ROMANTIC_COUPLE_PHOTO;
     if (typeof value === "string" && value.trim()) return value.trim();
-    if (value.url && typeof value.url === "string" && value.url.trim()) return value.url.trim();
-    if (value.dataUrl && typeof value.dataUrl === "string" && value.dataUrl.trim()) return value.dataUrl.trim();
+    if (typeof value === "object") {
+        if (value.url && typeof value.url === "string" && value.url.trim()) return value.url.trim();
+        if (value.dataUrl && typeof value.dataUrl === "string" && value.dataUrl.trim()) return value.dataUrl.trim();
+        if (value.src && typeof value.src === "string" && value.src.trim()) return value.src.trim();
+    }
     return DEFAULT_ROMANTIC_COUPLE_PHOTO;
 }

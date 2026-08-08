@@ -2,6 +2,8 @@ const Razorpay = require("razorpay");
 
 // SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth - Client cannot override)
 const SERVER_PRICING_CATALOG = {
+    "come-here-baby": 9,
+    "a-little-corner": 2999,
     "until-forever": 4999,
     "sunset-love": 1999,
     "aurora-sample": 1999,
@@ -63,7 +65,17 @@ exports.handler = async (event, context) => {
 
         // SECURITY RULE 1 & 2: Ignore client body.amount completely!
         // Calculate authoritative price on the server based on template catalog
-        const serverPriceINR = SERVER_PRICING_CATALOG[templateSlug] || 1999;
+        const serverPriceINR = SERVER_PRICING_CATALOG[templateSlug];
+        if (typeof serverPriceINR !== "number" || serverPriceINR <= 0) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({
+                    error: `Invalid or unsupported template pricing slug: "${templateSlug}"`,
+                    diagnostics,
+                }),
+            };
+        }
         const serverAmountPaise = Math.round(serverPriceINR * 100); // Convert to paise
 
         const instance = new Razorpay({

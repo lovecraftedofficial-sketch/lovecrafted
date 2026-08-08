@@ -3,6 +3,8 @@ const Razorpay = require("razorpay");
 
 // SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth)
 const SERVER_PRICING_CATALOG = {
+    "come-here-baby": 9,
+    "a-little-corner": 2999,
     "until-forever": 4999,
     "sunset-love": 1999,
     "aurora-sample": 1999,
@@ -139,8 +141,19 @@ exports.handler = async (event, context) => {
             }
 
             // D. Check Paid Amount vs Server-Catalog Expected Amount
-            const templateSlug = orderDetails.notes?.templateSlug || "sunset-love";
-            const expectedAmountINR = SERVER_PRICING_CATALOG[templateSlug] || 1999;
+            const templateSlug = orderDetails.notes?.templateSlug;
+            const expectedAmountINR = SERVER_PRICING_CATALOG[templateSlug];
+            if (typeof expectedAmountINR !== "number" || expectedAmountINR <= 0) {
+                console.warn(`[SECURITY REJECTION] Unknown template slug in payment verification: ${templateSlug}`);
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({
+                        verified: false,
+                        error: `Security Violation: Unknown or unsupported template pricing slug '${templateSlug}'.`,
+                    }),
+                };
+            }
             const expectedAmountPaise = expectedAmountINR * 100;
 
             const paidAmountPaise = paymentDetails.amount;

@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Heart, ArrowDown } from "lucide-react";
+import { resolveImage } from "@/editor/utils/imageUtils";
 
 export default function Hero({ content = {}, onNavigate = () => {} }) {
   const partnerName = content.partnerName || "My Baby";
@@ -10,7 +11,7 @@ export default function Hero({ content = {}, onNavigate = () => {} }) {
   const heroCopy1 = content.heroCopy1 || "Don't worry, baby. I'm always right beside you.";
   const heroCopy2 = content.heroCopy2 || "I know today might feel a little heavier than usual, so I made something small for you. 🥺";
   const heroCopy3 = content.heroCopy3 || "Come, check it out. I hope it makes you smile. ❤️";
-  const heroImage = content.heroImage || "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80";
+  const heroImage = resolveImage(content.heroImage);
   const ctaPrimary = content.ctaPrimary || "💗 See What I Made For You";
   const ctaSecondary = content.ctaSecondary || "🫂 Come Get Your Hug";
 
