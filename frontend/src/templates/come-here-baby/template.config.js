@@ -169,7 +169,7 @@ const comeHereBabyConfig = {
     // SECTION 6: TELL ME WHAT YOU NEED (GENTLE BOYFRIEND OFFERS)
     { key: "needsTitle", label: "Needs Section Title", type: "text", defaultValue: "Baby, What Do You Need? 🥺" },
     { key: "needsSubtitle", label: "Needs Section Subtitle", type: "text", defaultValue: "Pick whatever would make you feel a little better. ❤️" },
-    { key: "whatsappPhoneNumber", label: "Partner WhatsApp Number", type: "text", defaultValue: "919876543210", placeholder: "e.g. 919876543210", helpText: "Include country code without + or spaces. Example: 919876543210" },
+    { key: "whatsappPhoneNumber", label: "Partner WhatsApp Number", type: "text", defaultValue: "", placeholder: "e.g. 919876543210", helpText: "Include country code without + or spaces. Example: 919876543210" },
     { key: "option1", label: "Option 1 (e.g. 🫂 Ek Hug?)", type: "text", defaultValue: "🫂 Ek Hug?" },
     { key: "option2", label: "Option 2 (e.g. 🍫 Chocolate Laaun?)", type: "text", defaultValue: "🍫 Chocolate Laaun?" },
     { key: "option3", label: "Option 3 (e.g. 🥺 Thodi Pampering?)", type: "text", defaultValue: "🥺 Thodi Pampering?" },
@@ -280,7 +280,7 @@ const comeHereBabyConfig = {
 
     needsTitle: "Baby, What Do You Need? 🥺",
     needsSubtitle: "Pick whatever would make you feel a little better. ❤️",
-    whatsappPhoneNumber: "919876543210",
+    whatsappPhoneNumber: "",
     option1: "🫂 Ek Hug?",
     option2: "🍫 Chocolate Laaun?",
     option3: "🥺 Thodi Pampering?",
