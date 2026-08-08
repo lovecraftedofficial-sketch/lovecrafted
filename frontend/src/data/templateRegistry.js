@@ -12,8 +12,17 @@ import UntilForeverTemplate from "../templates/until-forever/UntilForeverTemplat
 import untilForeverConfig from "../templates/until-forever/template.config";
 import ALittleCornerTemplate from "../templates/a-little-corner/ALittleCornerTemplate";
 import aLittleCornerConfig from "../templates/a-little-corner/template.config";
+import ComeHereBabyTemplate from "../templates/come-here-baby/ComeHereBabyTemplate";
+import comeHereBabyConfig from "../templates/come-here-baby/template.config";
 
 export const templateRegistry = {
+  // Come Here Baby Ultra Comfort Entry
+  "come-here-baby": {
+    component: ComeHereBabyTemplate,
+    comingSoon: false,
+    config: comeHereBabyConfig,
+  },
+
   // A Little Corner Intimate Comfort Entry
   "a-little-corner": {
     component: ALittleCornerTemplate,
