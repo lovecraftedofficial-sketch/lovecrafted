@@ -3,21 +3,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, AlertCircle } from "lucide-react";
 
 export default function TellMeWhatYouNeed({ content = {} }) {
-  const needsTitle = content.needsTitle || "Tell Me What You Need";
-  const needsSubtitle = content.needsSubtitle || "You don't even have to explain. Just pick one. ❤️";
+  const needsTitle = content.needsTitle || "Baby, What Do You Need? 🥺";
+  const needsSubtitle = content.needsSubtitle || "Pick whatever would make you feel a little better. ❤️";
 
   const [toastError, setToastError] = useState(null);
 
-  const cards = [
-    { icon: "🫂", label: "I Need a Hug", req: content.reqHug || "Baby, I need my hug now 🥺🫂" },
-    { icon: "🍫", label: "I Want Chocolate", req: content.reqChocolate || "Baby, emergency chocolate request please 🍫🥺❤️" },
-    { icon: "💗", label: "I Need Some Love", req: content.reqLove || "I need some extra love today 🥺❤️" },
-    { icon: "😂", label: "Make Me Laugh", req: content.reqLaugh || "Baby, make me laugh. I'm having a difficult day 😭😂" },
-    { icon: "💌", label: "Send Me Something Sweet", req: content.reqSweet || "Can you send me something sweet? I need a little reminder that I'm loved. 💌❤️" },
-    { icon: "🥺", label: "I Need You", req: content.reqNeedYou || "I just need you right now. 🥺❤️" },
+  const options = [
+    content.option1 || "🫂 Ek Hug?",
+    content.option2 || "🍫 Chocolate Laaun?",
+    content.option3 || "🥺 Thodi Pampering?",
+    content.option4 || "💕 Extra Pyaar?",
+    content.option5 || "🧸 Thoda Laad?",
+    content.option6 || "📞 Thodi Der Baat Karein?",
+    content.option7 || "🌷 Mood Theek Karein?",
+    content.option8 || "🫶 Thoda Sa Saath?",
+    content.option9 || "☕ Kuch Warm Laaun?",
+    content.option10 || "💌 Ek Pyaara Sa Note?",
   ];
 
-  const handleCardClick = (card) => {
+  const handleCardClick = (optionText) => {
     const rawPhone = content.whatsappPhoneNumber || content.partnerWhatsAppNumber || content.phoneNumber;
     const cleanPhone = rawPhone ? String(rawPhone).replace(/\D/g, "") : "";
 
@@ -27,7 +31,8 @@ export default function TellMeWhatYouNeed({ content = {} }) {
       return;
     }
 
-    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(card.req)}`;
+    // Open WhatsApp with ONLY the short selected card text pre-filled
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(optionText)}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -37,7 +42,7 @@ export default function TellMeWhatYouNeed({ content = {} }) {
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3d0a18] border border-[#f8b3c3]/20 text-xs tracking-widest text-[#f8b3c3]">
             <Heart size={12} className="fill-[#f8b3c3]" />
-            <span>Instant Comfort Request</span>
+            <span>Gentle Comfort Options</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-serif text-white font-medium">
             {needsTitle}
@@ -62,18 +67,19 @@ export default function TellMeWhatYouNeed({ content = {} }) {
           )}
         </AnimatePresence>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
-          {cards.map((c, idx) => (
+        {/* 10 Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5 pt-2">
+          {options.map((optText, idx) => (
             <motion.button
               key={idx}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              onClick={() => handleCardClick(c)}
-              className="p-6 rounded-3xl bg-[#2a0c15] border border-[#f8b3c3]/20 hover:border-[#f8b3c3]/40 shadow-xl space-y-2 text-center cursor-pointer transition-all"
+              onClick={() => handleCardClick(optText)}
+              className="p-5 sm:p-6 rounded-3xl bg-[#2a0c15] border border-[#f8b3c3]/20 hover:border-[#f8b3c3]/40 shadow-xl flex items-center justify-center text-center cursor-pointer transition-all min-h-[110px]"
             >
-              <div className="text-4xl">{c.icon}</div>
-              <p className="text-sm font-serif text-white font-medium">{c.label}</p>
+              <p className="text-base sm:text-lg font-serif text-white font-medium leading-snug">
+                {optText}
+              </p>
             </motion.button>
           ))}
         </div>
