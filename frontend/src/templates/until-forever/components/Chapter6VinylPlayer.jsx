@@ -269,11 +269,12 @@ export default function Chapter6VinylPlayer({ content = {}, onComplete }) {
               <div className="w-full max-w-md rounded-2xl overflow-hidden border border-rose-500/30 shadow-2xl bg-black">
                 {provider.type === "spotify" && (
                   <iframe
-                    src={provider.embedUrl}
+                    src={provider.embedUrl.includes("?") ? provider.embedUrl : `${provider.embedUrl}?utm_source=generator`}
                     width="100%"
                     height="152"
                     frameBorder="0"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    allowFullScreen
                     loading="lazy"
                     title="Spotify Music Player"
                   />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -12,12 +12,15 @@ import {
     ChevronDown,
 } from "lucide-react";
 import { LANDING } from "@/constants/testIds";
-import { listTemplates } from "@/data/templateRegistry";
+import { listMarketplaceTemplates } from "@/data/templateRegistry";
 import TemplateCard from "@/components/TemplateCard";
+import CustomerFeedbackSection from "@/components/CustomerFeedbackSection";
+import { getPublicTestimonials } from "@/lib/feedbackService";
 
 export default function LandingPage() {
-    const templates = listTemplates();
-    const featured = templates.slice(0, 3);
+    const templates = listMarketplaceTemplates();
+    const featured = templates;
+    const publicTestimonials = getPublicTestimonials();
 
     return (
         <div data-testid={LANDING.root}>
@@ -242,62 +245,79 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* TIERS */}
+            {/* LAUNCH PRICING */}
             <section
                 data-testid={LANDING.tiersSection}
-                className="max-w-6xl mx-auto px-6 py-16 md:py-24"
+                className="max-w-5xl mx-auto px-6 py-16 md:py-24"
             >
-                <div className="lws-pill mb-4">Quality tiers</div>
-                <h2 className="font-display text-4xl md:text-5xl mb-10 lws-gradient-text">
-                    Choose your level of luxury
+                <div className="lws-pill mb-4">Launch Pricing</div>
+                <h2 className="font-display text-4xl md:text-5xl mb-4 lws-gradient-text">
+                    Choose your story
                 </h2>
-                <div className="grid md:grid-cols-3 gap-6">
+                <p className="text-[color:var(--lws-text-muted)] text-base md:text-lg max-w-2xl mb-10 leading-relaxed">
+                    Every LoveCrafted website is made to feel personal — from a simple romantic surprise to a full cinematic love story.
+                </p>
+
+                <div className="grid sm:grid-cols-2 gap-6">
                     {[
                         {
-                            tier: "Basic",
-                            price: 999,
-                            desc: "Warm, simple keepsakes with a handful of sections.",
-                            accent: "#a08a95",
-                        },
-                        {
-                            tier: "Premium",
-                            price: 1999,
-                            desc: "Full-length experiences with rich sections and animation.",
+                            tier: "SWEET & PERSONAL",
+                            name: "For My Baby",
+                            price: 99,
+                            desc: "A cute, intimate romantic experience designed for comforting and surprising someone you love.",
                             accent: "#f8b5c4",
+                            slug: "come-here-baby",
                         },
                         {
-                            tier: "Luxury",
-                            price: 3499,
-                            desc: "Deeply crafted designs with signature interactions.",
+                            tier: "CINEMATIC",
+                            name: "Until Forever",
+                            price: 299,
+                            desc: "A deeper interactive love-story experience with richer sections, memories and cinematic interactions.",
                             accent: "#d4a574",
+                            slug: "until-forever",
                         },
                     ].map((p) => (
                         <div
                             key={p.tier}
-                            className="lws-card p-7 relative overflow-hidden"
+                            className="lws-card p-7 md:p-8 relative overflow-hidden flex flex-col justify-between"
                             style={{
-                                boxShadow: `0 40px 100px -40px ${p.accent}44 inset`,
+                                boxShadow: `0 40px 100px -40px ${p.accent}33 inset`,
                             }}
                         >
-                            <div
-                                className="text-xs uppercase tracking-widest mb-3"
-                                style={{ color: p.accent }}
-                            >
-                                {p.tier}
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <span
+                                        className="text-[11px] uppercase tracking-widest px-3 py-1 rounded-full font-semibold"
+                                        style={{
+                                            color: p.accent,
+                                            background: `${p.accent}15`,
+                                            border: `1px solid ${p.accent}40`,
+                                        }}
+                                    >
+                                        {p.tier}
+                                    </span>
+                                </div>
+                                <h3 className="font-display text-2xl md:text-3xl text-[color:var(--lws-cream)] mb-2">
+                                    {p.name}
+                                </h3>
+                                <div className="font-display text-5xl mb-4 text-white">
+                                    ₹{p.price.toLocaleString("en-IN")}
+                                </div>
+                                <p className="text-sm text-[color:var(--lws-text-muted)] leading-relaxed mb-8">
+                                    {p.desc}
+                                </p>
                             </div>
-                            <div className="font-display text-4xl mb-2">
-                                ₹{p.price.toLocaleString("en-IN")}
+                            <div>
+                                <Link
+                                    to={`/templates/${p.slug}`}
+                                    className="lws-btn-primary w-full text-center justify-center text-sm py-3 font-semibold"
+                                >
+                                    View Experience <ArrowRight size={14} />
+                                </Link>
                             </div>
-                            <p className="text-[color:var(--lws-text-muted)] leading-relaxed">
-                                {p.desc}
-                            </p>
                         </div>
                     ))}
                 </div>
-                <p className="text-xs text-[color:var(--lws-text-dim)] mt-4">
-                    Demo pricing shown. Each template has its own price set by the
-                    studio.
-                </p>
             </section>
 
             {/* TESTIMONIALS PLACEHOLDER */}
@@ -310,33 +330,19 @@ export default function LandingPage() {
                     From the people who mattered
                 </h2>
                 <div className="grid md:grid-cols-3 gap-6">
-                    {[
-                        {
-                            q: "The most thoughtful gift I've ever received. I cried at a website. Twice.",
-                            a: "— A very lucky partner",
-                        },
-                        {
-                            q: "It felt like a love letter, but I could open it on my phone.",
-                            a: "— A romantic somewhere",
-                        },
-                        {
-                            q: "Not a Canva template. Not an app. Something that felt made.",
-                            a: "— A designer with high standards",
-                        },
-                    ].map((t) => (
-                        <blockquote key={t.q} className="lws-card p-6">
+                    {publicTestimonials.map((t) => (
+                        <blockquote key={t.id || t.q || t.feedback} className="lws-card p-6 flex flex-col justify-between">
                             <p className="font-italic-display text-lg leading-relaxed text-[color:var(--lws-cream)]">
-                                “{t.q}”
+                                “{t.feedback || t.q}”
                             </p>
                             <footer className="text-xs uppercase tracking-widest text-[color:var(--lws-text-dim)] mt-4">
-                                {t.a}
+                                — {t.name || t.a}
                             </footer>
                         </blockquote>
                     ))}
                 </div>
                 <p className="text-xs text-[color:var(--lws-text-dim)] mt-4">
-                    Illustrative placeholders — real testimonials will appear here
-                    as customers publish their websites.
+                    Verified customer stories — featured with explicit permission.
                 </p>
             </section>
 
@@ -364,18 +370,8 @@ export default function LandingPage() {
                             a: "Yes. Your website lives at a private random link. Password protection is coming.",
                         },
                         {
-                            q: "How do I pay & get my link?",
-                            a: (
-                                <span>
-                                    You pay directly via UPI QR Code (<strong className="text-[color:var(--lws-pink)]">8618379301@pz</strong>). After payment, enter your 12-digit UTR transaction ref and click <strong>1-Click WhatsApp Order</strong> or <strong>Email Order</strong> at{" "}
-                                    <a
-                                        href="mailto:lovecrafted.official@gmail.com"
-                                        className="text-[color:var(--lws-pink)] underline font-medium hover:opacity-80 transition-opacity"
-                                    >
-                                        lovecrafted.official@gmail.com
-                                    </a>. You'll receive your active live link instantly!
-                                </span>
-                            ),
+                            q: "How do I pay & get my keepsake?",
+                            a: "You can pay securely through Razorpay using the payment options available at checkout. Once your payment is successfully completed and confirmed, you’ll get access to create your personalized LoveCrafted keepsake.",
                         },
                     ].map((f) => (
                         <details key={f.q} className="lws-card p-5 group">
@@ -395,6 +391,9 @@ export default function LandingPage() {
                     ))}
                 </div>
             </section>
+
+            {/* CUSTOMER FEEDBACK SECTION */}
+            <CustomerFeedbackSection />
 
             {/* FINAL CTA */}
             <section className="max-w-4xl mx-auto px-6 py-20 md:py-32 text-center">

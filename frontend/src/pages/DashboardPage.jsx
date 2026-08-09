@@ -19,7 +19,10 @@ import {
     ExternalLink,
     CreditCard,
     FileText,
-    Heart
+    Heart,
+    MessageSquare,
+    CheckCircle2,
+    Shield
 } from "lucide-react";
 import { DASHBOARD } from "@/constants/testIds";
 import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
@@ -27,6 +30,7 @@ import { getOccasionBySlug } from "@/constants/occasions";
 import { getGiftTitle } from "@/lib/giftTitleUtils";
 import PublishModal from "@/components/PublishModal";
 import ShareModal from "@/components/ShareModal";
+import { getAllFeedback, toggleFeedbackApproval } from "@/lib/feedbackService";
 
 export default function DashboardPage() {
     const navigate = useNavigate();
@@ -62,11 +66,19 @@ export default function DashboardPage() {
         });
     });
 
-    const [filterTab, setFilterTab] = useState("all"); // 'all' | 'draft' | 'published'
+    const [filterTab, setFilterTab] = useState("all"); // 'all' | 'draft' | 'published' | 'feedback'
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedPublishDraft, setSelectedPublishDraft] = useState(null);
     const [selectedShareGift, setSelectedShareGift] = useState(null);
     const [copiedId, setCopiedId] = useState(null);
+
+    // Feedback Moderation State
+    const [feedbackList, setFeedbackList] = useState(() => getAllFeedback());
+
+    const handleToggleApproval = (id) => {
+        const updated = toggleFeedbackApproval(id);
+        setFeedbackList([...updated]);
+    };
 
     // Delete Confirmation Modal State
     const [giftToDelete, setGiftToDelete] = useState(null);
@@ -245,6 +257,17 @@ export default function DashboardPage() {
                         }`}
                     >
                         Published ({gifts.filter((g) => g.status.toLowerCase() === "published").length})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilterTab("feedback")}
+                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            filterTab === "feedback"
+                                ? "bg-rose-500 text-white shadow-md"
+                                : "text-neutral-400 hover:text-white"
+                        }`}
+                    >
+                        <MessageSquare size={13} /> Feedback ({feedbackList.length})
                     </button>
                 </div>
 
@@ -471,6 +494,90 @@ export default function DashboardPage() {
                         >
                             <Plus size={14} /> Browse Templates & Create
                         </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* CUSTOMER FEEDBACK MODERATION PANEL */}
+            {filterTab === "feedback" && (
+                <div className="space-y-6 animate-fadeIn my-6">
+                    <div className="flex items-center justify-between flex-wrap gap-4 p-6 rounded-3xl bg-neutral-900/80 border border-white/10 shadow-2xl">
+                        <div>
+                            <h2 className="text-xl font-bold font-serif text-white flex items-center gap-2">
+                                <MessageSquare size={20} className="text-rose-400" /> Customer Feedback & Review Moderation
+                            </h2>
+                            <p className="text-xs text-neutral-400 mt-1">
+                                Review customer submissions. Only feedback with explicit permission AND admin approval appears on the public website.
+                            </p>
+                        </div>
+                        <div className="text-xs text-rose-300 bg-rose-500/10 px-4 py-1.5 rounded-full border border-rose-500/20">
+                            Total Submissions: <strong className="text-white">{feedbackList.length}</strong>
+                        </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {feedbackList.map((fb) => (
+                            <div key={fb.id} className="lws-card p-6 space-y-4 relative flex flex-col justify-between border-rose-500/20">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1 text-rose-300">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <Heart
+                                                    key={i}
+                                                    size={14}
+                                                    className={i < fb.rating ? "fill-rose-400 text-rose-400" : "text-neutral-700"}
+                                                />
+                                            ))}
+                                            <span className="text-xs font-mono ml-1 text-neutral-400">{fb.rating}/5</span>
+                                        </div>
+
+                                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                                            fb.isApproved
+                                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                                                : "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                                        }`}>
+                                            {fb.isApproved ? "Approved & Live" : "Private / Pending"}
+                                        </span>
+                                    </div>
+
+                                    <p className="font-serif italic text-sm text-neutral-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-white/5">
+                                        “{fb.feedback}”
+                                    </p>
+
+                                    <div className="text-xs space-y-1 text-neutral-400 pt-1">
+                                        <div><strong className="text-neutral-300">Customer:</strong> {fb.name}</div>
+                                        {fb.email && <div><strong className="text-neutral-300">Email:</strong> {fb.email.replace(/(.{2})(.*)(?=@)/, "$1***")}</div>}
+                                        <div><strong className="text-neutral-300">Would Recommend:</strong> {fb.recommendation}</div>
+                                        <div><strong className="text-neutral-300">Testimonial Permission:</strong> {fb.testimonialPermission ? "Granted (Allowed to feature)" : "Not Granted (Keep Private)"}</div>
+                                        <div className="text-[10px] text-neutral-500 pt-1">Submitted: {new Date(fb.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}</div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                                    <button
+                                        type="button"
+                                        disabled={!fb.testimonialPermission}
+                                        onClick={() => handleToggleApproval(fb.id)}
+                                        className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                            !fb.testimonialPermission
+                                                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed opacity-60"
+                                                : fb.isApproved
+                                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
+                                                : "bg-emerald-600 text-white hover:bg-emerald-500 shadow-md"
+                                        }`}
+                                    >
+                                        <Shield size={13} />
+                                        <span>
+                                            {!fb.testimonialPermission
+                                                ? "Permission Not Granted"
+                                                : fb.isApproved
+                                                ? "Unapprove / Hide"
+                                                : "Approve for Testimonials"}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

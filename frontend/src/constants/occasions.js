@@ -1,3 +1,4 @@
+import { listMarketplaceTemplates } from "../data/templateRegistry";
 import {
     Heart,
     Sparkles,
@@ -145,15 +146,23 @@ export function getOccasionBySlug(slug) {
 }
 
 /**
- * Helper to dynamically calculate template counts for each occasion
+ * Helper to dynamically calculate template counts for each occasion.
+ * Strictly uses publicly visible marketplace templates to ensure hidden/internal
+ * templates contribute ZERO to customer-facing occasion counts.
  */
-export function getOccasionCounts(templates = []) {
+export function getOccasionCounts(templates = listMarketplaceTemplates()) {
     const counts = {};
     OCCASIONS.forEach((o) => {
         counts[o.id] = 0;
     });
 
-    templates.forEach((template) => {
+    // Ensure we count strictly publicly visible marketplace templates
+    const publicTemplates = (templates || []).filter((t) => {
+        const config = t?.config || {};
+        return !config.hiddenFromMarketplace && !t?.comingSoon;
+    });
+
+    publicTemplates.forEach((template) => {
         const config = template?.config || {};
         const templateOccasions = config.occasions || (config.category ? [config.category.toLowerCase()] : []);
 
@@ -161,9 +170,6 @@ export function getOccasionCounts(templates = []) {
             const normalizedId = occId.toLowerCase().replace(/\s+/g, "-");
             if (counts[normalizedId] !== undefined) {
                 counts[normalizedId] += 1;
-            } else if (normalizedId === "romantic") {
-                // Map legacy "romantic" category to anniversary & proposal
-                counts["anniversary"] = (counts["anniversary"] || 0) + 1;
             }
         });
     });

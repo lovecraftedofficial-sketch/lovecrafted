@@ -4,8 +4,8 @@
  * Name: For My Baby
  * Subtitle: The little place I made just for you.
  * Codename: come-here-baby
- * Price: ₹9 (Trial Price)
- * Tier: ₹9 Trial
+ * Price: ₹99
+ * Tier: Sweet & Personal
  */
 
 const comeHereBabyConfig = {
@@ -15,9 +15,9 @@ const comeHereBabyConfig = {
   subtitle: "The little place I made just for you.",
   category: "Romantic",
   occasions: ["comfort", "anniversary", "just-because", "long-distance"],
-  tier: "₹9 Trial",
-  price: 9,
-  priceDisplay: "₹9 Trial",
+  tier: "Sweet & Personal",
+  price: 99,
+  priceDisplay: "₹99",
   currency: "INR",
   description:
     "A cute, deeply romantic, nurturing, and emotionally comforting digital gift made by a boyfriend for his girlfriend when she is tired, exhausted, moody, sad, overwhelmed, or having a difficult day. Features a random love-note generator, pamper checklist, Spotify music player, things I love cards, 10 WhatsApp request actions, love jar, open-when notes, and a private letter.",

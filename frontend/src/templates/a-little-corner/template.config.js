@@ -11,6 +11,7 @@ const aLittleCornerConfig = {
   slug: "a-little-corner",
   name: "A Little Corner",
   category: "Romantic",
+  hiddenFromMarketplace: true,
   occasions: ["anniversary", "birthday", "comfort", "just-because"],
   tier: "Bespoke Comfort",
   price: 2999,

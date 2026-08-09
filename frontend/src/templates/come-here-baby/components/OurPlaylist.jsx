@@ -30,17 +30,17 @@ export default function OurPlaylist({ content = {} }) {
     return "spotify"; // default fallback for spotify track URLs
   }, [content.musicProvider, featuredSongUrl]);
 
-  // Clean Spotify Embed URL Helper
+  // Clean Spotify Embed URL Helper (Conforms to official Spotify Developer Embed spec)
   const spotifyEmbedUrl = useMemo(() => {
     if (!featuredSongUrl) return "";
     let clean = String(featuredSongUrl).split("?")[0]; // Strip tracking query params
+    let embedPath = clean;
     if (clean.includes("spotify.com/track/")) {
-      return clean.replace("spotify.com/track/", "spotify.com/embed/track/");
+      embedPath = clean.replace("spotify.com/track/", "spotify.com/embed/track/");
+    } else if (clean.includes("spotify.com/album/")) {
+      embedPath = clean.replace("spotify.com/album/", "spotify.com/embed/album/");
     }
-    if (clean.includes("spotify.com/album/")) {
-      return clean.replace("spotify.com/album/", "spotify.com/embed/album/");
-    }
-    return clean;
+    return embedPath.includes("?") ? embedPath : `${embedPath}?utm_source=generator`;
   }, [featuredSongUrl]);
 
   // Direct Audio HTML5 State
@@ -102,6 +102,7 @@ export default function OurPlaylist({ content = {} }) {
                 height="152"
                 frameBorder="0"
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
                 loading="lazy"
               />
             </div>

@@ -2,8 +2,8 @@
  * Until Forever - Flagship Ultra-Luxury Template Configuration
  * -----------------------------------------------------------
  * Codename: Until Forever
- * Price: ₹4,999 INR
- * Tier: Ultra-Luxury Flagship
+ * Price: ₹299 INR
+ * Tier: Cinematic
  */
 
 const untilForeverConfig = {
@@ -12,8 +12,9 @@ const untilForeverConfig = {
   name: "Until Forever",
   category: "Romantic",
   occasions: ["anniversary", "proposal", "birthday", "valentine"],
-  tier: "Ultra-Luxury Flagship",
-  price: 4999,
+  tier: "Cinematic",
+  price: 299,
+  priceDisplay: "₹299",
   currency: "INR",
   description:
     "LoveCrafted's flagship 12-chapter interactive love story experience. Featuring wax-sealed handwritten letters, scattered 3D scrapbook polaroids, situational voice memory cards, interactive starry night sky, vinyl song player, live relationship counter, and cinematic movie credits.",

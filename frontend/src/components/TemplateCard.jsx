@@ -9,6 +9,8 @@ function formatPrice(n, currency = "INR") {
 }
 
 const tierAccent = {
+    "Sweet & Personal": "#f8b5c4",
+    "Cinematic": "#d4a574",
     Basic: "#a08a95",
     Premium: "#f8b5c4",
     Luxury: "#d4a574",

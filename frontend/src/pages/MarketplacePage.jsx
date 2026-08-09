@@ -1,17 +1,17 @@
 import React, { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MARKETPLACE } from "@/constants/testIds";
-import { listTemplates } from "@/data/templateRegistry";
+import { listMarketplaceTemplates } from "@/data/templateRegistry";
 import { OCCASIONS, getOccasionCounts, getOccasionBySlug } from "@/constants/occasions";
 import TemplateCard from "@/components/TemplateCard";
 import { Filter, LayoutGrid, Sparkles, X, Clock, ArrowRight } from "lucide-react";
 
-const TIERS = ["All", "Basic", "Premium", "Luxury"];
+const TIERS = ["All", "Sweet & Personal", "Cinematic"];
 const PRICE_BUCKETS = [
     { id: "all", label: "Any price", min: 0, max: Infinity },
-    { id: "u1000", label: "Under ₹1,000", min: 0, max: 999 },
-    { id: "1000-2000", label: "₹1,000 – ₹2,000", min: 1000, max: 2000 },
-    { id: "2000p", label: "₹2,000+", min: 2000, max: Infinity },
+    { id: "u100", label: "Under ₹100", min: 0, max: 100 },
+    { id: "100-300", label: "₹100 – ₹300", min: 100, max: 300 },
+    { id: "300p", label: "₹300+", min: 300, max: Infinity },
 ];
 
 export default function MarketplacePage() {
@@ -20,13 +20,18 @@ export default function MarketplacePage() {
     const tier = searchParams.get("tier") || "All";
     const price = searchParams.get("price") || "all";
 
-    const all = useMemo(() => listTemplates(), []);
+    const all = useMemo(() => listMarketplaceTemplates(), []);
 
-    // Filter list of active occasions for visible Marketplace pill bar
-    const activeOccasionsList = useMemo(() => OCCASIONS.filter((o) => o.isActive), []);
-
-    // Compute dynamic template counts for every occasion from the registry
+    // Compute dynamic template counts strictly for publicly visible marketplace templates
     const occasionCounts = useMemo(() => getOccasionCounts(all), [all]);
+
+    // Derive active occasion chips dynamically ONLY for occasions that exist on at least 1 public template (count > 0)
+    const activeOccasionsList = useMemo(() => {
+        return OCCASIONS.filter((occ) => {
+            const count = occasionCounts[occ.slug] || occasionCounts[occ.id] || 0;
+            return count > 0 && occ.isActive !== false;
+        });
+    }, [occasionCounts]);
 
     const activeOccasionObj = useMemo(
         () => getOccasionBySlug(activeOccasionSlug),

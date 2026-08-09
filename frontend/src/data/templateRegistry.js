@@ -51,6 +51,7 @@ export const templateRegistry = {
       slug: "sunset-love",
       name: "Sunset Love",
       category: "Romantic",
+      hiddenFromMarketplace: true,
       occasions: ["anniversary", "proposal", "long-distance"],
       tier: "Premium",
       price: 1999,
@@ -244,5 +245,18 @@ export function listTemplates() {
 }
 
 export function listShippableTemplates() {
-  return listTemplates().filter((t) => !!t.component && !t.comingSoon);
+  return listTemplates().filter((t) => {
+    const config = t.config || {};
+    return !!t.component && !t.comingSoon && !config.hiddenFromMarketplace;
+  });
+}
+
+const PUBLIC_MARKETPLACE_SLUGS = ["come-here-baby", "until-forever"];
+
+export function listMarketplaceTemplates() {
+  return listTemplates().filter((t) => {
+    const config = t.config || {};
+    const slug = config.slug || t.id;
+    return PUBLIC_MARKETPLACE_SLUGS.includes(slug) && !config.hiddenFromMarketplace && !t.comingSoon;
+  });
 }
