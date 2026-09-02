@@ -51,7 +51,7 @@ export default function ComeHereBabyTemplate({ content = {}, config = {} }) {
             className="flex items-center gap-2 text-sm font-serif font-medium text-white cursor-pointer"
           >
             <Heart size={16} className="fill-[#f8b3c3] text-[#f8b3c3]" />
-            <span>For My Baby</span>
+            <span>Always Beside You</span>
           </button>
 
           <nav className="hidden md:flex items-center gap-5">

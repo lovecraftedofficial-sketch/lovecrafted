@@ -11,7 +11,7 @@
 const comeHereBabyConfig = {
   id: "come-here-baby",
   slug: "come-here-baby",
-  name: "For My Baby",
+  name: "Always Beside You",
   subtitle: "The little place I made just for you.",
   category: "Romantic",
   occasions: ["comfort", "anniversary", "just-because", "long-distance"],
@@ -20,7 +20,7 @@ const comeHereBabyConfig = {
   priceDisplay: "₹99",
   currency: "INR",
   description:
-    "A cute, deeply romantic, nurturing, and emotionally comforting digital gift made by a boyfriend for his girlfriend when she is tired, exhausted, moody, sad, overwhelmed, or having a difficult day. Features a random love-note generator, pamper checklist, Spotify music player, things I love cards, 10 WhatsApp request actions, love jar, open-when notes, and a private letter.",
+    "A reassuring, deeply romantic, and comforting digital keepsake for when your partner is tired, exhausted, moody, sad, overwhelmed, or having a difficult day. Features a random love-note generator, pamper checklist, Spotify music player, things I love cards, 10 WhatsApp request actions, love jar, open-when notes, and a private letter.",
   coverImage:
     "/images/for_my_baby_cover.jpg",
   features: [

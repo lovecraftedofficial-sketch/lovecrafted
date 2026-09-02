@@ -117,7 +117,7 @@ export default function MarketplacePage() {
                     <span className="lws-gradient-text">Crafted for Every Special Moment</span>
                 </h1>
                 <p className="text-neutral-400 mt-3 max-w-2xl text-sm sm:text-base leading-relaxed">
-                    Explore luxury digital keepsake websites tailored for Anniversaries, Proposals, Weddings, Birthdays, and cherished relationships.
+                    Explore luxury digital keepsakes tailored for Anniversaries, Proposals, Weddings, Birthdays, and cherished relationships.
                 </p>
             </div>
 

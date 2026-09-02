@@ -140,7 +140,7 @@ async function runRegressionSuite() {
   console.log("\n--- SECTION 3: DASHBOARD TITLE REGRESSION ---");
 
   const TEMPLATES_MAP = {
-    "come-here-baby": { config: { name: "For My Baby", slug: "come-here-baby" } },
+    "come-here-baby": { config: { name: "Always Beside You", slug: "come-here-baby" } },
     "a-little-corner": { config: { name: "A Little Corner", slug: "a-little-corner" } },
     "until-forever": { config: { name: "Until Forever", slug: "until-forever" } }
   };
@@ -180,22 +180,28 @@ async function runRegressionSuite() {
   }
 
   // Case A: partnerName = "Aarohi"
-  localStorage.setItem('lws:draft:come-here-baby:demo', JSON.stringify({ partnerName: 'Aarohi' }));
-  const titleAarohi = getGiftTitleTest({ id: 'g1', templateSlug: 'come-here-baby', title: 'Anniversary Memory Website' }, localStorage);
+  const localStorageMock = {
+    store: {},
+    getItem(key) { return this.store[key] || null; },
+    setItem(key, val) { this.store[key] = String(val); },
+    removeItem(key) { delete this.store[key]; }
+  };
+  localStorageMock.setItem('lws:draft:come-here-baby:demo', JSON.stringify({ partnerName: 'Aarohi' }));
+  const titleAarohi = getGiftTitleTest({ id: 'g1', templateSlug: 'come-here-baby', title: 'Anniversary Memory Website' }, localStorageMock);
   assert(titleAarohi === 'For Aarohi ❤️', "Dashboard title for partnerName 'Aarohi' resolves to 'For Aarohi ❤️'");
 
   // Case B: partnerName = "Puja"
-  localStorage.setItem('lws:draft:come-here-baby:demo', JSON.stringify({ partnerName: 'Puja' }));
-  const titlePuja = getGiftTitleTest({ id: 'g2', templateSlug: 'come-here-baby', title: 'Anniversary Memory Website' }, localStorage);
+  localStorageMock.setItem('lws:draft:come-here-baby:demo', JSON.stringify({ partnerName: 'Puja' }));
+  const titlePuja = getGiftTitleTest({ id: 'g2', templateSlug: 'come-here-baby', title: 'Anniversary Memory Website' }, localStorageMock);
   assert(titlePuja === 'For Puja ❤️', "Dashboard title for partnerName 'Puja' resolves to 'For Puja ❤️'");
 
   // Case C: empty partnerName fallback
-  localStorage.setItem('lws:draft:come-here-baby:demo', JSON.stringify({ partnerName: '  ' }));
-  const titleEmpty = getGiftTitleTest({ id: 'g3', templateSlug: 'come-here-baby', title: 'Anniversary Memory Website' }, localStorage);
-  assert(titleEmpty === 'For My Baby — My Gift', "Dashboard title for empty partnerName resolves to 'For My Baby — My Gift'");
+  localStorageMock.setItem('lws:draft:come-here-baby:demo', JSON.stringify({ partnerName: '  ' }));
+  const titleEmpty = getGiftTitleTest({ id: 'g3', templateSlug: 'come-here-baby', title: 'Anniversary Memory Website' }, localStorageMock);
+  assert(titleEmpty === 'Always Beside You — My Gift', "Dashboard title for empty partnerName resolves to 'Always Beside You — My Gift'");
 
   // Case D: custom title preservation
-  const titleCustom = getGiftTitleTest({ id: 'g4', templateSlug: 'come-here-baby', title: 'My Custom Romantic Surprise' }, localStorage);
+  const titleCustom = getGiftTitleTest({ id: 'g4', templateSlug: 'come-here-baby', title: 'My Custom Romantic Surprise' }, localStorageMock);
   assert(titleCustom === 'My Custom Romantic Surprise', "Custom user title 'My Custom Romantic Surprise' is preserved 100%");
 
   // Verify Dashboard card subtitle rendering

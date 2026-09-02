@@ -142,7 +142,7 @@ export default function TemplateDetailsPage() {
         {
             step: "03",
             title: "Share & Surprise",
-            desc: "Send your unique live website link to surprise and touch their heart.",
+            desc: "Send your unique private link to surprise and touch their heart.",
             icon: Share2,
         },
     ];
@@ -208,7 +208,7 @@ export default function TemplateDetailsPage() {
                                 <div className="font-semibold text-neutral-300 uppercase tracking-widest text-[10px]">
                                     One-Time Payment
                                 </div>
-                                <div>Lifetime hosting included</div>
+                                <div>Private shareable link included</div>
                             </div>
                         </div>
 
@@ -221,7 +221,7 @@ export default function TemplateDetailsPage() {
                                     data-testid={TEMPLATE_DETAILS.createBtn}
                                     className="lws-btn-primary text-sm py-3.5 px-7 rounded-full font-semibold shadow-xl shadow-rose-500/20 flex items-center gap-2 cursor-pointer hover:scale-[1.02] transition-transform"
                                 >
-                                    Start Creating <ArrowRight size={16} />
+                                    Create Yours <ArrowRight size={16} />
                                 </button>
                             ) : (
                                 <button disabled className="lws-btn-ghost opacity-50 cursor-not-allowed py-3.5 px-6 rounded-full border border-white/10 text-neutral-400">

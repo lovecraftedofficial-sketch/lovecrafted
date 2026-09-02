@@ -15,12 +15,10 @@ import { LANDING } from "@/constants/testIds";
 import { listMarketplaceTemplates } from "@/data/templateRegistry";
 import TemplateCard from "@/components/TemplateCard";
 import CustomerFeedbackSection from "@/components/CustomerFeedbackSection";
-import { getPublicTestimonials } from "@/lib/feedbackService";
 
 export default function LandingPage() {
     const templates = listMarketplaceTemplates();
     const featured = templates;
-    const publicTestimonials = getPublicTestimonials();
 
     return (
         <div data-testid={LANDING.root}>
@@ -50,23 +48,20 @@ export default function LandingPage() {
                         className="max-w-3xl"
                     >
                         <div className="lws-pill mb-6">
-                            <Sparkles size={12} /> Premium romantic websites, handcrafted
+                            <Sparkles size={12} /> Handcrafted Romantic Keepsakes
                         </div>
                         <h1
                             data-testid={LANDING.heroTitle}
                             className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-6"
                         >
-                            <span className="sheen-text">Turn your love story</span>
+                            <span className="sheen-text">Turn your memories</span>
                             <br />
                             <span className="font-italic-display text-[color:var(--lws-cream)] opacity-90">
-                                into a website.
+                                into a digital keepsake they'll never forget.
                             </span>
                         </h1>
                         <p className="text-lg md:text-xl text-[color:var(--lws-text-muted)] max-w-2xl leading-relaxed mb-10">
-                            LoveCrafted hands you a small collection of
-                            hand-designed romantic templates. Pick one. Personalize
-                            the words, photos, memories and music that matter. Share
-                            a private link with the person you love.
+                            Choose a handcrafted experience, personalize it with your names, memories, photos and music, then share a private link with someone you love.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <Link
@@ -102,8 +97,7 @@ export default function LandingPage() {
                             </span>
                         </h2>
                         <p className="text-[color:var(--lws-text-muted)] mt-3 max-w-xl">
-                            Every template is crafted from scratch. No dashboards
-                            full of copies. Just a few, made carefully.
+                            Every keepsake is crafted from scratch. No generic templates. Just a few, made carefully.
                         </p>
                     </div>
                     <Link to="/templates" className="lws-btn-ghost text-sm">
@@ -132,19 +126,19 @@ export default function LandingPage() {
                         {
                             n: "01",
                             t: "Pick a template",
-                            d: "Browse a handcrafted collection. Preview live. Choose the one that feels most like the two of you.",
+                            d: "Choose the experience that feels most like your story.",
                             icon: <Palette size={18} />,
                         },
                         {
                             n: "02",
                             t: "Make it yours",
-                            d: "Personalize names, messages, photos, memories and music through a beautiful visual editor. No code.",
+                            d: "Add names, messages, photos, memories and music. No code required.",
                             icon: <Wand2 size={18} />,
                         },
                         {
                             n: "03",
-                            t: "Share the link",
-                            d: "Publish and share a private link. Only the two of you know what waits behind it.",
+                            t: "Share the surprise",
+                            d: "Publish your keepsake and send the private link to them.",
                             icon: <Heart size={18} />,
                         },
                     ].map((s, i) => (
@@ -203,9 +197,8 @@ export default function LandingPage() {
                             Every design here is coded by hand. No generic
                             drag-and-drop themes. No filler features. Every
                             interaction, animation and typographic detail is chosen
-                            because it makes the finished website feel a little
-                            more like a love letter — and a little less like a
-                            product.
+                            because it makes the finished keepsake feel like a
+                            personal love letter.
                         </p>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -213,22 +206,22 @@ export default function LandingPage() {
                             {
                                 icon: <ShieldCheck size={16} />,
                                 t: "Private by design",
-                                d: "Share only through a private link. Optional password protection is coming.",
+                                d: "Share only through a private link that opens directly on any device.",
                             },
                             {
                                 icon: <Palette size={16} />,
                                 t: "Editorial visuals",
-                                d: "Editorial typography, controlled palettes, restrained animation.",
+                                d: "Curated typography, controlled palettes, and restrained romantic animation.",
                             },
                             {
                                 icon: <Music2 size={16} />,
                                 t: "A song, together",
-                                d: "Add a Spotify, YouTube or Apple Music track — or your own audio.",
+                                d: "Add a Spotify or direct audio track to play during their experience.",
                             },
                             {
                                 icon: <Heart size={16} />,
                                 t: "Made to last",
-                                d: "Not another Valentine's Day gimmick. A keepsake you can revisit any evening.",
+                                d: "A personalized digital keepsake you and your partner can revisit anytime.",
                             },
                         ].map((f) => (
                             <div key={f.t} className="lws-card p-5">
@@ -255,16 +248,16 @@ export default function LandingPage() {
                     Choose your story
                 </h2>
                 <p className="text-[color:var(--lws-text-muted)] text-base md:text-lg max-w-2xl mb-10 leading-relaxed">
-                    Every LoveCrafted website is made to feel personal — from a simple romantic surprise to a full cinematic love story.
+                    Every LoveCrafted keepsake is made to feel personal — from a sweet comfort surprise to a full cinematic love story.
                 </p>
 
                 <div className="grid sm:grid-cols-2 gap-6">
                     {[
                         {
                             tier: "SWEET & PERSONAL",
-                            name: "For My Baby",
+                            name: "Always Beside You",
                             price: 99,
-                            desc: "A cute, intimate romantic experience designed for comforting and surprising someone you love.",
+                            desc: "A reassuring, intimate romantic keepsake designed for comforting and surprising someone you love.",
                             accent: "#f8b5c4",
                             slug: "come-here-baby",
                         },
@@ -312,7 +305,7 @@ export default function LandingPage() {
                                     to={`/templates/${p.slug}`}
                                     className="lws-btn-primary w-full text-center justify-center text-sm py-3 font-semibold"
                                 >
-                                    View Experience <ArrowRight size={14} />
+                                    Preview <ArrowRight size={14} />
                                 </Link>
                             </div>
                         </div>
@@ -320,30 +313,51 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* TESTIMONIALS PLACEHOLDER */}
+            {/* MADE FOR THE MOMENTS THAT MATTER */}
             <section
                 data-testid={LANDING.testimonialsSection}
                 className="max-w-6xl mx-auto px-6 py-16 md:py-24"
             >
-                <div className="lws-pill mb-4">Kind words</div>
-                <h2 className="font-display text-4xl md:text-5xl mb-10 lws-gradient-text">
-                    From the people who mattered
+                <div className="lws-pill mb-4">Moments</div>
+                <h2 className="font-display text-4xl md:text-5xl mb-6 lws-gradient-text">
+                    Made for the moments that matter
                 </h2>
+                <p className="text-[color:var(--lws-text-muted)] text-base md:text-lg max-w-2xl mb-12 leading-relaxed">
+                    LoveCrafted turns your memories, words, photos and music into a private digital keepsake you can give to someone you love.
+                </p>
                 <div className="grid md:grid-cols-3 gap-6">
-                    {publicTestimonials.map((t) => (
-                        <blockquote key={t.id || t.q || t.feedback} className="lws-card p-6 flex flex-col justify-between">
-                            <p className="font-italic-display text-lg leading-relaxed text-[color:var(--lws-cream)]">
-                                “{t.feedback || t.q}”
-                            </p>
-                            <footer className="text-xs uppercase tracking-widest text-[color:var(--lws-text-dim)] mt-4">
-                                — {t.name || t.a}
-                            </footer>
-                        </blockquote>
+                    {[
+                        {
+                            title: "Anniversaries & Milestones",
+                            desc: "Celebrate the journey you have built together with a personalized story, your favorite photos, and a handwritten letter.",
+                            badge: "Milestones",
+                        },
+                        {
+                            title: "Comfort & Long Distance",
+                            desc: "Be there even when you are far apart with comforting notes, gentle care checklists, open-when envelopes, and your shared songs.",
+                            badge: "Connection",
+                        },
+                        {
+                            title: "Proposals & Meaningful Gifts",
+                            desc: "Say what words alone cannot capture with an interactive, cinematic surprise made specifically for them.",
+                            badge: "Keepsake",
+                        },
+                    ].map((m) => (
+                        <div key={m.title} className="lws-card p-7 flex flex-col justify-between">
+                            <div>
+                                <span className="text-[11px] uppercase tracking-widest text-[color:var(--lws-pink)] font-semibold mb-3 inline-block">
+                                    {m.badge}
+                                </span>
+                                <h3 className="font-display text-2xl text-[color:var(--lws-cream)] mb-3">
+                                    {m.title}
+                                </h3>
+                                <p className="text-sm text-[color:var(--lws-text-muted)] leading-relaxed">
+                                    {m.desc}
+                                </p>
+                            </div>
+                        </div>
                     ))}
                 </div>
-                <p className="text-xs text-[color:var(--lws-text-dim)] mt-4">
-                    Verified customer stories — featured with explicit permission.
-                </p>
             </section>
 
             {/* FAQ */}
@@ -355,23 +369,39 @@ export default function LandingPage() {
                 <h2 className="font-display text-4xl md:text-5xl mb-8 lws-gradient-text">
                     Questions people have asked
                 </h2>
-                <div className="space-y-2">
+                <div className="space-y-3">
                     {[
                         {
-                            q: "Can I upload my own template design?",
-                            a: "No. Every template is coded by the studio. You personalize the words, photos and music inside a template you choose.",
+                            q: "What exactly am I buying?",
+                            a: "You get access to personalize and publish a private, interactive digital keepsake. Your partner opens a unique link to experience your customized letters, photos, memory cards, and music in a beautifully animated presentation.",
                         },
                         {
-                            q: "What can I edit?",
-                            a: "Each template lists exactly what's editable — names, messages, dates, photos, memories, reasons, open-when messages, music, letters. The visual editor adapts to the template you pick.",
+                            q: "What can I edit and personalize?",
+                            a: "Each template lets you customize partner names, your personal love letter, photo memories, date milestones, special notes, open-when envelopes, and background music without any coding.",
                         },
                         {
-                            q: "Is my website private?",
-                            a: "Yes. Your website lives at a private random link. Password protection is coming.",
+                            q: "Do I need any technical or coding knowledge?",
+                            a: "None at all. Our visual creator studio lets you type your words, upload photos directly from your device, and see a live preview in real-time as you type.",
                         },
                         {
-                            q: "How do I pay & get my keepsake?",
-                            a: "You can pay securely through Razorpay using the payment options available at checkout. Once your payment is successfully completed and confirmed, you’ll get access to create your personalized LoveCrafted keepsake.",
+                            q: "How does the recipient receive it?",
+                            a: "Once published, you get a clean, private link (e.g. lovecrafted.in/story/your-names) with 1-click sharing to WhatsApp or easy link copying to send through any message.",
+                        },
+                        {
+                            q: "Is my keepsake link private?",
+                            a: "Yes. Only someone who has your unique link can open and view your keepsake. It is never listed on public search engines.",
+                        },
+                        {
+                            q: "Can I preview my keepsake before publishing?",
+                            a: "Yes. You can explore a complete live demo in the marketplace, and while customizing, the visual editor updates a live preview as you make edits.",
+                        },
+                        {
+                            q: "How does payment work?",
+                            a: "You pay a simple one-time price securely through Razorpay using UPI, debit/credit cards, or netbanking. There are no recurring subscriptions or hidden fees.",
+                        },
+                        {
+                            q: "What happens after payment?",
+                            a: "Your keepsake is immediately published to a permanent private link, and you can share it right away with the person you love.",
                         },
                     ].map((f) => (
                         <details key={f.q} className="lws-card p-5 group">
@@ -398,7 +428,7 @@ export default function LandingPage() {
             {/* FINAL CTA */}
             <section className="max-w-4xl mx-auto px-6 py-20 md:py-32 text-center">
                 <h2 className="font-display text-5xl md:text-6xl mb-6">
-                    <span className="lws-gradient-text">Say it in a website</span>
+                    <span className="lws-gradient-text">Say it with a keepsake</span>
                 </h2>
                 <p className="text-[color:var(--lws-text-muted)] text-lg mb-10">
                     Some feelings deserve more than a text message.
@@ -408,7 +438,7 @@ export default function LandingPage() {
                     data-testid={LANDING.finalCtaBtn}
                     className="lws-btn-primary"
                 >
-                    Choose a Template <ArrowRight size={16} />
+                    Explore Templates <ArrowRight size={16} />
                 </Link>
             </section>
         </div>
