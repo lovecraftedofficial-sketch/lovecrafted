@@ -821,43 +821,43 @@ export default function TemplateEditor() {
 
   // Right Side Live Preview (Expansive, beautifully aligned & 100% interactive)
   const preview = (
-    <div className="w-full max-w-2xl min-h-full pb-16">
+    <div className="w-full max-w-2xl min-h-full pb-20 px-1 sm:px-0">
       <AnniversaryKeepsakeView draft={draft} />
     </div>
   );
 
   return (
     <div className="flex h-screen flex-col bg-[#070304] text-[#f5e6d3] overflow-hidden">
-      <header className="sticky top-0 z-40 border-b border-[#dfc19c]/15 bg-[#140a0f]/90 backdrop-blur-xl shrink-0">
-        <div className="flex h-16 items-center justify-between gap-4 px-6">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-[#dfc19c]/15 bg-[#140a0f]/95 backdrop-blur-xl shrink-0">
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6">
+          <div className="flex items-center gap-2 sm:gap-3 shrink min-w-0">
             <Link
               to="/marketplace"
-              className="grid size-9 place-items-center rounded-full border border-[#dfc19c]/20 bg-[#0a0507] text-[#c5b0a5] hover:text-[#e8b4b8]"
+              className="grid size-8 sm:size-9 place-items-center rounded-full border border-[#dfc19c]/20 bg-[#0a0507] text-[#c5b0a5] hover:text-[#e8b4b8] shrink-0"
             >
               <ArrowLeft className="size-4" />
             </Link>
-            <div>
-              <p className="text-[0.6rem] uppercase tracking-[0.2em] text-[#dfc19c]/60">Romantic Studio</p>
-              <p className="text-sm font-serif text-white font-medium">Customising {draft.template_name}</p>
+            <div className="min-w-0">
+              <p className="text-[0.58rem] sm:text-[0.6rem] uppercase tracking-[0.2em] text-[#dfc19c]/60">Romantic Studio</p>
+              <p className="text-xs sm:text-sm font-serif text-white font-medium truncate max-w-[130px] sm:max-w-xs">{draft.template_name}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               type="button"
               onClick={handleSaveClick}
-              className="inline-flex h-9 items-center gap-1.5 sm:gap-2 rounded-full border border-[#dfc19c]/30 bg-[#160b11] px-3.5 sm:px-4 text-xs font-medium text-[#f5e6d3] hover:bg-[#25101c] hover:border-[#dfc19c]/50 transition-all cursor-pointer"
+              className="inline-flex h-8 sm:h-9 items-center gap-1 sm:gap-2 rounded-full border border-[#dfc19c]/30 bg-[#160b11] px-2.5 sm:px-4 text-xs font-medium text-[#f5e6d3] hover:bg-[#25101c] hover:border-[#dfc19c]/50 transition-all cursor-pointer"
             >
               {isSaved ? (
                 <>
-                  <Check className="size-3.5 text-emerald-400" />
-                  <span className="text-emerald-300 font-medium">Saved!</span>
+                  <Check className="size-3 text-emerald-400" />
+                  <span className="text-emerald-300 font-medium text-[0.75rem]">Saved!</span>
                 </>
               ) : (
                 <>
-                  <Save className="size-3.5 text-[#dfc19c]" />
-                  <span>Save</span>
+                  <Save className="size-3 sm:size-3.5 text-[#dfc19c]" />
+                  <span className="text-[0.75rem] sm:text-xs">Save</span>
                 </>
               )}
             </button>
@@ -865,10 +865,10 @@ export default function TemplateEditor() {
             <button
               type="button"
               onClick={handlePublishClick}
-              className="inline-flex h-9 items-center gap-1.5 sm:gap-2 rounded-full bg-[#d48b95] px-4 sm:px-5 text-xs font-semibold text-[#0a0507] hover:bg-[#e8b4b8] shadow-md shadow-rose-950/30 transition-all cursor-pointer"
+              className="inline-flex h-8 sm:h-9 items-center gap-1 sm:gap-2 rounded-full bg-[#d48b95] px-3 sm:px-5 text-xs font-semibold text-[#0a0507] hover:bg-[#e8b4b8] shadow-md shadow-rose-950/30 transition-all cursor-pointer"
             >
-              <Send className="size-3.5" />
-              <span>Publish (₹9)</span>
+              <Send className="size-3 sm:size-3.5" />
+              <span className="text-[0.75rem] sm:text-xs">Publish (₹9)</span>
             </button>
           </div>
         </div>
@@ -883,18 +883,22 @@ export default function TemplateEditor() {
         </section>
       </div>
 
-      <div className="flex flex-1 flex-col lg:hidden">
-        <div className="flex-1 p-4 pb-24">
+      {/* Fully Scrollable Mobile Experience */}
+      <div id="mobile-editor-scroll-container" className="flex flex-1 flex-col lg:hidden overflow-y-auto scrollbar-thin">
+        <div className="flex-1 p-3 sm:p-4 pb-28">
           {mobileTab === "edit" ? editForm : <div className="flex justify-center">{preview}</div>}
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#dfc19c]/15 bg-[#140a0f]/95 p-3 backdrop-blur-xl">
-          <div className="grid grid-cols-2 gap-2">
+        {/* Bottom Floating Navigation for Mobile */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#dfc19c]/15 bg-[#140a0f]/95 p-2.5 sm:p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
             <button
               type="button"
               onClick={() => setMobileTab("edit")}
-              className={`flex h-11 items-center justify-center gap-2 rounded-lg text-xs font-medium ${
-                mobileTab === "edit" ? "bg-[#4a0e1c] text-[#f5e6d3]" : "text-[#c5b0a5]"
+              className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                mobileTab === "edit"
+                  ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] shadow-lg shadow-rose-950/40"
+                  : "border border-[#dfc19c]/20 bg-[#1a0c15]/60 text-[#c5b0a5] hover:text-white"
               }`}
             >
               <Edit3 className="size-4" /> Edit Details
@@ -902,8 +906,10 @@ export default function TemplateEditor() {
             <button
               type="button"
               onClick={() => setMobileTab("preview")}
-              className={`flex h-11 items-center justify-center gap-2 rounded-lg text-xs font-medium ${
-                mobileTab === "preview" ? "bg-[#4a0e1c] text-[#f5e6d3]" : "text-[#c5b0a5]"
+              className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                mobileTab === "preview"
+                  ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] shadow-lg shadow-rose-950/40"
+                  : "border border-[#dfc19c]/20 bg-[#1a0c15]/60 text-[#c5b0a5] hover:text-white"
               }`}
             >
               <Eye className="size-4" /> Live Preview

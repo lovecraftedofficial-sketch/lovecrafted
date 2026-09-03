@@ -32,13 +32,13 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-[#dfc19c]/10 bg-[#0a0507]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Brand Logo: Heart Icon + LoveCrafted */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-[#e8b4b8] to-[#d48b95] text-[#0a0507] shadow-[0_0_20px_rgba(212,139,149,0.4)] transition-transform group-hover:scale-105">
-              <Heart className="size-4 fill-[#0a0507]" />
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+            <div className="grid size-8 sm:size-9 place-items-center rounded-full bg-gradient-to-br from-[#e8b4b8] to-[#d48b95] text-[#0a0507] shadow-[0_0_20px_rgba(212,139,149,0.4)] transition-transform group-hover:scale-105">
+              <Heart className="size-3.5 sm:size-4 fill-[#0a0507]" />
             </div>
-            <span className="font-serif text-2xl font-bold tracking-tight text-[#f5e6d3] group-hover:text-[#e8b4b8] transition-colors">
+            <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-[#f5e6d3] group-hover:text-[#e8b4b8] transition-colors">
               LoveCrafted
             </span>
           </Link>
@@ -78,17 +78,17 @@ export default function Navbar() {
           </nav>
 
           {/* Right Section: Sign In Link + Explore Templates Pill Button */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2.5 sm:gap-6">
             {user ? (
-              <span className="text-xs font-medium text-[#e8b4b8] bg-[#140a0f] border border-[#dfc19c]/20 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <span className="text-xs font-medium text-[#e8b4b8] bg-[#140a0f] border border-[#dfc19c]/20 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5">
                 <User className="size-3.5" />
-                {user.name}
+                <span className="max-w-[70px] sm:max-w-none truncate">{user.name}</span>
               </span>
             ) : (
               <button
                 type="button"
                 onClick={() => setShowAuthModal(true)}
-                className="text-sm font-medium text-[#c5b0a5] hover:text-[#f5e6d3] transition-colors"
+                className="text-xs sm:text-sm font-medium text-[#c5b0a5] hover:text-[#f5e6d3] transition-colors py-1 px-1.5 sm:px-2 cursor-pointer"
               >
                 Sign In
               </button>
@@ -96,9 +96,9 @@ export default function Navbar() {
 
             <Link
               to="/marketplace"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-6 text-sm font-medium text-[#0a0507] transition-all hover:shadow-[0_0_25px_rgba(212,139,149,0.4)] hover:scale-[1.02]"
+              className="inline-flex h-9 sm:min-h-[44px] items-center justify-center rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-3.5 sm:px-6 text-xs sm:text-sm font-semibold text-[#0a0507] transition-all hover:shadow-[0_0_25px_rgba(212,139,149,0.4)] hover:scale-[1.02]"
             >
-              Explore Templates
+              Explore
             </Link>
           </div>
         </div>

@@ -1,14 +1,27 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { VolumeX, Disc } from "lucide-react";
 
 export default function BackgroundMusic() {
+  const location = useLocation();
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
 
   // Soft, romantic ambient instrumental
   const audioSrc = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3";
 
+  // Exclude editor and published keepsake pages where template's own Vinyl player is active
+  const isExcluded = location.pathname.startsWith("/editor") || location.pathname.startsWith("/v/");
+
   useEffect(() => {
+    if (isExcluded && audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [isExcluded]);
+
+  useEffect(() => {
+    if (isExcluded) return;
     if (audioRef.current) {
       audioRef.current.volume = 0.15; // 15% ultra-soft background ambience
     }
@@ -26,7 +39,7 @@ export default function BackgroundMusic() {
 
     window.addEventListener("click", handleFirstClick);
     return () => window.removeEventListener("click", handleFirstClick);
-  }, []);
+  }, [isExcluded]);
 
   const toggleMusic = (e) => {
     e.stopPropagation();
@@ -40,8 +53,10 @@ export default function BackgroundMusic() {
     }
   };
 
+  if (isExcluded) return null;
+
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-5 right-5 z-40">
       <audio ref={audioRef} src={audioSrc} loop />
       
       <button

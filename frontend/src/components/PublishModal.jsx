@@ -86,8 +86,8 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className={`relative w-full ${step === "success" ? "max-w-md max-h-[92vh] overflow-y-auto" : "max-w-md"} rounded-3xl border border-[#d48b95]/30 bg-[#0e070a] p-6 sm:p-7 text-[#f5e6d3] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] scrollbar-thin`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-[#d48b95]/30 bg-[#0e070a] p-5 sm:p-7 text-[#f5e6d3] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] scrollbar-thin">
         
         {/* Close Button */}
         <button

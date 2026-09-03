@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -79,11 +79,7 @@ function App() {
                         />
                         <Route
                             path="/editor/:id"
-                            element={
-                                <Shell hideFooter>
-                                    <TemplateEditor />
-                                </Shell>
-                            }
+                            element={<TemplateEditor />}
                         />
                         <Route
                             path="/dashboard"
