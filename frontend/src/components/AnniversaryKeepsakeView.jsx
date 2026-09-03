@@ -146,6 +146,15 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
     return () => clearInterval(timer);
   }, [anniversaryDate]);
 
+  // Reload audio stream when song changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      audioRef.current.load();
+    }
+  }, [draft?.audio_preview_url, draft?.bg_music_url]);
+
   // Audio Time & Scrubber State
   const [audioProgress, setAudioProgress] = useState(0);
   const [currentTimeStr, setCurrentTimeStr] = useState("00:00");
@@ -233,8 +242,9 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
       <audio
         ref={audioRef}
         src={
-          draft?.bg_music_url && (draft.bg_music_url.includes(".mp3") || draft.bg_music_url.startsWith("/"))
-            ? draft.bg_music_url
+          draft?.audio_preview_url ||
+          (draft?.bg_music_url && (draft.bg_music_url.includes(".mp3") || draft.bg_music_url.includes(".m4a") || draft.bg_music_url.startsWith("/audio/")))
+            ? (draft?.audio_preview_url || draft.bg_music_url)
             : "/audio/sab-tera.mp3"
         }
         loop
@@ -502,13 +512,23 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
                   <div className="absolute inset-11 rounded-full border border-white/5" />
 
                   {/* Vinyl Center Label */}
-                  <div className="size-14 sm:size-16 rounded-full bg-gradient-to-tr from-[#d48b95] to-[#e8b4b8] border-2 border-[#0a0507] flex flex-col items-center justify-center shadow-inner text-center px-1">
-                    <span className="font-serif text-[0.68rem] font-bold text-[#0a0507] tracking-wider leading-tight">
-                      {partner1[0]} &amp; {partner2[0]}
-                    </span>
-                    <span className="text-[0.48rem] uppercase font-sans font-bold text-[#0a0507]/80 tracking-tighter truncate max-w-full">
-                      {songTitle}
-                    </span>
+                  <div className="size-14 sm:size-16 rounded-full bg-gradient-to-tr from-[#d48b95] to-[#e8b4b8] border-2 border-[#0a0507] flex flex-col items-center justify-center shadow-inner text-center px-1 overflow-hidden relative">
+                    {draft?.music_cover ? (
+                      <img
+                        src={draft.music_cover}
+                        alt={songTitle}
+                        className="size-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <>
+                        <span className="font-serif text-[0.68rem] font-bold text-[#0a0507] tracking-wider leading-tight">
+                          {partner1[0]} &amp; {partner2[0]}
+                        </span>
+                        <span className="text-[0.48rem] uppercase font-sans font-bold text-[#0a0507]/80 tracking-tighter truncate max-w-full">
+                          {songTitle}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </motion.div>
 
