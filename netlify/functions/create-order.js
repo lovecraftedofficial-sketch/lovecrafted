@@ -2,6 +2,7 @@ const Razorpay = require("razorpay");
 
 // SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth - Client cannot override)
 const SERVER_PRICING_CATALOG = {
+    "aurora-noire": 9,
     "come-here-baby": 99,
     "until-forever": 299,
     "a-little-corner": 2999,

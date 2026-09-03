@@ -1,0 +1,244 @@
+{
+  "aurora-noire": {
+    "id": "aurora-noire",
+    "template_name": "Aurora Noire Monogram",
+    "occasion_badge": "🥂 Happy Anniversary, My Favorite Human ❤️",
+    "occasion_title": "Another Year of Loving & Annoying Each Other",
+    "partner1_name": "Kabir",
+    "partner2_name": "Ananya",
+    "relationship_date": "2023-11-24",
+    "greeting_teaser": "Can you believe we've made it another year without driving each other crazy? Happy Anniversary, my love! You're still the only person I'd willingly share my fries and blanket with (and you know that's saying a lot!). Here's to surviving each other, laughing till our stomachs hurt, and falling harder in love every single day.",
+    "special_notes": [
+      { "id": 1, "emoji": "🥰", "title": "Your Sleepy Morning Smile", "content": "The adorable squint you make when the alarm rings and you stubbornly pull the blanket over your head." },
+      { "id": 2, "emoji": "✨", "title": "That Unfiltered Laugh", "content": "The way you laugh so hard you lose your breath at silly inside jokes that nobody else understands." },
+      { "id": 3, "emoji": "🤝", "title": "How You Reach For My Hand", "content": "The unconscious way you find my fingers whenever we're in crowded places or crossing the street." },
+      { "id": 4, "emoji": "🍟", "title": "Our Midnight Cravings", "content": "How a random 1 AM Maggi run or ice cream drive feels like the sweetest adventure when I'm with you." }
+    ],
+    "open_when_notes": [
+      { "id": 1, "title": "Your Sleepy Morning Smile", "content": "The adorable squint you make when the alarm rings and you stubbornly pull the blanket over your head." },
+      { "id": 2, "title": "That Unfiltered Laugh", "content": "The way you laugh so hard you lose your breath at silly inside jokes that nobody else understands." },
+      { "id": 3, "title": "How You Reach For My Hand", "content": "The unconscious way you find my fingers whenever we're in crowded places or crossing the street." },
+      { "id": 4, "title": "Our Midnight Cravings", "content": "How a random 1 AM Maggi run or ice cream drive feels like the sweetest adventure when I'm with you." }
+    ],
+    "music_type": "mp3",
+    "bg_music_url": "/audio/sab-tera.mp3",
+    "music_title": "Sab Tera",
+    "music_artist": "Armaan Malik, Shraddha Kapoor",
+    "music_cover": "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02442cc5719771ff2ca62f437f",
+    "spotify_url": "https://open.spotify.com/track/5uUEytfFSWfTzu5EqZxQju?si=5069458d6d784544",
+    "mp3_fallback_url": "/audio/sab-tera.mp3",
+    "memories_section1_title": "Where It All Began · Milestone Moments",
+    "memories_section1": [
+      { "id": 1, "title": "Our Very First Date", "caption": "The rainy evening where two hours felt like two seconds.", "image": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80" },
+      { "id": 2, "title": "The First Roadtrip", "caption": "Bad singing, wrong turns, and the most unforgettable sunset.", "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80" }
+    ],
+    "memories_section2_title": "Unfiltered Love · Our Candid & Silly Moments",
+    "memories_section2": [
+      { "id": 1, "title": "Goofy Afternoon", "caption": "You trying to take a serious aesthetic picture while I couldn't stop teasing you.", "image": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80" },
+      { "id": 2, "title": "Coffee & Cozy Chaos", "caption": "Messy hair, oversized hoodies, and pure comfort.", "image": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80" }
+    ],
+    "memories": [
+      { "id": 1, "title": "Our Very First Date", "caption": "The rainy evening where two hours felt like two seconds.", "image": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80" },
+      { "id": 2, "title": "The First Roadtrip", "caption": "Bad singing, wrong turns, and the most unforgettable sunset.", "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80" },
+      { "id": 3, "title": "Goofy Afternoon", "caption": "You trying to take a serious aesthetic picture while I couldn't stop teasing you.", "image": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80" },
+      { "id": 4, "title": "Coffee & Cozy Chaos", "caption": "Messy hair, oversized hoodies, and pure comfort.", "image": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80" }
+    ],
+    "proposal_letter_title": "Will You Keep Choosing Me? (A Proposal All Over Again) 💍",
+    "love_letter": "My love, looking back at our journey, every single day with you feels like a gift I never take for granted. Thank you for choosing me, for holding my hand when life gets messy, and for filling my world with your light and warmth. If I had to live this life a thousand times over, in every universe, I would search for you and choose you every single time. So here is me asking you all over again: Will you stay by my side, hold my hand, and be my forever love? Happy Anniversary, my heart.",
+    "proposal_yes_title": "You just made me the happiest person in the universe... all over again! 💍❤️",
+    "proposal_yes_message": "Thank you for saying YES to me, my love. I promise to hold your hand through every high and low, make you laugh on your hardest days, and love you deeper with each passing breath. My forever was always you.",
+    "accent_tone": "rose-gold"
+  },
+  "burgundy-botanica": {
+    "id": "burgundy-botanica",
+    "template_name": "Burgundy Botanica Archive",
+    "occasion_badge": "🌿 Intimate Vows & Micro-Wedding Love",
+    "occasion_title": "Two Souls, One Forest Path",
+    "partner1_name": "Elena",
+    "partner2_name": "Julian",
+    "relationship_date": "2023-10-12",
+    "love_letter": "Two souls, one quiet forest path. Walking beside you through life is the greatest privilege of my life.",
+    "voice_note_title": "Whispered Vows for Your Ears Only 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "mp3",
+    "bg_music_url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a82a0b.mp3",
+    "accent_tone": "burgundy",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when you need a gentle hug", "content": "Wrap yourself in a blanket and imagine my arms around you right now." },
+      { "id": 2, "title": "Open when the world feels loud", "content": "Take a deep breath. Our little world is quiet, peaceful, and forever yours." },
+      { "id": 3, "title": "Open on a rainy Sunday morning", "content": "Let us stay in bed all day listening to the rain together." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Forest Sanctuary", "caption": "Our quiet walk among ancient pines", "image": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Hand-Pressed Flowers", "caption": "The bloom you saved from our first spring", "image": "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "chateau-velvet": {
+    "id": "chateau-velvet",
+    "template_name": "Chateau de Velvet & Rose",
+    "occasion_badge": "🏰 Destination Romance & French Getaway",
+    "occasion_title": "Escaping to Paris With You",
+    "partner1_name": "Sophie",
+    "partner2_name": "Gabriel",
+    "relationship_date": "2022-06-20",
+    "love_letter": "Under the French sunset, amidst velvet roses and wax seals, I vow to love you in every corner of the world.",
+    "voice_note_title": "A Sweet Voice Note From Our Trip 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "spotify",
+    "bg_music_url": "https://open.spotify.com/track/1Bxfay2w22B2yMUUu8dKV8",
+    "accent_tone": "rose-gold",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when you pack our bags for Paris", "content": "Get ready for croissants, Eiffel Tower lights, and endless romantic strolls!" },
+      { "id": 2, "title": "Open when you want to dance", "content": "Put on our song, take my hand, and let us spin in the living room." },
+      { "id": 3, "title": "Open on our flight to paradise", "content": "Look out the window — every mile brings us closer to a lifetime of memories." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Chateau Courtyard", "caption": "Sunset wine tasting in Southern France", "image": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Velvet Nights", "caption": "Dressed up for dinner in Paris", "image": "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "crimson-twilight": {
+    "id": "crimson-twilight",
+    "template_name": "Crimson Twilight Vows",
+    "occasion_badge": "🍷 Vineyard Candlelight & 1st Anniversary",
+    "occasion_title": "Toasting to Our Eternal Love",
+    "partner1_name": "Clara",
+    "partner2_name": "Mateo",
+    "relationship_date": "2024-05-18",
+    "love_letter": "Like fine wine in deep crimson and rose gold, our love grows richer with every passing season.",
+    "voice_note_title": "Our Midnight Toast Audio Note 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "mp3",
+    "bg_music_url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a82a0b.mp3",
+    "accent_tone": "burgundy",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when we open our anniversary bottle", "content": "Pour two glasses! Here is to the first year of the rest of our lives." },
+      { "id": 2, "title": "Open when you need a sweet reminder", "content": "You are the warmest part of my everyday life. Cheers to you, my love!" },
+      { "id": 3, "title": "Open when you feel like reminiscing", "content": "Look back at our first photo together — we were so in love!" }
+    ],
+    "memories": [
+      { "id": 1, "title": "Vineyard Sunset", "caption": "Sunset wine tasting in the hills", "image": "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Candlelit Toast", "caption": "Celebrating 1 year together", "image": "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "midnight-garden": {
+    "id": "midnight-garden",
+    "template_name": "Midnight Garden Manor",
+    "occasion_badge": "🌲 Villa Romance & Valentine Keepsake",
+    "occasion_title": "Our Secret Garden Sanctuary",
+    "partner1_name": "Maya",
+    "partner2_name": "Leo",
+    "relationship_date": "2023-02-14",
+    "love_letter": "Deep in our private garden of memories, your love is the flower that blooms forever.",
+    "voice_note_title": "Midnight Voice Note Recorded Just For You 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "spotify",
+    "bg_music_url": "https://open.spotify.com/track/3ee8Jmje8o58R6Z8v80xeB",
+    "accent_tone": "emerald",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when you walk in our garden", "content": "Notice the flowers blooming? They remind me of your beautiful smile." },
+      { "id": 2, "title": "Open when you want a warm smile", "content": "Sending you 1,000 hugs and kisses right through this screen!" },
+      { "id": 3, "title": "Open on Valentine Midnight", "content": "Happy Valentine Day, my forever love. You are my dream come true." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Manor Gates", "caption": "Our secret garden walk at dusk", "image": "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Botanical Seals", "caption": "The wax seal note you gave me", "image": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "nocturne-chandeliers": {
+    "id": "nocturne-chandeliers",
+    "template_name": "Nocturne & Chandeliers",
+    "occasion_badge": "💎 Ballroom Gala & Birthday Celebration",
+    "occasion_title": "Dazzling Bright Under Chandeliers",
+    "partner1_name": "Isabella",
+    "partner2_name": "Arthur",
+    "relationship_date": "2021-11-05",
+    "love_letter": "Beneath the glowing chandeliers, you are the brightest star in the ballroom of my life.",
+    "voice_note_title": "Birthday Love Message Voice Note 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "mp3",
+    "bg_music_url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a82a0b.mp3",
+    "accent_tone": "platinum",
+    "open_when_notes": [
+      { "id": 1, "title": "Open before the grand ballroom dance", "content": "Take my arm, smile for the photos, and let us own the night!" },
+      { "id": 2, "title": "Open when you put on your favourite dress", "content": "You take my breath away every single time I see you." },
+      { "id": 3, "title": "Open on your birthday morning", "content": "Happy Birthday my queen! Today is all about celebrating you." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Chandelier Night", "caption": "Danced until 3 AM under the crystal lights", "image": "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Grand Entrance", "caption": "Holding hands entering the hall", "image": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "riviera-sunset": {
+    "id": "riviera-sunset",
+    "template_name": "Riviera Sunset Solstice",
+    "occasion_badge": "🌅 Coastline Sunset & Beach Promises",
+    "occasion_title": "Where Sunset Waves Meet Our Heartbeat",
+    "partner1_name": "Aria",
+    "partner2_name": "Lucas",
+    "relationship_date": "2023-07-07",
+    "love_letter": "Where the ocean waves meet the warm golden sand, my heart will always crash into yours.",
+    "voice_note_title": "Ocean Waves & Voice Confession 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "spotify",
+    "bg_music_url": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b",
+    "accent_tone": "rose-gold",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when you hear the ocean waves", "content": "Listen to the sea rhythm — it matches how much I love you." },
+      { "id": 2, "title": "Open when watching a sunset without me", "content": "Look at the pink sky and know I am thinking of you." },
+      { "id": 3, "title": "Open on our beach date anniversary", "content": "Happy Anniversary! Let us write our names in the sand once again." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Coastal Sunset", "caption": "Kissing by the waves at dusk", "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Golden Shore", "caption": "Barefoot walks along the Riviera beach", "image": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "sonata-rose": {
+    "id": "sonata-rose",
+    "template_name": "Sonata in Rose Minor",
+    "occasion_badge": "🎹 Classical Sonata & Long Distance Love",
+    "occasion_title": "A Symphony Composed For You",
+    "partner1_name": "Camille",
+    "partner2_name": "Sebastian",
+    "relationship_date": "2022-12-01",
+    "love_letter": "Distance is only measuring space, never love. Every note of this sonata plays for you.",
+    "voice_note_title": "Long Distance Goodnight Voice Note 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "spotify",
+    "bg_music_url": "https://open.spotify.com/track/1Bxfay2w22B2yMUUu8dKV8",
+    "accent_tone": "champagne",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when distance feels hard", "content": "No matter how many miles separate us, you are right here in my heart." },
+      { "id": 2, "title": "Open when you miss my voice", "content": "Play the voice note above — I am whispering sweet goodnights to you." },
+      { "id": 3, "title": "Open the night before we meet again", "content": "Counting down the hours! Tomorrow I get to hold you again." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Grand Piano", "caption": "Playing classical sonatas together", "image": "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Museum Date", "caption": "Our afternoon date among classical statues", "image": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80" }
+    ]
+  },
+  "obsidian-gala": {
+    "id": "obsidian-gala",
+    "template_name": "The Obsidian Gala",
+    "occasion_badge": "🖤 Obsidian Baroque & Reconnection Story",
+    "occasion_title": "Timeless & Gilded in Obsidian Gold",
+    "partner1_name": "Victoria",
+    "partner2_name": "Dominic",
+    "relationship_date": "2020-09-09",
+    "love_letter": "Gilded in gold and bound in baroque obsidian, our story is timeless and eternal.",
+    "voice_note_title": "Private Late Night Voice Letter 🎙️",
+    "voice_note_url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+    "music_type": "mp3",
+    "bg_music_url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a82a0b.mp3",
+    "accent_tone": "rose-gold",
+    "open_when_notes": [
+      { "id": 1, "title": "Open when you need strength", "content": "Together we have overcome everything. You are my rock and my inspiration." },
+      { "id": 2, "title": "Open when you look at our photos", "content": "Every single picture tells a story of endless devotion." },
+      { "id": 3, "title": "Open on our quiet late night", "content": "Pour wine, dim the lights, and let us listen to our song together." }
+    ],
+    "memories": [
+      { "id": 1, "title": "Obsidian Gala", "caption": "Dressed in black tie for our special night", "image": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=600&q=80" },
+      { "id": 2, "title": "Golden Letterpress", "caption": "The wax-sealed note from our anniversary", "image": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80" }
+    ]
+  }
+}

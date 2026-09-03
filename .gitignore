@@ -12,6 +12,11 @@ browser/
 *.env
 *.secret
 
-# Node modules
+# Node modules & build outputs
 node_modules/
 frontend/node_modules/
+build/
+frontend/build/
+dist/
+.DS_Store
+*.log

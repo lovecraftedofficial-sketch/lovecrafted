@@ -1,611 +1,172 @@
-import React, { useState, useMemo } from "react";
+﻿import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-    PenLine,
-    Eye,
-    Plus,
-    Clock,
-    Send,
-    Sparkles,
-    Search,
-    Copy,
-    Trash2,
-    Share2,
-    Check,
-    AlertTriangle,
-    X,
-    Lock,
-    Unlock,
-    ExternalLink,
-    CreditCard,
-    FileText,
-    Heart,
-    MessageSquare,
-    CheckCircle2,
-    Shield
+  Edit3,
+  ExternalLink,
+  Eye,
+  Heart,
+  Plus,
+  Send,
+  Sparkles,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
-import { DASHBOARD } from "@/constants/testIds";
-import { listShippableTemplates, getTemplate } from "@/data/templateRegistry";
-import { getOccasionBySlug } from "@/constants/occasions";
-import { getGiftTitle } from "@/lib/giftTitleUtils";
-import PublishModal from "@/components/PublishModal";
-import ShareModal from "@/components/ShareModal";
-import { getAllFeedback, toggleFeedbackApproval } from "@/lib/feedbackService";
+import { Button } from "../components/ui/button";
+
+const INITIAL_DRAFTS = [
+  {
+    id: "draft_1",
+    slug: "aurora-sample",
+    title: "Website Draft 1",
+    subtitle: "AURORA SAMPLE",
+    templateName: "Aurora Noire Monogram",
+    lastEdited: "Just now",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
+    status: "draft",
+  },
+  {
+    id: "draft_2",
+    slug: "sunset-love",
+    title: "Website Draft 2",
+    subtitle: "SUNSET LOVE",
+    templateName: "Burgundy Botanica Archive",
+    lastEdited: "Just now",
+    image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80",
+    status: "draft",
+  },
+];
 
 export default function DashboardPage() {
-    const navigate = useNavigate();
-    const shippable = listShippableTemplates();
+  const navigate = useNavigate();
+  const [drafts] = useState(INITIAL_DRAFTS);
+  const [requestedLive, setRequestedLive] = useState({});
 
-    // Gift cards state persisted locally
-    const [gifts, setGifts] = useState(() => {
-        const stored = localStorage.getItem("lws:user_gifts");
-        if (stored) {
-            try {
-                return JSON.parse(stored);
-            } catch {
-                /* ignore */
-            }
-        }
-        // Fallback default starter drafts using sensible title generation
-        return shippable.slice(0, 3).map((t, i) => {
-            const giftObj = {
-                id: `gift-${t.config.slug}-${i}`,
-                templateSlug: t.config.slug,
-                occasionSlug: (t.config.occasions && t.config.occasions[0]) || t.config.category.toLowerCase(),
-                status: i === 0 ? "Published" : "Draft",
-                paymentStatus: i === 0 ? "paid" : "unpaid",
-                invoiceRef: i === 0 ? "INV-LC-8921" : null,
-                slug: i === 0 ? "our-anniversary" : `story-${i}`,
-                lastEdited: i === 0 ? "2 hours ago" : "Yesterday",
-                createdAt: new Date().toISOString(),
-            };
-            return {
-                ...giftObj,
-                title: getGiftTitle(giftObj),
-            };
-        });
-    });
+  const handleRequestLive = (id) => {
+    setRequestedLive((prev) => ({ ...prev, [id]: true }));
+  };
 
-    const [filterTab, setFilterTab] = useState("all"); // 'all' | 'draft' | 'published' | 'feedback'
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedPublishDraft, setSelectedPublishDraft] = useState(null);
-    const [selectedShareGift, setSelectedShareGift] = useState(null);
-    const [copiedId, setCopiedId] = useState(null);
+  return (
+    <div className="min-h-screen bg-[#0a0507] text-[#f5e6d3] font-sans antialiased selection:bg-[#d48b95]/30 selection:text-[#f5e6d3]">
+      {/* ---------- Header / Hero Section with Luxe Radial Glow ---------- */}
+      <section className="relative overflow-hidden bg-luxe-radial pt-16 pb-14 lg:pt-20 lg:pb-16 border-b border-[#dfc19c]/10">
+        <div
+          className="pointer-events-none absolute -left-40 top-10 size-[32rem] rounded-full opacity-30 blur-[120px]"
+          style={{ background: "radial-gradient(circle, rgba(212,139,149,0.35), transparent 70%)" }}
+        />
 
-    // Feedback Moderation State
-    const [feedbackList, setFeedbackList] = useState(() => getAllFeedback());
-
-    const handleToggleApproval = (id) => {
-        const updated = toggleFeedbackApproval(id);
-        setFeedbackList([...updated]);
-    };
-
-    // Delete Confirmation Modal State
-    const [giftToDelete, setGiftToDelete] = useState(null);
-
-    const saveGifts = (updatedGifts) => {
-        setGifts(updatedGifts);
-        try {
-            localStorage.setItem("lws:user_gifts", JSON.stringify(updatedGifts));
-        } catch {
-            /* ignore */
-        }
-    };
-
-    const handleDuplicateGift = (gift) => {
-        const cloned = {
-            ...gift,
-            id: `gift-${gift.templateSlug}-${Date.now()}`,
-            title: `${gift.title} (Copy)`,
-            status: "Draft",
-            paymentStatus: "unpaid",
-            invoiceRef: null,
-            slug: `${gift.slug || "story"}-copy-${Date.now().toString().slice(-4)}`,
-            lastEdited: "Just now",
-            createdAt: new Date().toISOString(),
-        };
-        const nextGifts = [cloned, ...gifts];
-        saveGifts(nextGifts);
-    };
-
-    const handleTogglePublishStatus = (giftId) => {
-        const nextGifts = gifts.map((g) => {
-            if (g.id === giftId) {
-                const nextStatus = g.status.toLowerCase() === "published" ? "Draft" : "Published";
-                return { ...g, status: nextStatus, lastEdited: "Just now" };
-            }
-            return g;
-        });
-        saveGifts(nextGifts);
-    };
-
-    const handleConfirmDelete = () => {
-        if (!giftToDelete) return;
-        const nextGifts = gifts.filter((g) => g.id !== giftToDelete.id);
-        saveGifts(nextGifts);
-        setGiftToDelete(null);
-    };
-
-    const handleCopyPublicLink = (gift) => {
-        const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
-        const publicUrl = `${baseUrl}/story/${gift.slug || gift.id}`;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(publicUrl);
-            setCopiedId(gift.id);
-            setTimeout(() => setCopiedId(null), 2000);
-        }
-    };
-
-    // Filter & Search logic
-    const filteredGifts = useMemo(() => {
-        return gifts.filter((g) => {
-            // Filter Tab
-            if (filterTab === "draft" && g.status.toLowerCase() !== "draft") return false;
-            if (filterTab === "published" && g.status.toLowerCase() !== "published") return false;
-
-            // Search Query
-            if (searchQuery.trim() !== "") {
-                const q = searchQuery.toLowerCase();
-                const matchTitle = g.title.toLowerCase().includes(q);
-                const matchTemplate = g.templateSlug.toLowerCase().includes(q);
-                const matchOccasion = (g.occasionSlug || "").toLowerCase().includes(q);
-                if (!matchTitle && !matchTemplate && !matchOccasion) return false;
-            }
-
-            return true;
-        });
-    }, [gifts, filterTab, searchQuery]);
-
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
-
-    return (
-        <div data-testid={DASHBOARD.root} className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 text-white">
-            {/* Custom Delete Confirmation Modal */}
-            {giftToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 relative">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                                <AlertTriangle size={22} />
-                            </div>
-                            <div>
-                                <h3 className="font-serif text-lg font-bold text-white">Delete Keepsake?</h3>
-                                <p className="text-xs text-neutral-400">This action cannot be undone.</p>
-                            </div>
-                        </div>
-
-                        <p className="text-xs text-neutral-300 leading-relaxed bg-black/40 p-3 rounded-xl border border-white/5">
-                            Are you sure you want to delete "<strong className="text-white">{giftToDelete.title}</strong>"?
-                        </p>
-
-                        <div className="flex items-center justify-end gap-3 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => setGiftToDelete(null)}
-                                className="px-4 py-2 rounded-xl text-xs font-medium bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleConfirmDelete}
-                                className="px-4 py-2 rounded-xl text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white shadow-lg transition-colors cursor-pointer"
-                            >
-                                Yes, Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Studio Dashboard Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-                <div>
-                    <div className="lws-pill mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300">
-                        <Sparkles size={13} /> Your Studio
-                    </div>
-                    <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight">
-                        <span className="lws-gradient-text">My Romantic Keepsakes</span>
-                    </h1>
-                    <p className="text-neutral-400 mt-2 text-xs sm:text-sm max-w-xl leading-relaxed">
-                        Manage your customized website drafts, continue editing, or unlock publishing via Razorpay checkout.
-                    </p>
-                </div>
-
-                <Link
-                    to="/templates"
-                    data-testid={DASHBOARD.newSiteBtn}
-                    className="lws-btn-primary text-xs py-3 px-5 rounded-full inline-flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-105 transition-transform shrink-0"
-                >
-                    <Plus size={16} /> Create New Keepsake
-                </Link>
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-4">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/30 bg-[#140a0f]/80 px-4 py-1.5 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
+                <Sparkles className="size-3.5 text-[#e8b4b8]" />
+                YOUR ATELIER STUDIO
+              </span>
+              <h1 className="font-serif text-4xl sm:text-5xl font-medium text-white">
+                Your websites
+              </h1>
+              <p className="max-w-xl text-sm leading-relaxed text-[#c5b0a5] sm:text-base">
+                Customize your romantic website drafts or request your final shareable live link.
+              </p>
             </div>
 
-            {/* Filter Tabs & Search Control Bar */}
-            <div className="lws-card p-4 mb-8 bg-neutral-900/60 border border-white/10 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                {/* Filter Tabs */}
-                <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-full p-1 w-full sm:w-auto">
-                    <button
-                        type="button"
-                        onClick={() => setFilterTab("all")}
-                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                            filterTab === "all"
-                                ? "bg-rose-500 text-white shadow-md"
-                                : "text-neutral-400 hover:text-white"
-                        }`}
-                    >
-                        All Gifts ({gifts.length})
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setFilterTab("draft")}
-                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                            filterTab === "draft"
-                                ? "bg-rose-500 text-white shadow-md"
-                                : "text-neutral-400 hover:text-white"
-                        }`}
-                    >
-                        Drafts ({gifts.filter((g) => g.status.toLowerCase() === "draft").length})
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setFilterTab("published")}
-                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                            filterTab === "published"
-                                ? "bg-rose-500 text-white shadow-md"
-                                : "text-neutral-400 hover:text-white"
-                        }`}
-                    >
-                        Published ({gifts.filter((g) => g.status.toLowerCase() === "published").length})
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setFilterTab("feedback")}
-                        className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            filterTab === "feedback"
-                                ? "bg-rose-500 text-white shadow-md"
-                                : "text-neutral-400 hover:text-white"
-                        }`}
-                    >
-                        <MessageSquare size={13} /> Feedback ({feedbackList.length})
-                    </button>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative w-full sm:w-72">
-                    <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                    <input
-                        type="text"
-                        placeholder="Search gifts or occasions..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-8 py-2 rounded-full bg-black/60 border border-white/10 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-rose-500/50"
-                    />
-                    {searchQuery && (
-                        <button
-                            onClick={() => setSearchQuery("")}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
-                        >
-                            <X size={12} />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Gift Grid or Guided Empty State */}
-            {filteredGifts.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredGifts.map((gift) => {
-                        const templateEntry = getTemplate(gift.templateSlug);
-                        const occasionObj = getOccasionBySlug(gift.occasionSlug);
-                        const isPublished = gift.status.toLowerCase() === "published";
-                        const isPaid = gift.paymentStatus === "paid" || isPublished;
-                        const publicLink = `${baseUrl}/story/${gift.slug || gift.id}`;
-
-                        return (
-                            <article
-                                key={gift.id}
-                                data-testid={DASHBOARD.websiteCard(gift.id)}
-                                className="lws-card overflow-hidden rounded-3xl border border-white/10 bg-neutral-900/80 hover:border-rose-500/30 transition-all duration-300 flex flex-col group shadow-xl"
-                            >
-                                {/* Thumbnail Header */}
-                                <div className="aspect-[16/10] bg-neutral-950 overflow-hidden relative">
-                                    {templateEntry?.config?.coverImage ? (
-                                        <img
-                                            src={templateEntry.config.coverImage}
-                                            alt={gift.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-neutral-600 text-xs">
-                                            No preview cover
-                                        </div>
-                                    )}
-
-                                    {/* Status Badge */}
-                                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                                        <span
-                                            className={`px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest backdrop-blur-md border ${
-                                                isPublished
-                                                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                                                    : "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                                            }`}
-                                        >
-                                            {isPublished ? "● Published" : "○ Draft Saved"}
-                                        </span>
-
-                                        <span
-                                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide backdrop-blur-md border ${
-                                                isPaid
-                                                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                                                    : "bg-neutral-800 text-neutral-400 border-white/10"
-                                            }`}
-                                        >
-                                            {isPaid ? "Paid" : "Unpaid"}
-                                        </span>
-                                    </div>
-
-                                    {/* Occasion Badge */}
-                                    {occasionObj && (
-                                        <div className="absolute bottom-3 left-3">
-                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-black/70 text-rose-300 border border-white/10 flex items-center gap-1 backdrop-blur-sm">
-                                                {React.createElement(occasionObj.icon, { size: 11 })}
-                                                <span>{occasionObj.name}</span>
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Body Info */}
-                                <div className="p-5 flex-1 flex flex-col space-y-4">
-                                    <div>
-                                        <h3 className="font-serif text-lg font-bold text-white group-hover:text-rose-200 transition-colors">
-                                            {getGiftTitle(gift)}
-                                        </h3>
-                                        <p className="text-xs text-neutral-400 mt-1">
-                                            Template: <strong className="text-neutral-300 font-medium">{templateEntry?.config?.name || gift.templateSlug}</strong>
-                                        </p>
-                                        {gift.invoiceRef && (
-                                            <p className="text-[10px] font-mono text-emerald-300 mt-0.5 flex items-center gap-1">
-                                                <FileText size={10} /> {gift.invoiceRef}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="text-[11px] text-neutral-400 flex items-center justify-between pt-1 border-t border-white/5">
-                                        <span className="flex items-center gap-1.5">
-                                            <Clock size={12} className="text-rose-400" />
-                                            <span>Last edited {gift.lastEdited}</span>
-                                        </span>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleTogglePublishStatus(gift.id)}
-                                            className="text-[10px] text-neutral-400 hover:text-rose-300 underline cursor-pointer"
-                                        >
-                                            {isPublished ? "Unpublish" : "Set Published"}
-                                        </button>
-                                    </div>
-
-                                    {/* Quick Actions Grid */}
-                                    <div className="pt-2 mt-auto space-y-2">
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <Link
-                                                to={`/dashboard/websites/${gift.templateSlug}/edit`}
-                                                data-testid={DASHBOARD.editBtn(gift.id)}
-                                                className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
-                                            >
-                                                <PenLine size={13} className="text-rose-400" /> Edit
-                                            </Link>
-
-                                            {isPublished ? (
-                                                <a
-                                                    href={publicLink}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
-                                                >
-                                                    <ExternalLink size={13} className="text-emerald-400" /> View Live
-                                                </a>
-                                            ) : (
-                                                <Link
-                                                    to={`/templates/${gift.templateSlug}`}
-                                                    data-testid={DASHBOARD.previewBtn(gift.id)}
-                                                    className="lws-btn-ghost text-xs py-2 px-3 rounded-xl border border-white/10 hover:bg-white/10 text-neutral-200 justify-center flex items-center gap-1.5 font-medium cursor-pointer"
-                                                >
-                                                    <Eye size={13} className="text-rose-400" /> Preview
-                                                </Link>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            {isPublished ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSelectedShareGift(gift)}
-                                                    className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
-                                                >
-                                                    <Share2 size={13} /> Share Link
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSelectedPublishDraft(gift)}
-                                                    className="flex-1 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
-                                                >
-                                                    <CreditCard size={13} /> Unlock & Publish
-                                                </button>
-                                            )}
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleCopyPublicLink(gift)}
-                                                title="Copy public link"
-                                                className="p-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                            >
-                                                {copiedId === gift.id ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDuplicateGift(gift)}
-                                                title="Duplicate gift"
-                                                className="p-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                            >
-                                                <Copy size={13} />
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => setGiftToDelete(gift)}
-                                                title="Delete gift"
-                                                className="p-2 rounded-xl bg-neutral-800 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 border border-white/10 transition-colors cursor-pointer"
-                                            >
-                                                <Trash2 size={13} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        );
-                    })}
-                </div>
-            ) : (
-                /* Guided Empty State */
-                <div data-testid={DASHBOARD.empty} className="lws-card p-12 md:p-16 text-center rounded-3xl bg-neutral-900/40 border border-white/10 max-w-xl mx-auto space-y-5">
-                    <div className="w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
-                        <Heart size={26} className="animate-pulse fill-rose-500" />
-                    </div>
-                    <div className="space-y-2">
-                        <h3 className="font-serif text-2xl font-bold text-white">
-                            No Keepsakes Found
-                        </h3>
-                        <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
-                            {searchQuery
-                                ? `No romantic gifts match your search query "${searchQuery}".`
-                                : "You haven't created any digital gifts yet. Pick a template from our luxury gallery to begin customizing."}
-                        </p>
-                    </div>
-
-                    <div className="pt-2">
-                        <Link
-                            to="/templates"
-                            className="lws-btn-primary text-xs py-3 px-6 rounded-full inline-flex items-center gap-2 cursor-pointer shadow-xl hover:scale-105 transition-transform"
-                        >
-                            <Plus size={14} /> Browse Templates & Create
-                        </Link>
-                    </div>
-                </div>
-            )}
-
-            {/* CUSTOMER FEEDBACK MODERATION PANEL */}
-            {filterTab === "feedback" && (
-                <div className="space-y-6 animate-fadeIn my-6">
-                    <div className="flex items-center justify-between flex-wrap gap-4 p-6 rounded-3xl bg-neutral-900/80 border border-white/10 shadow-2xl">
-                        <div>
-                            <h2 className="text-xl font-bold font-serif text-white flex items-center gap-2">
-                                <MessageSquare size={20} className="text-rose-400" /> Customer Feedback & Review Moderation
-                            </h2>
-                            <p className="text-xs text-neutral-400 mt-1">
-                                Review customer submissions. Only feedback with explicit permission AND admin approval appears on the public website.
-                            </p>
-                        </div>
-                        <div className="text-xs text-rose-300 bg-rose-500/10 px-4 py-1.5 rounded-full border border-rose-500/20">
-                            Total Submissions: <strong className="text-white">{feedbackList.length}</strong>
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {feedbackList.map((fb) => (
-                            <div key={fb.id} className="lws-card p-6 space-y-4 relative flex flex-col justify-between border-rose-500/20">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-1 text-rose-300">
-                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                <Heart
-                                                    key={i}
-                                                    size={14}
-                                                    className={i < fb.rating ? "fill-rose-400 text-rose-400" : "text-neutral-700"}
-                                                />
-                                            ))}
-                                            <span className="text-xs font-mono ml-1 text-neutral-400">{fb.rating}/5</span>
-                                        </div>
-
-                                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
-                                            fb.isApproved
-                                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                                                : "bg-amber-500/10 border-amber-500/30 text-amber-300"
-                                        }`}>
-                                            {fb.isApproved ? "Approved & Live" : "Private / Pending"}
-                                        </span>
-                                    </div>
-
-                                    <p className="font-serif italic text-sm text-neutral-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-white/5">
-                                        “{fb.feedback}”
-                                    </p>
-
-                                    <div className="text-xs space-y-1 text-neutral-400 pt-1">
-                                        <div><strong className="text-neutral-300">Customer:</strong> {fb.name}</div>
-                                        {fb.email && <div><strong className="text-neutral-300">Email:</strong> {fb.email.replace(/(.{2})(.*)(?=@)/, "$1***")}</div>}
-                                        <div><strong className="text-neutral-300">Would Recommend:</strong> {fb.recommendation}</div>
-                                        <div><strong className="text-neutral-300">Testimonial Permission:</strong> {fb.testimonialPermission ? "Granted (Allowed to feature)" : "Not Granted (Keep Private)"}</div>
-                                        <div className="text-[10px] text-neutral-500 pt-1">Submitted: {new Date(fb.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}</div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                                    <button
-                                        type="button"
-                                        disabled={!fb.testimonialPermission}
-                                        onClick={() => handleToggleApproval(fb.id)}
-                                        className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                                            !fb.testimonialPermission
-                                                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed opacity-60"
-                                                : fb.isApproved
-                                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
-                                                : "bg-emerald-600 text-white hover:bg-emerald-500 shadow-md"
-                                        }`}
-                                    >
-                                        <Shield size={13} />
-                                        <span>
-                                            {!fb.testimonialPermission
-                                                ? "Permission Not Granted"
-                                                : fb.isApproved
-                                                ? "Unapprove / Hide"
-                                                : "Approve for Testimonials"}
-                                        </span>
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* PUBLISH & PAYMENTS MODAL */}
-            <PublishModal
-                isOpen={!!selectedPublishDraft}
-                onClose={() => setSelectedPublishDraft(null)}
-                templateSlug={selectedPublishDraft?.templateSlug}
-                draftTitle={selectedPublishDraft?.title}
-                customContent={(() => {
-                    if (!selectedPublishDraft) return {};
-                    try {
-                        const raw = localStorage.getItem(`lws:draft:${selectedPublishDraft.templateSlug}:demo`);
-                        return raw ? JSON.parse(raw) : {};
-                    } catch {
-                        return {};
-                    }
-                })()}
-            />
-
-            {/* SHARE MODAL */}
-            <ShareModal
-                isOpen={!!selectedShareGift}
-                onClose={() => setSelectedShareGift(null)}
-                publicUrl={selectedShareGift ? `${baseUrl}/story/${selectedShareGift.slug || selectedShareGift.id}` : ""}
-                giftTitle={selectedShareGift?.title}
-            />
+            <Link
+              to="/marketplace"
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#d48b95] px-7 text-sm font-medium text-[#0a0507] transition-all duration-300 hover:bg-[#e8b4b8] hover:shadow-[0_0_25px_rgba(212,139,149,0.35)] shrink-0"
+            >
+              <Plus className="size-4" />
+              <span>Create a new website</span>
+            </Link>
+          </div>
         </div>
-    );
+      </section>
+
+      {/* ---------- Drafts Grid ---------- */}
+      <section className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {drafts.map((draft) => (
+            <motion.div
+              key={draft.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="group overflow-hidden rounded-3xl border border-[#dfc19c]/15 bg-[#140a0f]/90 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:border-[#e8b4b8]/30"
+            >
+              {/* Card Image */}
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#0d0609]">
+                <img
+                  src={draft.image}
+                  alt={draft.title}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#140a0f] via-transparent to-transparent" />
+                
+                {/* Status Badge */}
+                <div className="absolute top-4 right-4">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#dfc19c]/25 bg-[#0a0507]/80 px-3 py-1 text-[0.65rem] uppercase tracking-wider text-[#dfc19c] backdrop-blur-md">
+                    DRAFT SAVED
+                  </span>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6 space-y-4">
+                <div>
+                  <h3 className="font-serif text-xl font-medium text-white">{draft.title}</h3>
+                  <p className="text-[0.65rem] tracking-[0.2em] uppercase font-semibold text-[#dfc19c]/70 mt-1">
+                    {draft.subtitle}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-[#c5b0a5]/70 border-t border-[#dfc19c]/10 pt-4">
+                  <Clock className="size-3.5 text-[#e8b4b8]" />
+                  <span>Last edited {draft.lastEdited}</span>
+                </div>
+
+                {/* Quick Action Buttons */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/editor/${draft.slug}`)}
+                    className="flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfc19c]/20 bg-[#1b0e15] text-xs font-medium text-[#f5e6d3] hover:border-[#e8b4b8] hover:text-[#e8b4b8] transition-colors"
+                  >
+                    <Edit3 className="size-3.5" />
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/v/${draft.slug}`)}
+                    className="flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfc19c]/20 bg-[#1b0e15] text-xs font-medium text-[#f5e6d3] hover:border-[#e8b4b8] hover:text-[#e8b4b8] transition-colors"
+                  >
+                    <Eye className="size-3.5" />
+                    <span>Preview</span>
+                  </button>
+                </div>
+
+                {/* Publish Live Link Action */}
+                <div className="pt-2">
+                  {requestedLive[draft.id] ? (
+                    <div className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e8b4b8]/40 bg-[#d48b95]/20 text-xs font-medium text-[#e8b4b8]">
+                      <CheckCircle2 className="size-4 text-[#e8b4b8]" />
+                      <span>Live Link Requested</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleRequestLive(draft.id)}
+                      className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-xs font-semibold text-[#0a0507] hover:shadow-[0_0_20px_rgba(212,139,149,0.35)] transition-all"
+                    >
+                      <Send className="size-3.5" />
+                      <span>Publish &amp; Get Live Link</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
 }

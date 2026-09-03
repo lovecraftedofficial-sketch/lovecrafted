@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { EDITOR } from "@/constants/testIds";
 import { ImagePlus, Replace, Trash2 } from "lucide-react";
 import {
-    createLocalImageAsync,
+    createLocalImage,
     revokeLocalImage,
     resolveImage,
     ACCEPTED_IMAGE_EXT,
@@ -31,17 +31,16 @@ export default function ImageFieldEditor({ field, value, onChange }) {
         onChange(next);
     };
 
-    const onPick = async (e) => {
+    const onPick = (e) => {
         const file = e.target.files && e.target.files[0];
         e.target.value = "";
         if (!file) return;
-        const res = await createLocalImageAsync(file);
+        const res = createLocalImage(file);
         if (!res.ok) {
             alert(res.error);
             return;
         }
-        const url = res.value?.url || res.value;
-        setNext(url);
+        setNext(res.value);
     };
 
     const onRemove = () => setNext(null);
@@ -63,7 +62,7 @@ export default function ImageFieldEditor({ field, value, onChange }) {
                     )}
                 </div>
                 <div className="p-3 flex items-center gap-2 border-t border-[color:var(--lws-border)]">
-                    {!value ? (
+                    {!src ? (
                         <button
                             type="button"
                             onClick={() => inputRef.current?.click()}
@@ -103,7 +102,8 @@ export default function ImageFieldEditor({ field, value, onChange }) {
                 </div>
             </div>
             <p className="text-[11px] text-[color:var(--lws-text-dim)] mt-2">
-                Images are compressed and saved directly in your custom website link.
+                Phase 1: images are previewed locally in your browser only.
+                Nothing is uploaded.
             </p>
         </div>
     );

@@ -1,110 +1,85 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Lock, ArrowUpRight } from "lucide-react";
-import { MARKETPLACE } from "@/constants/testIds";
+import { motion } from "framer-motion";
+import { Sparkles, ArrowRight } from "lucide-react";
 
-function formatPrice(n, currency = "INR") {
-    if (currency === "INR") return `₹${n.toLocaleString("en-IN")}`;
-    return `${currency} ${n.toLocaleString()}`;
+export default function TemplateCard({ template, index = 0 }) {
+  // Format price in INR format (e.g., ₹1,499 or ₹9)
+  const formattedPrice =
+    typeof template.price === "number"
+      ? `₹${template.price.toLocaleString("en-IN")}`
+      : `₹${template.price || "1,499"}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.45, ease: "easeOut", delay: index * 0.08 }}
+      whileHover={{ y: -6 }}
+      className="group flex flex-col overflow-hidden rounded-3xl border border-[#dfc19c]/15 bg-[#140a0f]/90 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:border-[#e8b4b8]/35 hover:shadow-[0_0_35px_rgba(212,139,149,0.2)]"
+      data-testid={`template-card-${template.id}`}
+    >
+      {/* Top Image Showcase */}
+      <div className="relative aspect-[16/11] overflow-hidden bg-[#0d0609]">
+        <img
+          src={template.image}
+          alt={template.title}
+          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#140a0f] via-transparent to-transparent" />
+
+        {/* Top Badges: Tier & Price Chip */}
+        <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-2">
+          {template.archived ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-[#0a0507]/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-amber-300 backdrop-blur-md">
+              <Sparkles className="size-3 text-amber-400" />
+              In Atelier
+            </span>
+          ) : template.tier ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e8b4b8]/30 bg-[#0a0507]/80 px-3.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[#e8b4b8] backdrop-blur-md">
+              <Sparkles className="size-3 text-[#e8b4b8]" />
+              {template.tier}
+            </span>
+          ) : null}
+
+          <span
+            className={`ml-auto rounded-full px-3 py-1 text-xs shadow-md ${
+              template.archived
+                ? "bg-gradient-to-r from-amber-500/20 to-rose-500/20 border border-amber-400/40 text-amber-200 font-medium tracking-wide"
+                : "bg-[#d48b95] text-[#0a0507] font-serif font-bold"
+            }`}
+          >
+            {template.archived ? "Coming Soon" : formattedPrice}
+          </span>
+        </div>
+      </div>
+
+      {/* Body Content */}
+      <div className="flex flex-1 flex-col justify-between p-6 space-y-4">
+        <div className="space-y-2">
+          <p className="text-[0.65rem] tracking-[0.2em] uppercase font-semibold text-[#dfc19c]/70">
+            {template.category}
+          </p>
+          <h3 className="font-serif text-xl font-medium text-[#f5e6d3] group-hover:text-white transition-colors">
+            {template.title}
+          </h3>
+          <p className="text-xs leading-relaxed text-[#c5b0a5] line-clamp-2">
+            {template.subtitle || template.description}
+          </p>
+        </div>
+
+        {/* CTA Link */}
+        <div className="pt-2 border-t border-[#dfc19c]/10">
+          <Link
+            to={template.archived ? `/editor/${template.id}` : `/templates/${template.id}`}
+            className="inline-flex items-center gap-2 text-xs font-medium text-[#e8b4b8] group-hover:text-[#f5e6d3] transition-colors"
+          >
+            <span>{template.archived ? "Open & Edit Draft in Studio" : "View the suite"}</span>
+            <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
-
-const tierAccent = {
-    Basic: "#a08a95",
-    Premium: "#f8b5c4",
-    Luxury: "#d4a574",
-};
-
-export default function TemplateCard({ entry }) {
-    const { config, comingSoon } = entry;
-    const accent = tierAccent[config.tier] || "#f8b5c4";
-    return (
-        <article
-            data-testid={MARKETPLACE.card(config.slug)}
-            className="lws-card overflow-hidden group flex flex-col"
-        >
-            <div className="relative aspect-[4/3] overflow-hidden bg-[color:var(--lws-surface-2)]">
-                {config.coverImage ? (
-                    <img
-                        src={config.coverImage}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        loading="lazy"
-                    />
-                ) : null}
-                <div className="absolute inset-0 bg-gradient-to-t from-[color:var(--lws-bg)] via-transparent to-transparent" />
-                <div className="absolute top-3 left-3 flex gap-2">
-                    <span
-                        className="text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full"
-                        style={{
-                            background: "rgba(10,5,7,0.7)",
-                            color: accent,
-                            border: `1px solid ${accent}55`,
-                        }}
-                    >
-                        {config.tier}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-black/50 border border-[color:var(--lws-border-strong)] text-[color:var(--lws-text-muted)]">
-                        {config.category}
-                    </span>
-                </div>
-                {comingSoon && (
-                    <div className="absolute top-3 right-3 lws-pill" style={{ borderColor: "#d4a57455", color: "#d4a574", background: "rgba(212,165,116,0.08)" }}>
-                        <Lock size={11} /> Coming Soon
-                    </div>
-                )}
-            </div>
-            <div className="p-5 flex-1 flex flex-col">
-                <h3 className="font-display text-2xl mb-2 flex items-center justify-between gap-3">
-                    <span className="lws-gradient-text">{config.name}</span>
-                    <span className="text-base font-body text-[color:var(--lws-cream)]">
-                        {formatPrice(config.price, config.currency)}
-                    </span>
-                </h3>
-                <p className="text-sm text-[color:var(--lws-text-muted)] leading-relaxed line-clamp-3 mb-4">
-                    {config.description}
-                </p>
-                {Array.isArray(config.features) && config.features.length > 0 && (
-                    <ul className="flex flex-wrap gap-1.5 mb-5">
-                        {config.features.slice(0, 4).map((f) => (
-                            <li
-                                key={f}
-                                className="text-[11px] px-2 py-1 rounded-full border border-[color:var(--lws-border-strong)] text-[color:var(--lws-text-muted)]"
-                            >
-                                {f}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                <div className="mt-auto flex items-center gap-3">
-                    <Link
-                        to={`/templates/${config.slug}`}
-                        data-testid={MARKETPLACE.cardPreviewBtn(config.slug)}
-                        className="lws-btn-ghost text-sm flex-1 justify-center"
-                    >
-                        Preview
-                    </Link>
-                    {!comingSoon ? (
-                        <Link
-                            to={`/dashboard/websites/${config.slug}/edit`}
-                            data-testid={MARKETPLACE.cardCreateBtn(config.slug)}
-                            className="lws-btn-primary text-sm flex-1 justify-center"
-                        >
-                            Create Yours <ArrowUpRight size={14} />
-                        </Link>
-                    ) : (
-                        <button
-                            type="button"
-                            disabled
-                            data-testid={MARKETPLACE.cardCreateBtn(config.slug)}
-                            className="lws-btn-ghost text-sm flex-1 justify-center opacity-50 cursor-not-allowed"
-                        >
-                            Locked
-                        </button>
-                    )}
-                </div>
-            </div>
-        </article>
-    );
-}
-
-export { formatPrice };

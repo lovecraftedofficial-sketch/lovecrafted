@@ -1,457 +1,250 @@
-import React, { useMemo, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-    ArrowRight,
-    ArrowLeft,
-    Check,
-    Lock,
-    Sparkles,
-    Clock,
-    Eye,
-    Heart,
-    Music,
-    Camera,
-    Mail,
-    Calendar,
-    MessageSquare,
-    Mic,
-    Share2,
-    Wand2,
-    Crown,
-    Gift,
-    ShieldCheck
+  ArrowLeft,
+  Check,
+  Edit3,
+  Eye,
+  Palette,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
-import { getTemplate } from "@/data/templateRegistry";
-import { OCCASIONS } from "@/constants/occasions";
-import TemplateRenderer from "@/components/TemplateRenderer";
-import { TEMPLATE_DETAILS } from "@/constants/testIds";
-import { formatPrice } from "@/components/TemplateCard";
+import { TEMPLATE_SUITES } from "../data/suitesConfig";
+
+const HIGHLIGHTS = [
+  {
+    icon: Palette,
+    title: "Recolour in one tap",
+    body: "Five accent tones restyle typography, dividers and buttons across the whole suite.",
+  },
+  {
+    icon: Eye,
+    title: "Live studio preview",
+    body: "Every word you type appears instantly in a faithful rendering of your invitation.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Saved to your atelier",
+    body: "Your customised invitation is stored securely and can be reopened at any time.",
+  },
+];
+
+const ALL_SUITES_MAP = {
+  "aurora-noire": {
+    id: "aurora-noire",
+    title: "Aurora Noire Monogram",
+    subtitle: "Anniversary Edition: Warm teasing, little quirks, our song, 2 galleries & proposing again",
+    description: "Celebrate your anniversary with a warm romantic greeting, playful teasing, small notes about what you love about your partner, full song playback, two personal photo galleries, and proposing to her all over again.",
+    category: "Modern Loft & Studio",
+    tier: "Anniversary Edition",
+    price: 9,
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Warm greeting & playful teasing header",
+      "Special notes about the little things you love",
+      "Full song playback & Spotify integration",
+      "2 personal photo gallery sections (Milestones & Candids)",
+      "Proposing all over again heartfelt love letter",
+      "Red Heart-Shaped QR keepsake download",
+    ],
+  },
+  "burgundy-botanica": {
+    id: "burgundy-botanica",
+    title: "Burgundy Botanica Archive",
+    subtitle: "Earthy dark flora on hand-pressed parchment",
+    description: "Rich botanical textures, hand-pressed parchment details, and warm romantic typography.",
+    category: "Intimate & Micro-Wedding",
+    tier: "Minimalist Luxury",
+    price: 1299,
+    image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Botanical foliage motifs",
+      "Hand-pressed parchment feel",
+      "RSVP & Gift registry support",
+      "Instant share link",
+    ],
+  },
+  "chateau-velvet": {
+    id: "chateau-velvet",
+    title: "Chateau de Velvet & Rose",
+    subtitle: "Warm rose gold foil and wax-sealed French aesthetics",
+    description: "French Chateau inspired luxury aesthetic with wax seals, gold foil accents, and romantic velvet tones.",
+    category: "Destination Wedding",
+    tier: "Exclusive Atelier",
+    price: 1999,
+    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Wax-seal reveal animation",
+      "French chateau typography",
+      "Multi-day schedule planner",
+      "Instant share link",
+    ],
+  },
+};
+
+const DEFAULT_SUITE = ALL_SUITES_MAP["aurora-noire"];
 
 export default function TemplateDetailsPage() {
-    const { slug } = useParams();
-    const navigate = useNavigate();
-    const entry = getTemplate(slug);
-    const demoRef = useRef(null);
+  const { id = "aurora-noire" } = useParams();
+  const navigate = useNavigate();
 
-    // Filter matching occasion objects for "Perfect For" section
-    const matchingOccasions = useMemo(() => {
-        if (!entry?.config) return [];
-        const config = entry.config;
-        const occIds = (config.occasions || [config.category]).map((o) => o.toLowerCase());
-        return OCCASIONS.filter((o) =>
-            occIds.includes(o.id) ||
-            occIds.includes(o.slug) ||
-            (o.id === "anniversary" && config.category === "Romantic")
-        );
-    }, [entry]);
+  const template = ALL_SUITES_MAP[id] || {
+    ...DEFAULT_SUITE,
+    id: id,
+    title: id.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+  };
 
-    if (!entry) {
-        return (
-            <div data-testid={TEMPLATE_DETAILS.notFound} className="max-w-xl mx-auto text-center py-24 px-6 space-y-6">
-                <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
-                    <Sparkles size={28} />
-                </div>
-                <div className="lws-pill">Keepsake Not Found</div>
-                <h1 className="font-display text-4xl md:text-5xl font-bold text-white">
-                    <span className="lws-gradient-text">Template Unavailable</span>
-                </h1>
-                <p className="text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
-                    The requested keepsake template slug "<code className="text-rose-300 font-mono">{slug}</code>" does not exist in our catalog.
-                </p>
-                <div className="pt-2">
-                    <Link to="/templates" className="lws-btn-primary px-6 py-3 text-sm inline-flex items-center gap-2">
-                        <ArrowLeft size={16} /> Browse All Templates
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+  const suiteConfig = TEMPLATE_SUITES.find((s) => s.id === id);
+  const isArchived = suiteConfig ? suiteConfig.archived : id !== "aurora-noire";
+  const formattedPrice = isArchived
+    ? "Coming Soon"
+    : `₹${template.price?.toLocaleString("en-IN") || "9"}`;
 
-    const { config, comingSoon } = entry;
+  return (
+    <div className="min-h-screen bg-[#0a0507] text-[#f5e6d3] font-sans antialiased selection:bg-[#d48b95]/30 selection:text-[#f5e6d3]">
+      {/* Top Back Navigation Bar */}
+      <div className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
+        <Link
+          to="/marketplace"
+          className="inline-flex items-center gap-2 text-xs font-medium text-[#c5b0a5] hover:text-[#e8b4b8] transition-colors"
+        >
+          <ArrowLeft className="size-3.5" />
+          Back to the collection
+        </Link>
+      </div>
 
-    const scrollToDemo = () => {
-        if (demoRef.current) {
-            demoRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    };
-
-    const whatsIncludedItems = [
-        {
-            title: "Handwritten Love Letter",
-            desc: "Full-page romantic letter with custom title & gold wax seal effect",
-            icon: Mail,
-            status: "included",
-        },
-        {
-            title: "3D Tilt Polaroid Gallery",
-            desc: "Interactive memory cards with realistic tilt reflection on hover",
-            icon: Camera,
-            status: "included",
-        },
-        {
-            title: "Love Story Timeline",
-            desc: "Chronological milestone timeline from first date to present day",
-            icon: Calendar,
-            status: "included",
-        },
-        {
-            title: "Background Music Player",
-            desc: "Floating vinyl player supporting custom MP3 audio tracks",
-            icon: Music,
-            status: "included",
-        },
-        {
-            title: "Live Relationship Counter",
-            desc: "Real-time live counter tracking days, hours, minutes together",
-            icon: Clock,
-            status: "included",
-        },
-        {
-            title: "Secret Open-When Notes",
-            desc: "Interactive envelope cards that reveal hidden messages on click",
-            icon: MessageSquare,
-            status: "included",
-        },
-        {
-            title: "Virtual Hug & Heart Shower",
-            desc: "Animated particle effects and interactive heart shower button",
-            icon: Heart,
-            status: "included",
-        },
-        {
-            title: "HD Voice Recording Player",
-            desc: "Embedded audio recorder for intimate voice note messages",
-            icon: Mic,
-            status: "coming-soon",
-        },
-    ];
-
-    const howItWorksSteps = [
-        {
-            step: "01",
-            title: "Choose Template",
-            desc: "Select this luxury template design crafted specifically for your occasion.",
-            icon: Sparkles,
-        },
-        {
-            step: "02",
-            title: "Personalize Content",
-            desc: "Add your photos, dates, love letter, and background music in under 10 minutes.",
-            icon: Wand2,
-        },
-        {
-            step: "03",
-            title: "Share & Surprise",
-            desc: "Send your unique private link to surprise and touch their heart.",
-            icon: Share2,
-        },
-    ];
-
-    return (
-        <div data-testid={TEMPLATE_DETAILS.root} className="min-h-screen bg-[#0a0508] text-white">
-            {/* Navigation Breadcrumb Bar */}
-            <div className="border-b border-white/10 bg-neutral-900/40 backdrop-blur-md sticky top-0 z-30">
-                <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
-                    <Link
-                        to="/templates"
-                        className="text-xs text-neutral-400 hover:text-white flex items-center gap-1.5 transition-colors font-medium cursor-pointer"
-                    >
-                        <ArrowLeft size={14} /> Back to Marketplace
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[11px] uppercase tracking-widest text-neutral-400">
-                            {config.tier} Collection
-                        </span>
-                    </div>
-                </div>
+      {/* Main Details Grid */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-12"
+      >
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-12">
+          {/* Left Column: Preview Image + 3 Feature Highlights */}
+          <div className="lg:col-span-7 space-y-10">
+            {/* Cinematic Preview Image Container */}
+            <div className="relative overflow-hidden rounded-3xl border border-[#dfc19c]/15 bg-[#140a0f] p-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
+              <img
+                src={template.image}
+                alt={template.title}
+                className="w-full aspect-[4/3] rounded-2xl object-cover"
+              />
             </div>
 
-            {/* Hero Main Section */}
-            <section className="max-w-7xl mx-auto px-4 md:px-6 pt-10 md:pt-16 pb-12">
-                <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-14 items-center">
-                    {/* Left Column: Info & Actions */}
-                    <div className="space-y-6">
-                        {/* Badges Bar */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="lws-pill text-xs px-3 py-1 font-semibold text-rose-300 border-rose-500/30 bg-rose-500/10">
-                                {config.category}
-                            </span>
-                            <span className="lws-pill text-xs px-3 py-1 font-semibold text-amber-300 border-amber-500/30 bg-amber-500/10 inline-flex items-center gap-1">
-                                <Crown size={12} /> {config.tier} Tier
-                            </span>
-                            <span className="lws-pill text-xs px-3 py-1 font-medium text-neutral-300 border-white/10 bg-white/5 inline-flex items-center gap-1">
-                                <Clock size={12} className="text-rose-400" /> ~5–10 min setup
-                            </span>
-                            {comingSoon && (
-                                <span className="lws-pill text-xs px-3 py-1 font-bold text-purple-300 border-purple-500/30 bg-purple-500/20 inline-flex items-center gap-1">
-                                    <Lock size={12} /> Coming Soon
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Title & Description */}
-                        <div>
-                            <h1 data-testid={TEMPLATE_DETAILS.title} className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
-                                <span className="lws-gradient-text">{config.name}</span>
-                            </h1>
-                            <p className="text-neutral-300 text-sm sm:text-base leading-relaxed mt-4 max-w-xl">
-                                {config.description}
-                            </p>
-                        </div>
-
-                        {/* Price Badge */}
-                        <div className="flex items-baseline gap-3 pt-2">
-                            <span className="font-display text-4xl sm:text-5xl font-bold text-white tracking-tight">
-                                {formatPrice(config.price, config.currency)}
-                            </span>
-                            <div className="text-xs text-neutral-400">
-                                <div className="font-semibold text-neutral-300 uppercase tracking-widest text-[10px]">
-                                    One-Time Payment
-                                </div>
-                                <div>Private shareable link included</div>
-                            </div>
-                        </div>
-
-                        {/* Primary Action Buttons Bar */}
-                        <div className="flex flex-wrap items-center gap-3 pt-4">
-                            {!comingSoon ? (
-                                <button
-                                    type="button"
-                                    onClick={() => navigate(`/dashboard/websites/${config.slug}/edit`)}
-                                    data-testid={TEMPLATE_DETAILS.createBtn}
-                                    className="lws-btn-primary text-sm py-3.5 px-7 rounded-full font-semibold shadow-xl shadow-rose-500/20 flex items-center gap-2 cursor-pointer hover:scale-[1.02] transition-transform"
-                                >
-                                    Create Yours <ArrowRight size={16} />
-                                </button>
-                            ) : (
-                                <button disabled className="lws-btn-ghost opacity-50 cursor-not-allowed py-3.5 px-6 rounded-full border border-white/10 text-neutral-400">
-                                    Coming Soon
-                                </button>
-                            )}
-
-                            <button
-                                type="button"
-                                onClick={scrollToDemo}
-                                className="lws-btn-ghost text-sm py-3.5 px-6 rounded-full border border-white/10 hover:bg-white/10 text-neutral-200 font-medium flex items-center gap-2 cursor-pointer transition-colors"
-                            >
-                                <Eye size={16} className="text-rose-400" /> Live Preview
-                            </button>
-
-                            <Link
-                                to="/templates"
-                                className="text-xs text-neutral-400 hover:text-white px-3 py-3 font-medium transition-colors cursor-pointer"
-                            >
-                                Browse All
-                            </Link>
-                        </div>
-
-                        {/* Trust Guarantee */}
-                        <div className="flex items-center gap-4 text-xs text-neutral-400 pt-2">
-                            <span className="flex items-center gap-1.5 text-emerald-400">
-                                <ShieldCheck size={14} /> Instant Access
-                            </span>
-                            <span>•</span>
-                            <span>No coding required</span>
-                            <span>•</span>
-                            <span>Mobile optimized</span>
-                        </div>
-                    </div>
-
-                    {/* Right Column: Hero Cover Preview Card */}
-                    <div className="relative group">
-                        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-rose-500/30 to-purple-600/30 blur-xl opacity-75 group-hover:opacity-100 transition duration-500"></div>
-                        <div className="relative lws-card overflow-hidden rounded-3xl border border-white/15 bg-neutral-900/90 shadow-2xl">
-                            {config.coverImage ? (
-                                <img
-                                    src={config.coverImage}
-                                    alt={config.name}
-                                    className="w-full h-auto object-cover aspect-[4/3] group-hover:scale-105 transition-transform duration-700"
-                                />
-                            ) : (
-                                <div className="aspect-[4/3] bg-neutral-900 flex items-center justify-center text-neutral-500">
-                                    No preview cover available
-                                </div>
-                            )}
-
-                            <div className="p-4 bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-xs">
-                                <span className="text-neutral-300 font-medium">✨ {config.name} Experience</span>
-                                <button
-                                    onClick={scrollToDemo}
-                                    className="text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1 cursor-pointer"
-                                >
-                                    Interactive Demo ↓
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* What's Included Section */}
-            <section className="max-w-7xl mx-auto px-4 md:px-6 py-14 border-t border-white/10">
-                <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-                    <div className="lws-pill inline-flex items-center gap-1 text-xs font-semibold text-rose-300">
-                        <Gift size={13} /> Complete Keepsake Package
-                    </div>
-                    <h2 className="font-display text-3xl sm:text-4xl font-bold text-white">
-                        <span className="lws-gradient-text">What's Included in This Template</span>
-                    </h2>
-                    <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
-                        Every feature is crafted to evoke joy, nostalgia, and tears of happiness.
-                    </p>
-                </div>
-
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {whatsIncludedItems.map((item, idx) => {
-                        const IconComponent = item.icon;
-                        const isComing = item.status === "coming-soon";
-
-                        return (
-                            <div
-                                key={idx}
-                                className={`p-5 rounded-2xl border transition-all duration-300 ${
-                                    isComing
-                                        ? "bg-neutral-900/30 border-white/5 opacity-60"
-                                        : "bg-neutral-900/70 border-white/10 hover:border-rose-500/40 hover:bg-neutral-900/90 shadow-lg"
-                                }`}
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className={`p-2.5 rounded-xl ${isComing ? "bg-white/5 text-neutral-500" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"}`}>
-                                        <IconComponent size={20} />
-                                    </div>
-                                    {isComing ? (
-                                        <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                                            Coming Soon
-                                        </span>
-                                    ) : (
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                                            <Check size={10} /> Included
-                                        </span>
-                                    )}
-                                </div>
-                                <h3 className="font-semibold text-sm text-white mb-1">
-                                    {item.title}
-                                </h3>
-                                <p className="text-xs text-neutral-400 leading-relaxed">
-                                    {item.desc}
-                                </p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
-
-            {/* Perfect For Occasions Section */}
-            {matchingOccasions.length > 0 && (
-                <section className="max-w-7xl mx-auto px-4 md:px-6 py-14 border-t border-white/10">
-                    <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
-                        <div className="lws-pill inline-flex items-center gap-1 text-xs font-semibold text-rose-300">
-                            <Heart size={13} /> Occasion Match
-                        </div>
-                        <h2 className="font-display text-3xl sm:text-4xl font-bold text-white">
-                            Perfect For These Moments
-                        </h2>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                        {matchingOccasions.map((occ) => {
-                            const IconComp = occ.icon;
-
-                            return (
-                                <div
-                                    key={occ.id}
-                                    className="p-6 rounded-2xl bg-gradient-to-b from-neutral-900/80 to-black/60 border border-white/10 hover:border-rose-500/30 transition-all space-y-3"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/20 flex items-center justify-center">
-                                        <IconComp size={20} />
-                                    </div>
-                                    <h3 className="font-serif text-lg font-bold text-white">
-                                        {occ.name}
-                                    </h3>
-                                    <p className="text-xs text-neutral-400 leading-relaxed">
-                                        {occ.shortDescription}
-                                    </p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </section>
-            )}
-
-            {/* How It Works Section */}
-            <section className="max-w-7xl mx-auto px-4 md:px-6 py-16 border-t border-white/10 bg-neutral-950/50">
-                <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-                    <div className="lws-pill inline-flex items-center gap-1 text-xs font-semibold text-rose-300">
-                        <Wand2 size={13} /> Simple 3-Step Process
-                    </div>
-                    <h2 className="font-display text-3xl sm:text-4xl font-bold text-white">
-                        <span className="lws-gradient-text">How It Works</span>
-                    </h2>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-8 relative max-w-5xl mx-auto">
-                    {howItWorksSteps.map((stepItem, i) => {
-                        const StepIcon = stepItem.icon;
-
-                        return (
-                            <div key={i} className="relative p-6 rounded-2xl bg-neutral-900/60 border border-white/10 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center font-bold">
-                                        <StepIcon size={20} />
-                                    </div>
-                                    <span className="font-display text-2xl font-bold text-white/20">
-                                        {stepItem.step}
-                                    </span>
-                                </div>
-                                <h3 className="font-bold text-base text-white">
-                                    {stepItem.title}
-                                </h3>
-                                <p className="text-xs text-neutral-400 leading-relaxed">
-                                    {stepItem.desc}
-                                </p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
-
-            {/* Interactive Live Demo Preview Section */}
-            <section ref={demoRef} className="max-w-7xl mx-auto px-4 md:px-6 py-16 border-t border-white/10">
-                <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
-                    <div>
-                        <div className="lws-pill mb-2 inline-flex items-center gap-1 text-xs font-semibold text-rose-300">
-                            <Eye size={13} /> Interactive Experience
-                        </div>
-                        <h2 className="font-display text-3xl sm:text-4xl font-bold text-white">
-                            <span className="lws-gradient-text">Live Interactive Demo</span>
-                        </h2>
-                        <p className="text-xs text-neutral-400 mt-1">
-                            Experience the exact website your partner or recipient will see.
-                        </p>
-                    </div>
-
-                    {!comingSoon && (
-                        <button
-                            type="button"
-                            onClick={() => navigate(`/dashboard/websites/${config.slug}/edit`)}
-                            className="lws-btn-primary text-xs py-2.5 px-5 rounded-full inline-flex items-center gap-2 cursor-pointer shadow-lg"
-                        >
-                            Customize This Design <ArrowRight size={14} />
-                        </button>
-                    )}
-                </div>
-
-                {/* Interactive Demo Frame */}
-                <div
-                    data-testid={TEMPLATE_DETAILS.previewFrame}
-                    className="lws-card overflow-hidden rounded-3xl border border-white/15 bg-black shadow-2xl"
+            {/* 3 Highlight Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {HIGHLIGHTS.map((highlight, index) => (
+                <motion.div
+                  key={highlight.title}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.08 }}
+                  className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f]/80 p-5 backdrop-blur-xl"
                 >
-                    <TemplateRenderer
-                        templateSlug={config.slug}
-                        content={config.demoData || {}}
-                    />
+                  <span className="grid size-9 place-items-center rounded-full border border-[#dfc19c]/25 bg-[#1b0e15] text-[#e8b4b8] mb-3">
+                    <highlight.icon className="size-4" />
+                  </span>
+                  <h3 className="font-serif text-sm font-medium text-[#f5e6d3]">
+                    {highlight.title}
+                  </h3>
+                  <p className="mt-2 text-[0.7rem] leading-relaxed text-[#c5b0a5]">
+                    {highlight.body}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Atelier Quote Card */}
+            <div className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f]/60 p-7 backdrop-blur-xl space-y-4">
+              <p className="text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]/70">
+                FROM THE ATELIER
+              </p>
+              <p className="font-serif text-lg sm:text-xl italic leading-relaxed text-[#f5e6d3]">
+                &ldquo;Some stories deserve more than a message. They deserve a place you can return to.&rdquo;
+              </p>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-serif font-semibold text-[#e8b4b8]">LoveCrafted</span>
+                <span className="text-[#dfc19c]/40">—</span>
+                <span className="text-[#c5b0a5]">Made for the moments worth keeping.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Sticky Purchase & Customise Panel */}
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-24">
+              <div className="rounded-3xl border border-[#dfc19c]/15 bg-[#140a0f]/90 p-8 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl space-y-6">
+                {/* Badges */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e8b4b8]/30 bg-[#0a0507] px-3 py-1 text-[0.65rem] uppercase tracking-wider text-[#e8b4b8]">
+                    <Sparkles className="size-3 text-[#e8b4b8]" />
+                    {template.tier}
+                  </span>
+                  <span className="rounded-full border border-[#dfc19c]/20 px-3 py-1 text-[0.65rem] uppercase tracking-wider text-[#dfc19c]/80">
+                    {template.category}
+                  </span>
                 </div>
-            </section>
+
+                {/* Title & Subtitle */}
+                <div>
+                  <h1 className="font-serif text-3xl sm:text-4xl font-medium text-white">
+                    {template.title}
+                  </h1>
+                  <p className="mt-2 text-xs leading-relaxed text-[#c5b0a5]">
+                    {template.subtitle}
+                  </p>
+                </div>
+
+                {/* Price Section */}
+                <div className="flex items-baseline gap-2 border-y border-[#dfc19c]/10 py-5">
+                  <span
+                    className={`font-serif ${
+                      isArchived ? "text-2xl sm:text-3xl text-amber-300" : "text-4xl text-[#f5e6d3]"
+                    } font-semibold`}
+                  >
+                    {formattedPrice}
+                  </span>
+                  <span className="text-xs text-[#c5b0a5]">
+                    {isArchived ? "In Atelier · Under Preparation" : "one-time, yours forever"}
+                  </span>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs leading-relaxed text-[#c5b0a5]">
+                  {template.description}
+                </p>
+
+                {/* Features List */}
+                <ul className="space-y-3 pt-2">
+                  {template.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-3 text-xs text-[#f5e6d3]">
+                      <Check className="size-4 text-[#e8b4b8] shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Customise CTA Button */}
+                <button
+                  type="button"
+                  onClick={() => navigate(`/editor/${template.id}`)}
+                  className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-[#d48b95] text-sm font-medium text-[#0a0507] transition-all hover:bg-[#e8b4b8] hover:shadow-[0_0_30px_rgba(212,139,149,0.35)] cursor-pointer"
+                >
+                  <Edit3 className="size-4" />
+                  <span>{isArchived ? "Preview & Edit Draft in Studio" : "Customise this suite"}</span>
+                </button>
+
+                <p className="text-center text-[0.7rem] text-[#c5b0a5]/70">
+                  Opens the live studio — nothing is charged here.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </motion.section>
+    </div>
+  );
 }

@@ -1,487 +1,260 @@
 import React, { useState } from "react";
 import {
-    X,
-    Copy,
-    ShieldCheck,
-    CheckCircle2,
-    ArrowRight,
-    Heart,
-    Lock,
-    QrCode,
-    AlertCircle,
-    Check,
-    Loader2,
-    RotateCcw,
-    CreditCard,
-    MessageCircle,
-    Globe
+  X,
+  ShieldCheck,
+  ArrowRight,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Heart,
+  Loader2,
+  Lock,
+  QrCode,
+  Sparkles,
+  AlertCircle
 } from "lucide-react";
-import emailjs from "@emailjs/browser";
-import { getTemplate } from "@/data/templateRegistry";
-import { processRazorpayPayment } from "@/lib/paymentService";
-import { sanitizeAndUploadAllStoryMedia } from "@/lib/mediaUploadService";
-import { saveStoryToDatabase } from "@/lib/storyStorageService";
+import HeartQRCard from "./HeartQRCard";
 
-const EMAILJS_SERVICE_ID = process.env.REACT_APP_EMAILJS_SERVICE_ID || "service_lovecrafted";
-const EMAILJS_TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID || "template_order";
-const EMAILJS_PUBLIC_KEY = process.env.REACT_APP_EMAILJS_PUBLIC_KEY || "YOUR_EMAILJS_PUBLIC_KEY";
+export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, price = 1499, customContent }) {
+  const OWNER_UPI_ID = "8618379301@pz";
+  const priceFormatted = (price || 1499).toLocaleString("en-IN");
 
-export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, customContent }) {
-    const OWNER_UPI_ID = "8618379301@pz";
-    const OWNER_EMAIL = "lovecrafted.official@gmail.com";
+  const [senderName, setSenderName] = useState("");
+  const [partnerName, setPartnerName] = useState("");
+  const [customSlug, setCustomSlug] = useState("");
+  const [step, setStep] = useState("form"); // "form" | "payment" | "success"
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-    const templateEntry = getTemplate(templateSlug || "until-forever");
-    const priceAmount = templateEntry?.config?.price || 4999;
-    const tierName = templateEntry?.config?.tier || "Ultra-Luxury Flagship";
-    const priceFormatted = priceAmount.toLocaleString("en-IN");
+  if (!isOpen) return null;
 
-    const [senderName, setSenderName] = useState("");
-    const [whatsappNumber, setWhatsappNumber] = useState("");
-    const [partnerName, setPartnerName] = useState("");
-    const [customSlug, setCustomSlug] = useState("");
+  const displayTitle = draftTitle || "My Baby";
+  const slugPart = customSlug.trim()
+    ? customSlug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
+    : `${senderName || "our"}-story`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
 
-    // Step state: "form" | "payment" | "payment-failed" | "success" | "opening-transition"
-    const [step, setStep] = useState("form");
-    const [transitionStage, setTransitionStage] = useState("preparing");
-    const [paymentErrorMessage, setPaymentErrorMessage] = useState("");
-    const [generatedSlug, setGeneratedSlug] = useState("");
-    const [copiedLink, setCopiedLink] = useState(false);
-    const [showQrCode, setShowQrCode] = useState(false);
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3005";
+  const publishedUrl = `${baseUrl}/v/${slugPart}`;
 
-    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const handleFormSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setStep("payment");
+    }, 800);
+  };
 
-    if (!isOpen) return null;
+  const handlePaymentComplete = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setStep("success");
+    }, 1200);
+  };
 
-    const handleFormSubmit = (e) => {
-        if (e && e.preventDefault) e.preventDefault();
+  const handleCopy = () => {
+    if (navigator.clipboard) navigator.clipboard.writeText(publishedUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
-        const cleanSender = senderName.trim() || "love";
-        const cleanPartner = partnerName.trim() || "forever";
-        const slugPart = customSlug.trim()
-            ? customSlug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
-            : `${cleanSender}-and-${cleanPartner}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className={`relative w-full ${step === "success" ? "max-w-md max-h-[92vh] overflow-y-auto" : "max-w-md"} rounded-3xl border border-[#d48b95]/30 bg-[#0e070a] p-6 sm:p-7 text-[#f5e6d3] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] scrollbar-thin`}>
+        
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-5 right-5 text-[#c5b0a5] hover:text-white transition-colors"
+        >
+          <X className="size-5" />
+        </button>
 
-        setGeneratedSlug(slugPart);
-        setStep("payment");
-    };
-
-    const activeSlug = generatedSlug || "our-anniversary";
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://lovecrafted-official.netlify.app";
-
-    // Clean Permanent Public Story URL (Zero Base64 parameter!)
-    const cleanDisplayUrl = `lovecrafted.in/story/${activeSlug}`;
-    const publicLiveLink = `${baseUrl}/story/${activeSlug}?slug=${templateSlug || "until-forever"}&active=true`;
-
-    const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`I created a special romantic keepsake website for you! Open your surprise here: ${publicLiveLink}`)}`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(publicLiveLink)}`;
-
-    const handleCopyPublicLink = () => {
-        if (navigator.clipboard) navigator.clipboard.writeText(publicLiveLink);
-        setCopiedLink(true);
-        setTimeout(() => setCopiedLink(false), 2000);
-    };
-
-    // Trigger 1.5s Transition Overlay before opening live gift
-    const handleOpenGiftWithTransition = () => {
-        setStep("opening-transition");
-        setTransitionStage("preparing");
-
-        setTimeout(() => {
-            setTransitionStage("opening");
-        }, 800);
-
-        setTimeout(() => {
-            window.open(publicLiveLink, "_blank");
-            onClose();
-        }, 1600);
-    };
-
-    // Trigger Razorpay Payment Checkout & Permanent Cloud Storage Pipeline
-    const handleStartRazorpayPayment = () => {
-        setIsProcessingPayment(true);
-        setPaymentErrorMessage("");
-
-        processRazorpayPayment({
-            templateSlug: templateSlug || "until-forever",
-            templateName: templateEntry?.config?.name || draftTitle || "Website",
-            tier: tierName,
-            customerName: senderName,
-            customerEmail: "customer@example.com",
-            customerPhone: whatsappNumber,
-            onSuccess: async (paymentData) => {
-                // Step 1: Upload all local Blob audio & images to permanent HTTPS storage
-                const cleanContent = await sanitizeAndUploadAllStoryMedia(customContent);
-
-                // Step 2: Save entire story as permanent database record with story ID
-                const permanentStoryId = await saveStoryToDatabase({
-                    storyId: activeSlug,
-                    templateSlug: templateSlug || "until-forever",
-                    title: draftTitle || "Until Forever Keepsake",
-                    content: cleanContent,
-                    customSlug: activeSlug,
-                });
-
-                setIsProcessingPayment(false);
-                setStep("success");
-
-                // Update local storage gifts registry
-                try {
-                    const storedGifts = localStorage.getItem("lws:user_gifts");
-                    let giftsList = storedGifts ? JSON.parse(storedGifts) : [];
-                    const updatedGifts = giftsList.map((g) => {
-                        if (g.templateSlug === templateSlug || g.title === draftTitle) {
-                            return {
-                                ...g,
-                                status: "Published",
-                                paymentStatus: "paid",
-                                invoiceRef: paymentData.invoiceRef,
-                                paymentId: paymentData.paymentId,
-                                slug: permanentStoryId,
-                                lastEdited: "Just now",
-                            };
-                        }
-                        return g;
-                    });
-                    localStorage.setItem("lws:user_gifts", JSON.stringify(updatedGifts));
-                } catch {}
-
-                // Send background notification email
-                try {
-                    emailjs.send(
-                        EMAILJS_SERVICE_ID,
-                        EMAILJS_TEMPLATE_ID,
-                        {
-                            to_name: "LoveCrafted Owner",
-                            to_email: OWNER_EMAIL,
-                            customer_name: senderName,
-                            partner_name: partnerName,
-                            whatsapp_number: whatsappNumber,
-                            amount_paid: `₹${priceFormatted} INR`,
-                            utr_number: paymentData.paymentId,
-                            invoice_ref: paymentData.invoiceRef,
-                            template_name: templateEntry?.config?.name || templateSlug,
-                            owner_activation_link: publicLiveLink,
-                            upi_id: OWNER_UPI_ID,
-                        },
-                        EMAILJS_PUBLIC_KEY
-                    ).catch(() => {});
-                } catch {}
-            },
-            onFailure: (errMsg) => {
-                setIsProcessingPayment(false);
-                setPaymentErrorMessage(errMsg || "Payment could not be processed.");
-                setStep("payment-failed");
-            },
-            onCancel: (cancelMsg) => {
-                setIsProcessingPayment(false);
-                setPaymentErrorMessage(cancelMsg || "Payment was cancelled.");
-                setStep("payment-failed");
-            },
-        });
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="bg-[#181114] border border-rose-500/30 rounded-3xl p-6 max-w-md w-full text-center relative shadow-2xl overflow-y-auto max-h-[90vh] text-white">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors cursor-pointer"
-                >
-                    <X size={18} />
-                </button>
-
-                {step !== "success" && step !== "opening-transition" && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold mb-3">
-                        <ShieldCheck size={12} /> Secure Razorpay Checkout
-                    </div>
-                )}
-
-                {step !== "success" && step !== "opening-transition" && (
-                    <>
-                        <h3 className="font-display text-2xl text-white mb-1">
-                            {step === "form" && `Publish ${templateEntry?.config?.name || draftTitle || "Website"}`}
-                            {step === "payment" && `Checkout — ₹${priceFormatted}`}
-                            {step === "payment-failed" && "Payment Unsuccessful"}
-                        </h3>
-                        <p className="text-neutral-400 text-xs mb-5">
-                            {step === "form" && `Enter recipient details and custom slug to unlock public sharing for this ${tierName} template.`}
-                            {step === "payment" && `Pay ₹${priceFormatted} via Razorpay (UPI, Credit/Debit Card, Netbanking) to publish.`}
-                            {step === "payment-failed" && "Your payment was not completed. You can retry safely below."}
-                        </p>
-                    </>
-                )}
-
-                {/* STEP 1: FORM & CUSTOM SLUG */}
-                {step === "form" && (
-                    <form onSubmit={handleFormSubmit} className="space-y-4 text-left">
-                        <div className="bg-neutral-900/90 border border-white/10 rounded-2xl p-4 flex items-center justify-between text-xs">
-                            <div>
-                                <span className="text-neutral-400 block text-[10px] uppercase tracking-wider font-semibold">
-                                    {tierName} Tier Template
-                                </span>
-                                <span className="text-white font-serif text-base font-bold">
-                                    {templateEntry?.config?.name || "Until Forever"}
-                                </span>
-                            </div>
-                            <span className="font-bold text-amber-300 text-lg">₹{priceFormatted}</span>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                                Your Name *
-                            </label>
-                            <input
-                                type="text"
-                                required
-                                placeholder="e.g. Rahul Sharma"
-                                value={senderName}
-                                onChange={(e) => setSenderName(e.target.value)}
-                                className="w-full bg-black/60 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-rose-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                                Partner / Recipient Name *
-                            </label>
-                            <input
-                                type="text"
-                                required
-                                placeholder="e.g. Ananya"
-                                value={partnerName}
-                                onChange={(e) => setPartnerName(e.target.value)}
-                                className="w-full bg-black/60 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-rose-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                                Custom Story Slug (Optional)
-                            </label>
-                            <div className="flex items-center bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-neutral-400">
-                                <span className="text-neutral-500 mr-1 font-mono">/story/</span>
-                                <input
-                                    type="text"
-                                    placeholder={
-                                        senderName && partnerName
-                                            ? `${senderName.toLowerCase()}-and-${partnerName.toLowerCase()}`
-                                            : "our-anniversary"
-                                    }
-                                    value={customSlug}
-                                    onChange={(e) => setCustomSlug(e.target.value)}
-                                    className="bg-transparent text-white focus:outline-none w-full font-mono text-xs"
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full lws-btn-primary py-3.5 rounded-full flex items-center justify-center gap-2 text-xs font-semibold mt-4 shadow-xl cursor-pointer"
-                        >
-                            Proceed to Razorpay Checkout (₹{priceFormatted}) <ArrowRight size={15} />
-                        </button>
-                    </form>
-                )}
-
-                {/* STEP 2: RAZORPAY PAYMENT INITIATION */}
-                {step === "payment" && (
-                    <div className="space-y-5 text-left animate-fadeIn">
-                        <div className="bg-neutral-900/90 border border-rose-500/30 rounded-2xl p-5 text-center space-y-3 shadow-xl">
-                            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center mx-auto">
-                                <CreditCard size={24} />
-                            </div>
-                            <div>
-                                <h4 className="font-serif text-lg font-bold text-white">
-                                    Complete Payment to Publish
-                                </h4>
-                                <p className="text-xs text-neutral-400 mt-1">
-                                    Instant cloud media upload & database story publishing.
-                                </p>
-                            </div>
-
-                            <div className="bg-black/60 p-3 rounded-xl border border-white/10 text-xs text-neutral-300 space-y-1 text-left">
-                                <div className="flex justify-between">
-                                    <span className="text-neutral-400">Website Title:</span>
-                                    <span className="font-semibold text-white">{draftTitle || "Love Story"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-neutral-400">Permanent Link:</span>
-                                    <span className="font-mono text-rose-300">/story/{activeSlug}</span>
-                                </div>
-                                <div className="flex justify-between border-t border-white/5 pt-1 mt-1 font-bold">
-                                    <span>Total Payable:</span>
-                                    <span className="text-amber-300 text-sm">₹{priceFormatted} INR</span>
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={handleStartRazorpayPayment}
-                                disabled={isProcessingPayment}
-                                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-semibold text-xs shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-[1.02]"
-                            >
-                                {isProcessingPayment ? (
-                                    <>
-                                        <Loader2 size={16} className="animate-spin" /> Uploading Media & Publishing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <CreditCard size={16} /> Pay ₹{priceFormatted} & Publish
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* STEP 2.5: PAYMENT FAILURE & RETRY */}
-                {step === "payment-failed" && (
-                    <div className="space-y-4 text-center animate-fadeIn">
-                        <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-center space-y-3">
-                            <AlertCircle size={32} className="text-rose-400 mx-auto" />
-                            <h4 className="font-serif text-lg font-bold text-white">Payment Unsuccessful</h4>
-                            <p className="text-xs text-rose-200 leading-relaxed">
-                                {paymentErrorMessage || "The payment transaction was cancelled or declined. No amount was deducted."}
-                            </p>
-                            <button
-                                type="button"
-                                onClick={handleStartRazorpayPayment}
-                                className="w-full py-3 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-lg inline-flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                            >
-                                <RotateCcw size={14} /> Retry Razorpay Payment (₹{priceFormatted})
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* STEP 3: REDESIGNED PREMIUM PAYMENT SUCCESS SCREEN */}
-                {step === "success" && (
-                    <div className="space-y-4 text-center animate-fadeIn py-1">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-500/20 to-pink-500/30 border border-rose-400/40 text-rose-300 flex items-center justify-center mx-auto shadow-inner">
-                            <Heart size={28} className="fill-rose-500 text-rose-400 animate-pulse" />
-                        </div>
-
-                        <div className="space-y-1">
-                            <h3 className="font-display text-2xl font-bold text-white tracking-tight">
-                                ❤️ Your Love Story is Live!
-                            </h3>
-                            <p className="text-neutral-400 text-xs max-w-xs mx-auto leading-relaxed">
-                                Your keepsake has been stored permanently and is ready to be shared.
-                            </p>
-                        </div>
-
-                        <div className="bg-black/60 border border-rose-500/30 p-3.5 rounded-2xl space-y-2 text-left shadow-lg">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] uppercase tracking-wider text-rose-300 font-semibold flex items-center gap-1">
-                                    <Globe size={12} className="text-rose-400" /> Permanent Story URL
-                                </span>
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    ● Live
-                                </span>
-                            </div>
-
-                            <div className="flex items-center justify-between bg-neutral-900/90 border border-white/10 p-2.5 rounded-xl">
-                                <span className="text-xs font-mono text-rose-200 truncate select-all px-1 font-medium">
-                                    {cleanDisplayUrl}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={handleCopyPublicLink}
-                                    className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
-                                >
-                                    {copiedLink ? (
-                                        <>
-                                            <Check size={12} className="text-emerald-400" /> Copied!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy size={12} /> Copy
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="bg-neutral-900/70 border border-white/5 p-3 rounded-2xl text-left text-xs text-neutral-300 space-y-1.5">
-                            <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block mb-1">
-                                What's Next?
-                            </span>
-                            <div className="grid grid-cols-1 gap-1 text-[11px]">
-                                <div className="flex items-center gap-2 text-neutral-300">
-                                    <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                                    <span>Share the permanent link with your partner</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-neutral-300">
-                                    <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                                    <span>Cloud media storage active (Zero Blob URLs)</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-neutral-300">
-                                    <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                                    <span>Open & preview your live gift on any phone</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {showQrCode && (
-                            <div className="p-3 rounded-2xl bg-black/80 border border-white/10 text-center space-y-2 animate-fadeIn">
-                                <div className="bg-white p-2 rounded-xl inline-block mx-auto shadow-2xl">
-                                    <img src={qrCodeUrl} alt="Gift QR Code" className="w-32 h-32 mx-auto" />
-                                </div>
-                                <p className="text-[10px] text-neutral-400">
-                                    Scan with phone camera to open website
-                                </p>
-                            </div>
-                        )}
-
-                        <div className="space-y-2 pt-1">
-                            <button
-                                type="button"
-                                onClick={handleOpenGiftWithTransition}
-                                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-semibold text-xs shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-[1.02]"
-                            >
-                                <Heart size={15} className="fill-white" /> Open My Gift
-                            </button>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <a
-                                    href={whatsappShareUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="py-2.5 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                                >
-                                    <MessageCircle size={14} /> WhatsApp
-                                </a>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setShowQrCode((v) => !v)}
-                                    className="py-2.5 px-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                                >
-                                    <QrCode size={14} /> {showQrCode ? "Hide QR" : "QR Code"}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {step === "opening-transition" && (
-                    <div className="py-12 space-y-4 text-center animate-fadeIn">
-                        <div className="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
-                            <Heart size={32} className="fill-rose-500 animate-ping" />
-                        </div>
-
-                        <div className="space-y-2">
-                            <h4 className="font-display text-xl font-bold text-white">
-                                {transitionStage === "preparing" ? "❤️ Preparing your surprise..." : "✨ Opening your keepsake..."}
-                            </h4>
-                            <p className="text-xs text-neutral-400">
-                                Launching recipient unboxing experience...
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </div>
+        {/* Top Badge */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-[#d48b95]/40 bg-[#1f0e18] text-[#e8b4b8] text-[0.7rem] font-medium tracking-wide">
+            <ShieldCheck className="size-3.5 text-[#e8b4b8]" />
+            <span>Secure Razorpay Checkout</span>
+          </div>
         </div>
-    );
+
+        {/* Modal Header */}
+        <div className="text-center mt-4 space-y-1.5">
+          <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium">
+            {step === "form" && `Publish For ${displayTitle}`}
+            {step === "payment" && `Complete Razorpay Payment`}
+            {step === "success" && `Keepsake Published! 🎉`}
+          </h2>
+          <p className="text-xs text-[#c5b0a5]/80 max-w-sm mx-auto leading-relaxed font-sans">
+            {step === "form" && "Enter recipient details and custom slug to unlock public sharing for this Sweet & Personal template."}
+            {step === "payment" && `Scan QR or proceed with UPI / Razorpay to activate live URL.`}
+            {step === "success" && `Your romantic keepsake is live and ready to share with ${partnerName || "your partner"}!`}
+          </p>
+        </div>
+
+        {/* STEP 1: FORM */}
+        {step === "form" && (
+          <form onSubmit={handleFormSubmit} className="mt-6 space-y-4 text-left">
+            {/* Price Card */}
+            <div className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f] p-4 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <span className="text-[0.6rem] font-semibold tracking-wider uppercase text-[#c5b0a5]/60 block">
+                  SWEET &amp; PERSONAL TIER TEMPLATE
+                </span>
+                <h3 className="font-serif text-base font-bold text-white">
+                  {displayTitle}
+                </h3>
+              </div>
+              <span className="font-serif text-xl font-bold text-[#dfc19c]">
+                ₹{priceFormatted}
+              </span>
+            </div>
+
+            {/* Your Name */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#f5e6d3]">
+                Your Name <span className="text-[#e8b4b8]">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Rahul Sharma"
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
+                className="w-full h-11 bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 text-xs text-white placeholder:text-[#c5b0a5]/40 focus:outline-none focus:border-[#e8b4b8]"
+              />
+            </div>
+
+            {/* Partner Name */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#f5e6d3]">
+                Partner / Recipient Name <span className="text-[#e8b4b8]">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Ananya"
+                value={partnerName}
+                onChange={(e) => setPartnerName(e.target.value)}
+                className="w-full h-11 bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 text-xs text-white placeholder:text-[#c5b0a5]/40 focus:outline-none focus:border-[#e8b4b8]"
+              />
+            </div>
+
+            {/* Custom Story Slug */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#f5e6d3]">
+                Custom Story Slug (Optional)
+              </label>
+              <div className="flex items-center bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 h-11 text-xs">
+                <span className="text-[#c5b0a5]/50 font-mono mr-1 select-none">/story/</span>
+                <input
+                  type="text"
+                  placeholder="our-anniversary"
+                  value={customSlug}
+                  onChange={(e) => setCustomSlug(e.target.value)}
+                  className="bg-transparent text-white focus:outline-none w-full font-mono text-xs placeholder:text-[#c5b0a5]/40"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className="w-full h-12 mt-4 rounded-xl bg-gradient-to-r from-[#e8b4b8] via-[#dfc19c] to-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-lg cursor-pointer"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Preparing Checkout...
+                </>
+              ) : (
+                <>
+                  Proceed to Razorpay Checkout (₹{priceFormatted}) <ArrowRight className="size-4" />
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* STEP 2: RAZORPAY / UPI PAYMENT */}
+        {step === "payment" && (
+          <div className="mt-6 space-y-4 text-left animate-fadeIn">
+            <div className="rounded-2xl border border-[#e8b4b8]/30 bg-[#140a0f] p-5 text-center space-y-3">
+              <div className="flex items-center justify-center gap-2 text-xs text-[#e8b4b8] font-semibold">
+                <QrCode className="size-4" /> Scan &amp; Pay via UPI / Cards / NetBanking
+              </div>
+              <div className="bg-white p-3 rounded-xl inline-block mx-auto">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`upi://pay?pa=${OWNER_UPI_ID}&am=${price}&cu=INR`)}`}
+                  alt="Razorpay UPI QR"
+                  className="w-36 h-36 mx-auto"
+                />
+              </div>
+              <p className="text-xs text-[#c5b0a5]">UPI ID: <span className="font-mono text-white">{OWNER_UPI_ID}</span></p>
+              <p className="text-xs text-[#dfc19c] font-bold">Total: ₹{priceFormatted} INR</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handlePaymentComplete}
+              disabled={isProcessing}
+              className="w-full h-12 rounded-xl bg-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center justify-center gap-2 hover:bg-[#e8b4b8] transition-all cursor-pointer"
+            >
+              {isProcessing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              Verify &amp; Activate Keepsake Link
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3: SUCCESS */}
+        {step === "success" && (
+          <div className="mt-5 space-y-4 text-center animate-fadeIn">
+            <div className="size-11 rounded-full bg-[#d48b95]/20 border border-[#e8b4b8]/40 text-[#e8b4b8] flex items-center justify-center mx-auto">
+              <Heart className="size-5 fill-[#e8b4b8] text-[#e8b4b8] animate-bounce" />
+            </div>
+
+            <div className="rounded-2xl border border-[#dfc19c]/20 bg-[#140a0f] p-4 text-left space-y-2">
+              <span className="text-[0.65rem] uppercase tracking-wider text-[#e8b4b8] font-semibold block">
+                YOUR LIVE STORY LINK
+              </span>
+              <div className="p-2.5 rounded-lg bg-[#070305] border border-[#dfc19c]/15 text-xs font-mono text-white break-all">
+                {publishedUrl}
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="flex-1 h-9 rounded-lg border border-[#dfc19c]/20 text-xs text-[#f5e6d3] hover:bg-[#1f0e18] flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Copy className="size-3.5" /> {copiedLink ? "Copied!" : "Copy Link"}
+                </button>
+                <a
+                  href={publishedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 h-9 rounded-lg bg-[#d48b95] text-[#0a0507] text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-[#e8b4b8] cursor-pointer"
+                >
+                  <ExternalLink className="size-3.5" /> Open Story
+                </a>
+              </div>
+            </div>
+
+            {/* Heart-Shaped Red QR Keepsake Card */}
+            <div className="pt-3 border-t border-[#dfc19c]/15 text-left space-y-2">
+              <span className="text-[0.68rem] uppercase tracking-widest text-[#e8b4b8] font-semibold block text-center">
+                ❤️ ROMANTIC KEEPSAKE QR CARD
+              </span>
+              <HeartQRCard
+                url={publishedUrl}
+                partnerName={partnerName}
+                senderName={senderName}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

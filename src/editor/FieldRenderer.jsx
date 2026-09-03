@@ -22,17 +22,6 @@ const registry = {
     "song-url": SongUrlEditor,
 };
 
-const GUIDED_PLACEHOLDERS = {
-    partnerName: "e.g. Aarohi or Alex",
-    creatorName: "e.g. Someone Special",
-    heroMessage: "Tell your partner what made you fall in love...",
-    quote: "“In every universe, I would still choose you.”",
-    letterMessage: "Write your heartfelt love letter here...",
-    bgMusicUrl: "Paste an MP3 audio URL (e.g. https://...)",
-    card1Caption: "Golden hour, soft breeze, and endless conversations...",
-    loveNote: "You make ordinary days feel special...",
-};
-
 export default function FieldRenderer({ field, value, onChange }) {
     const Comp = registry[field.type];
     if (!Comp) {
@@ -42,28 +31,19 @@ export default function FieldRenderer({ field, value, onChange }) {
             </div>
         );
     }
-
-    const guidedPlaceholder =
-        field.placeholder || GUIDED_PLACEHOLDERS[field.key] || "Enter content...";
-
-    const fieldWithPlaceholder = {
-        ...field,
-        placeholder: guidedPlaceholder,
-    };
-
     return (
         <div data-testid={EDITOR.fieldWrapper(field.key)} className="space-y-2">
             <div className="flex items-baseline justify-between gap-3">
-                <label className="text-xs uppercase tracking-[0.18em] text-[color:var(--lws-text-muted)] font-semibold">
+                <label className="text-xs uppercase tracking-[0.18em] text-[color:var(--lws-text-muted)]">
                     {field.label}
                     {field.required && (
                         <span className="text-[color:var(--lws-pink)] ml-1">*</span>
                     )}
                 </label>
             </div>
-            <Comp field={fieldWithPlaceholder} value={value} onChange={onChange} />
+            <Comp field={field} value={value} onChange={onChange} />
             {field.hint && (
-                <p className="text-[11px] text-[color:var(--lws-text-dim)] leading-relaxed">
+                <p className="text-[11px] text-[color:var(--lws-text-dim)]">
                     {field.hint}
                 </p>
             )}

@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import TemplateRenderer from "@/components/TemplateRenderer";
-import UnboxingIntro from "@/components/UnboxingIntro";
 import { getTemplate } from "@/data/templateRegistry";
-import { Heart, Lock, Clock, Send } from "lucide-react";
+import { Heart, Lock, Clock, Send, ShieldAlert } from "lucide-react";
 
 export default function ViewWebsitePage() {
     const { shareId } = useParams();
@@ -14,8 +13,6 @@ export default function ViewWebsitePage() {
 
     // Payment verification security check
     const isActivated = searchParams.get("active") === "true" || searchParams.get("verified") === "1" || searchParams.get("v") === "1";
-
-    const entry = useMemo(() => getTemplate(templateSlug), [templateSlug]);
 
     const content = useMemo(() => {
         // First try decoding from URL parameter
@@ -62,8 +59,9 @@ export default function ViewWebsitePage() {
         }
 
         // Fallback to default demo data for template
+        const entry = getTemplate(templateSlug);
         return entry?.config?.demoData || {};
-    }, [shareId, templateSlug, encodedData, entry]);
+    }, [shareId, templateSlug, encodedData]);
 
     // If website is NOT activated by Owner yet, show security verification pending screen
     if (!isActivated) {
@@ -110,13 +108,11 @@ export default function ViewWebsitePage() {
 
     return (
         <div className="relative min-h-screen">
-            {/* Recipient Unboxing Experience Wrap */}
-            <UnboxingIntro content={content} config={entry?.config || {}}>
-                <TemplateRenderer templateSlug={templateSlug} content={content} />
-            </UnboxingIntro>
+            {/* Fullscreen Render of Partner's Custom Website */}
+            <TemplateRenderer templateSlug={templateSlug} content={content} />
 
             {/* Subtle Romantic Studio Badge at Bottom */}
-            <div className="fixed bottom-4 right-4 z-40">
+            <div className="fixed bottom-4 right-4 z-50">
                 <Link
                     to="/"
                     target="_blank"

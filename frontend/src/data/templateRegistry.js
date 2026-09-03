@@ -7,36 +7,10 @@
 import AuroraSampleTemplate from "@/templates/aurora-sample/AuroraSampleTemplate";
 import auroraSampleConfig from "@/templates/aurora-sample/template.config";
 
+// Sunset Love Template Import
 import SunsetLoveTemplate from "../templates/sunset-love/SunsetLoveTemplate";
-import UntilForeverTemplate from "../templates/until-forever/UntilForeverTemplate";
-import untilForeverConfig from "../templates/until-forever/template.config";
-import ALittleCornerTemplate from "../templates/a-little-corner/ALittleCornerTemplate";
-import aLittleCornerConfig from "../templates/a-little-corner/template.config";
-import ComeHereBabyTemplate from "../templates/come-here-baby/ComeHereBabyTemplate";
-import comeHereBabyConfig from "../templates/come-here-baby/template.config";
 
 export const templateRegistry = {
-  // Come Here Baby Ultra Comfort Entry
-  "come-here-baby": {
-    component: ComeHereBabyTemplate,
-    comingSoon: false,
-    config: comeHereBabyConfig,
-  },
-
-  // A Little Corner Intimate Comfort Entry
-  "a-little-corner": {
-    component: ALittleCornerTemplate,
-    comingSoon: false,
-    config: aLittleCornerConfig,
-  },
-
-  // Until Forever Flagship Experience Entry
-  "until-forever": {
-    component: UntilForeverTemplate,
-    comingSoon: false,
-    config: untilForeverConfig.config || untilForeverConfig,
-  },
-
   [auroraSampleConfig.slug]: {
     component: AuroraSampleTemplate,
     config: auroraSampleConfig,
@@ -51,8 +25,6 @@ export const templateRegistry = {
       slug: "sunset-love",
       name: "Sunset Love",
       category: "Romantic",
-      hiddenFromMarketplace: true,
-      occasions: ["anniversary", "proposal", "long-distance"],
       tier: "Premium",
       price: 1999,
       currency: "INR",
@@ -167,7 +139,6 @@ export const templateRegistry = {
       slug: "midnight-love",
       name: "Midnight Love",
       category: "Romantic",
-      occasions: ["anniversary", "proposal", "coming-soon"],
       tier: "Luxury",
       price: 3499,
       currency: "INR",
@@ -195,14 +166,13 @@ export const templateRegistry = {
       slug: "royal-love",
       name: "Royal Love",
       category: "Romantic",
-      occasions: ["wedding", "parents", "coming-soon"],
       tier: "Luxury",
       price: 3499,
       currency: "INR",
       description:
         "A regal, gold-and-burgundy love story with couple gallery, relationship timeline, a royal letter, and quotes.",
       coverImage:
-        "https://images.unsplash.com/photo-1509927079599-421242923f07?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1600&q=80",
       features: ["Couple gallery", "Timeline", "Royal letter", "Quotes"],
       editableSchema: [],
       demoData: {},
@@ -216,7 +186,6 @@ export const templateRegistry = {
       slug: "soft-memories",
       name: "Soft Memories",
       category: "Romantic",
-      occasions: ["graduation", "friendship", "promotion", "coming-soon"],
       tier: "Basic",
       price: 999,
       currency: "INR",
@@ -245,18 +214,5 @@ export function listTemplates() {
 }
 
 export function listShippableTemplates() {
-  return listTemplates().filter((t) => {
-    const config = t.config || {};
-    return !!t.component && !t.comingSoon && !config.hiddenFromMarketplace;
-  });
-}
-
-const PUBLIC_MARKETPLACE_SLUGS = ["come-here-baby", "until-forever"];
-
-export function listMarketplaceTemplates() {
-  return listTemplates().filter((t) => {
-    const config = t.config || {};
-    const slug = config.slug || t.id;
-    return PUBLIC_MARKETPLACE_SLUGS.includes(slug) && !config.hiddenFromMarketplace && !t.comingSoon;
-  });
+  return listTemplates().filter((t) => !!t.component && !t.comingSoon);
 }

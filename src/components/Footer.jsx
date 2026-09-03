@@ -1,39 +1,74 @@
-import React from 'react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 
-export const Footer = () => {
+export default function Footer() {
   return (
-    <footer className="w-full py-12 border-t border-white/10 bg-black/40 backdrop-blur-sm mt-20">
-      <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center gap-4 text-center">
-        
-        {/* Brand Name */}
-        <div className="flex items-center gap-2">
-          <span className="text-pink-400 text-lg">💖</span>
-          <span className="font-serif text-lg tracking-wide text-white/90 font-bold">
-            LoveCrafted
-          </span>
+    <footer className="border-t border-[#dfc19c]/10 bg-[#0a0507] text-[#c5b0a5] pt-20 pb-12">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 mb-16">
+          {/* Col 1: LoveCrafted Brand info */}
+          <div className="lg:col-span-5 space-y-6">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-[#e8b4b8] to-[#d48b95] text-[#0a0507]">
+                <Heart className="size-4 fill-[#0a0507]" />
+              </div>
+              <span className="font-serif text-2xl font-bold tracking-tight text-[#f5e6d3]">
+                LoveCrafted
+              </span>
+            </Link>
+
+            <p className="text-sm leading-relaxed max-w-md text-[#c5b0a5]/80">
+              Turn your love story into a handcrafted keepsake of pure emotion. Personalize romantic notes,
+              secret open-when letters, photo galleries, and background songs for your special someone.
+            </p>
+          </div>
+
+          {/* Col 2: Navigation Links */}
+          <div className="lg:col-span-3 space-y-4">
+            <h4 className="text-xs uppercase tracking-[0.25em] font-semibold text-[#dfc19c]/80">
+              NAVIGATION
+            </h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link to="/" className="hover:text-[#f5e6d3] transition-colors">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/marketplace" className="hover:text-[#f5e6d3] transition-colors">
+                  Templates
+                </Link>
+              </li>
+              <li>
+                <Link to="/dashboard" className="hover:text-[#f5e6d3] transition-colors">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link to="/feedback" className="hover:text-[#f5e6d3] transition-colors">
+                  Feedback
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 3: Heritage */}
+          <div className="lg:col-span-4 space-y-4">
+            <h4 className="text-xs uppercase tracking-[0.25em] font-semibold text-[#dfc19c]/80">
+              LOVECRAFTED ATELIER
+            </h4>
+            <p className="text-sm leading-relaxed text-[#c5b0a5]/80">
+              Composing handcrafted romantic keepsakes and digital love letters for couples, anniversaries, proposals, and lifetime memories.
+            </p>
+          </div>
         </div>
 
-        {/* Contact Email Link */}
-        <div className="flex items-center gap-2 text-neutral-400 hover:text-pink-300 transition-colors duration-200 text-sm">
-          <span>📩</span>
-          <a 
-            href="mailto:lovecrafted.official@gmail.com" 
-            className="underline underline-offset-4 decoration-neutral-600 hover:decoration-pink-300 font-medium"
-          >
-            lovecrafted.official@gmail.com
-          </a>
+        {/* Bottom copyright bar */}
+        <div className="border-t border-[#dfc19c]/10 pt-8 text-center text-xs text-[#c5b0a5]/60">
+          Crafted with <span className="text-[#e8b4b8]">♡</span> by LoveCrafted
         </div>
-
-        {/* Tagline & Copyright */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 text-xs text-neutral-500 mt-2">
-          <span>HANDCRAFTED ROMANTIC WEBSITES · ONE TEMPLATE AT A TIME</span>
-          <span className="hidden sm:inline">•</span>
-          <span>© 2026 · LoveCrafted</span>
-        </div>
-
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

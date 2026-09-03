@@ -1,334 +1,178 @@
-import React, { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { MARKETPLACE } from "@/constants/testIds";
-import { listMarketplaceTemplates } from "@/data/templateRegistry";
-import { OCCASIONS, getOccasionCounts, getOccasionBySlug } from "@/constants/occasions";
-import TemplateCard from "@/components/TemplateCard";
-import { Filter, LayoutGrid, Sparkles, X, Clock, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Search, SlidersHorizontal, X, Archive, Sparkles } from "lucide-react";
+import TemplateCard from "../components/TemplateCard";
+import { Input } from "../components/ui/input";
+import { TEMPLATE_SUITES } from "../data/suitesConfig";
 
-const TIERS = ["All", "Sweet & Personal", "Cinematic"];
-const PRICE_BUCKETS = [
-    { id: "all", label: "Any price", min: 0, max: Infinity },
-    { id: "u100", label: "Under ₹100", min: 0, max: 100 },
-    { id: "100-300", label: "₹100 – ₹300", min: 100, max: 300 },
-    { id: "300p", label: "₹300+", min: 300, max: Infinity },
+const CATEGORIES = [
+  "All settings",
+  "Black Tie & Evening Gala",
+  "Classical & Museum",
+  "Coastal & Seaside",
+  "Destination Wedding",
+  "Estate & Villa",
+  "Intimate & Micro-Wedding",
+  "Metropolitan Ballroom",
+  "Modern Loft & Studio",
+  "Vineyard & Winery",
 ];
 
 export default function MarketplacePage() {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const activeOccasionSlug = searchParams.get("occasion") || "all";
-    const tier = searchParams.get("tier") || "All";
-    const price = searchParams.get("price") || "all";
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All settings");
+  const [viewTab, setViewTab] = useState("published"); // "published" | "archived"
 
-    const all = useMemo(() => listMarketplaceTemplates(), []);
+  const publishedSuites = TEMPLATE_SUITES.filter((s) => !s.archived);
+  const archivedSuites = TEMPLATE_SUITES.filter((s) => s.archived);
 
-    // Compute dynamic template counts strictly for publicly visible marketplace templates
-    const occasionCounts = useMemo(() => getOccasionCounts(all), [all]);
+  const currentPool = viewTab === "archived" ? archivedSuites : publishedSuites;
 
-    // Derive active occasion chips dynamically ONLY for occasions that exist on at least 1 public template (count > 0)
-    const activeOccasionsList = useMemo(() => {
-        return OCCASIONS.filter((occ) => {
-            const count = occasionCounts[occ.slug] || occasionCounts[occ.id] || 0;
-            return count > 0 && occ.isActive !== false;
-        });
-    }, [occasionCounts]);
+  const filteredSuites = currentPool.filter((suite) => {
+    const matchesCategory =
+      selectedCategory === "All settings" ||
+      suite.category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesSearch =
+      search.trim() === "" ||
+      suite.title.toLowerCase().includes(search.toLowerCase()) ||
+      suite.category.toLowerCase().includes(search.toLowerCase()) ||
+      suite.subtitle.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-    const activeOccasionObj = useMemo(
-        () => getOccasionBySlug(activeOccasionSlug),
-        [activeOccasionSlug]
-    );
-
-    // Is the currently requested URL occasion inactive?
-    const isInactiveOccasionUrl = activeOccasionObj && !activeOccasionObj.isActive;
-
-    const handleOccasionChange = (slug) => {
-        const newParams = new URLSearchParams(searchParams);
-        if (slug === "all") {
-            newParams.delete("occasion");
-        } else {
-            newParams.set("occasion", slug);
-        }
-        setSearchParams(newParams);
-    };
-
-    const handleTierChange = (newTier) => {
-        const newParams = new URLSearchParams(searchParams);
-        if (newTier === "All") {
-            newParams.delete("tier");
-        } else {
-            newParams.set("tier", newTier);
-        }
-        setSearchParams(newParams);
-    };
-
-    const handlePriceChange = (newPrice) => {
-        const newParams = new URLSearchParams(searchParams);
-        if (newPrice === "all") {
-            newParams.delete("price");
-        } else {
-            newParams.set("price", newPrice);
-        }
-        setSearchParams(newParams);
-    };
-
-    const handleResetAll = () => {
-        setSearchParams({});
-    };
-
-    // Filter logic checking multi-occasion arrays
-    const filtered = useMemo(() => {
-        if (isInactiveOccasionUrl) return [];
-
-        return all.filter((t) => {
-            const c = t.config || {};
-            const tOccasions = (c.occasions || []).map((o) => o.toLowerCase());
-            const legacyCategory = (c.category || "").toLowerCase();
-
-            // Occasion Filter
-            if (activeOccasionSlug !== "all") {
-                const target = activeOccasionSlug.toLowerCase();
-                const matchesOccasion =
-                    tOccasions.includes(target) ||
-                    legacyCategory === target ||
-                    (target === "anniversary" && legacyCategory === "romantic");
-
-                if (!matchesOccasion) return false;
-            }
-
-            // Tier Filter
-            if (tier !== "All" && c.tier !== tier) return false;
-
-            // Price Bucket Filter
-            const bucket = PRICE_BUCKETS.find((b) => b.id === price);
-            if (bucket && (c.price < bucket.min || c.price > bucket.max)) return false;
-
-            return true;
-        });
-    }, [all, activeOccasionSlug, tier, price, isInactiveOccasionUrl]);
-
-    return (
-        <div data-testid={MARKETPLACE.root} className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-16 text-white">
-            {/* Header Banner */}
-            <div className="mb-8 md:mb-12">
-                <div className="lws-pill mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300">
-                    <Sparkles size={13} /> Occasion Keepsakes
-                </div>
-                <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
-                    <span className="lws-gradient-text">Crafted for Every Special Moment</span>
-                </h1>
-                <p className="text-neutral-400 mt-3 max-w-2xl text-sm sm:text-base leading-relaxed">
-                    Explore luxury digital keepsakes tailored for Anniversaries, Proposals, Weddings, Birthdays, and cherished relationships.
-                </p>
-            </div>
-
-            {/* Dynamic Active Occasions Filter Bar */}
-            <div className="mb-8 space-y-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest text-neutral-400 font-semibold flex items-center gap-1.5">
-                        <Filter size={13} className="text-rose-400" /> Select Occasion
-                    </span>
-                    {activeOccasionSlug !== "all" && (
-                        <button
-                            type="button"
-                            onClick={() => handleOccasionChange("all")}
-                            className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors cursor-pointer"
-                        >
-                            <X size={12} /> Clear occasion filter
-                        </button>
-                    )}
-                </div>
-
-                {/* Horizontal Scroll Pill Bar (Renders ONLY active occasions) */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none snap-x">
-                    {/* "All Occasions" Pill */}
-                    <button
-                        type="button"
-                        onClick={() => handleOccasionChange("all")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 shrink-0 cursor-pointer snap-start ${
-                            activeOccasionSlug === "all"
-                                ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/20 border border-rose-400/40"
-                                : "bg-neutral-900/80 border border-white/10 text-neutral-300 hover:border-white/20 hover:text-white"
-                        }`}
-                    >
-                        <LayoutGrid size={14} />
-                        <span>All Occasions</span>
-                        <span
-                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                activeOccasionSlug === "all"
-                                    ? "bg-white/20 text-white"
-                                    : "bg-white/10 text-neutral-400"
-                            }`}
-                        >
-                            {all.length}
-                        </span>
-                    </button>
-
-                    {/* Dynamically Generated Active Occasion Pills */}
-                    {activeOccasionsList.map((occ) => {
-                        const IconComp = occ.icon;
-                        const isSelected = activeOccasionSlug === occ.slug;
-                        const count = occasionCounts[occ.id] || 0;
-
-                        return (
-                            <button
-                                key={occ.id}
-                                type="button"
-                                onClick={() => handleOccasionChange(occ.slug)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 shrink-0 cursor-pointer snap-start ${
-                                    isSelected
-                                        ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/20 border border-rose-400/40 scale-[1.02]"
-                                        : "bg-neutral-900/80 border border-white/10 text-neutral-300 hover:border-rose-500/40 hover:text-white"
-                                }`}
-                            >
-                                <IconComp
-                                    size={14}
-                                    className={isSelected ? "text-white" : "text-rose-400"}
-                                />
-                                <span>{occ.name}</span>
-                                <span
-                                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                        isSelected
-                                            ? "bg-white/20 text-white"
-                                            : "bg-white/10 text-neutral-400"
-                                    }`}
-                                >
-                                    {count}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Active Occasion Info Banner */}
-            {activeOccasionObj && !isInactiveOccasionUrl && (
-                <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-rose-950/40 via-neutral-900/80 to-purple-950/30 border border-rose-500/20 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fadeIn">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center justify-center shrink-0">
-                            {React.createElement(activeOccasionObj.icon, { size: 20 })}
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-white font-serif">
-                                {activeOccasionObj.name} Keepsakes
-                            </h2>
-                            <p className="text-xs text-neutral-400 mt-0.5">
-                                {activeOccasionObj.shortDescription}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Inactive Occasion URL Fallback Banner */}
-            {isInactiveOccasionUrl && (
-                <div className="lws-card p-10 md:p-14 text-center rounded-3xl bg-neutral-900/60 border border-amber-500/30 max-w-xl mx-auto space-y-4 my-8 animate-fadeIn">
-                    <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center justify-center mx-auto shadow-inner">
-                        <Clock size={28} className="animate-pulse" />
-                    </div>
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
-                            Upcoming Release
-                        </div>
-                        <h3 className="font-serif text-2xl font-bold text-white">
-                            This occasion is coming soon.
-                        </h3>
-                        <p className="text-xs text-neutral-400 leading-relaxed max-w-md mx-auto">
-                            Customized keepsakes for <strong>{activeOccasionObj.name}</strong> are currently in development for our upcoming launch. Check out our active gift collections below!
-                        </p>
-                    </div>
-                    <div className="pt-2">
-                        <button
-                            type="button"
-                            onClick={() => handleOccasionChange("all")}
-                            className="lws-btn-primary text-xs py-3 px-6 rounded-full inline-flex items-center gap-2 cursor-pointer shadow-xl hover:scale-105 transition-transform"
-                        >
-                            Browse Available Occasions <ArrowRight size={14} />
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Secondary Controls Bar (Tier & Price Filters + Result Count) */}
-            {!isInactiveOccasionUrl && (
-                <div className="lws-card p-4 mb-8 flex flex-wrap items-center gap-3 bg-neutral-900/60 border border-white/10 rounded-2xl">
-                    <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-neutral-400 font-semibold">
-                        <Filter size={12} /> Refine:
-                    </span>
-
-                    {/* Tier Filter Dropdown */}
-                    <select
-                        data-testid={MARKETPLACE.filterTier}
-                        value={tier}
-                        onChange={(e) => handleTierChange(e.target.value)}
-                        className="bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-rose-500/50 cursor-pointer"
-                    >
-                        {TIERS.map((t) => (
-                            <option key={t} value={t} className="bg-neutral-900 text-white">
-                                {t === "All" ? "All Tiers" : `${t} Tier`}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Price Filter Dropdown */}
-                    <select
-                        data-testid={MARKETPLACE.filterPrice}
-                        value={price}
-                        onChange={(e) => handlePriceChange(e.target.value)}
-                        className="bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-neutral-200 focus:outline-none focus:border-rose-500/50 cursor-pointer"
-                    >
-                        {PRICE_BUCKETS.map((b) => (
-                            <option key={b.id} value={b.id} className="bg-neutral-900 text-white">
-                                {b.label}
-                            </option>
-                        ))}
-                    </select>
-
-                    <div className="ml-auto flex items-center gap-3 text-xs text-neutral-400">
-                        <span>
-                            Showing <strong className="text-white font-semibold">{filtered.length}</strong> template{filtered.length === 1 ? "" : "s"}
-                        </span>
-                        {(activeOccasionSlug !== "all" || tier !== "All" || price !== "all") && (
-                            <button
-                                type="button"
-                                onClick={handleResetAll}
-                                className="text-xs text-rose-400 hover:text-rose-300 underline underline-offset-4 cursor-pointer"
-                            >
-                                Reset filters
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Template Grid or Empty State */}
-            {!isInactiveOccasionUrl && filtered.length > 0 && (
-                <div data-testid={MARKETPLACE.grid} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filtered.map((t) => (
-                        <TemplateCard key={t.config.slug} entry={t} />
-                    ))}
-                </div>
-            )}
-
-            {!isInactiveOccasionUrl && filtered.length === 0 && (
-                <div data-testid={MARKETPLACE.emptyState} className="lws-card p-12 md:p-16 text-center rounded-3xl bg-neutral-900/40 border border-white/10 max-w-xl mx-auto space-y-4">
-                    <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/20">
-                        <Sparkles size={22} />
-                    </div>
-                    <h3 className="font-serif text-2xl font-bold text-white">
-                        No Keepsakes Found
-                    </h3>
-                    <p className="text-xs text-neutral-400 leading-relaxed">
-                        No templates currently match the selected combination of occasion, tier, and price filters.
-                    </p>
-                    <button
-                        type="button"
-                        onClick={handleResetAll}
-                        className="lws-btn-primary text-xs py-2.5 px-5 rounded-full inline-flex items-center gap-2 cursor-pointer shadow-lg"
-                    >
-                        <X size={14} /> Clear All Filters
-                    </button>
-                </div>
-            )}
+  return (
+    <div className="min-h-screen bg-[#0a0507] text-[#f5e6d3] font-sans antialiased selection:bg-[#d48b95]/30 selection:text-[#f5e6d3]">
+      {/* Top Header */}
+      <section className="relative overflow-hidden bg-luxe-radial pt-16 pb-14 lg:pt-20 lg:pb-16">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 space-y-4">
+          <p className="text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]/70">
+            THE COLLECTION
+          </p>
+          <h1 className="font-serif text-4xl sm:text-5xl text-white font-medium">
+            {viewTab === "archived"
+              ? `${archivedSuites.length} archived studio draft${archivedSuites.length === 1 ? "" : "s"}.`
+              : publishedSuites.length === 1
+              ? "Handcrafted couture suite."
+              : `${publishedSuites.length} couture invitation suites.`}
+          </h1>
+          <p className="max-w-xl text-sm leading-relaxed text-[#c5b0a5] sm:text-base">
+            {viewTab === "archived"
+              ? "These templates are safely archived. You can open, edit and publish them anytime for customer use."
+              : "Each suite arrives fully composed and endlessly editable. Open the studio to make it yours."}
+          </p>
         </div>
-    );
+      </section>
+
+      {/* Sticky Filter Bar */}
+      <div className="sticky top-20 z-40 border-y border-[#dfc19c]/15 bg-[#0a0507]/90 backdrop-blur-xl py-4">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            {/* Search Input */}
+            <div className="relative w-full lg:w-80">
+              <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#dfc19c]/50" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search suites, settings, moods…"
+                className="h-11 border-[#dfc19c]/20 bg-[#140a0f] pl-10 text-sm text-[#f5e6d3] placeholder:text-[#c5b0a5]/50 focus-visible:border-[#e8b4b8]/50 focus-visible:ring-1 focus-visible:ring-[#e8b4b8]/50 rounded-lg"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#dfc19c]/60 hover:text-[#f5e6d3]"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+              <SlidersHorizontal className="size-4 shrink-0 text-[#dfc19c]/40 mr-1 hidden sm:block" />
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`h-9 whitespace-nowrap rounded-full border px-4 text-xs font-medium tracking-wide transition-all duration-200 ${
+                      selectedCategory === cat
+                        ? "border-[#e8b4b8]/50 bg-[#d48b95]/20 text-[#e8b4b8] shadow-[0_0_20px_rgba(212,139,149,0.25)]"
+                        : "border-[#dfc19c]/15 bg-[#140a0f]/60 text-[#c5b0a5] hover:border-[#dfc19c]/30 hover:text-[#f5e6d3]"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <section className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <p className="text-xs tracking-wide text-[#c5b0a5] font-mono">
+            {filteredSuites.length} beautiful occasion{filteredSuites.length === 1 ? "" : "s"}
+            {viewTab === "archived" ? " (Archived Drafts)" : ""}
+          </p>
+
+          {/* Owner Published / Archive Tab Switcher */}
+          <div className="inline-flex items-center rounded-full border border-[#dfc19c]/20 bg-[#140a0f] p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setViewTab("published")}
+              className={`px-3.5 py-1 rounded-full transition-all cursor-pointer ${
+                viewTab === "published"
+                  ? "bg-[#d48b95] text-[#0a0507] font-semibold shadow-md"
+                  : "text-[#c5b0a5] hover:text-white"
+              }`}
+            >
+              Published ({publishedSuites.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewTab("archived")}
+              className={`px-3.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewTab === "archived"
+                  ? "bg-[#351824] text-[#e8b4b8] font-semibold border border-[#e8b4b8]/30"
+                  : "text-[#c5b0a5] hover:text-white"
+              }`}
+              title="Owner view: Drafts stored safely in archive"
+            >
+              <Archive className="size-3 text-[#e8b4b8]" />
+              <span>Archived Drafts</span>
+              <span className="text-[0.65rem] px-1.5 py-0.2 rounded-full bg-[#1b0b14] border border-[#dfc19c]/20 text-[#dfc19c]">
+                {archivedSuites.length}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          {filteredSuites.map((suite, index) => (
+            <TemplateCard key={suite.id} template={suite} index={index} />
+          ))}
+        </div>
+
+        {filteredSuites.length === 0 && (
+          <div className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f] p-12 text-center my-12">
+            <p className="font-serif text-xl text-[#f5e6d3]">No occasions match that filter</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setSelectedCategory("All settings");
+              }}
+              className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-[#d48b95] px-6 text-xs font-medium text-[#0a0507] hover:bg-[#e8b4b8]"
+            >
+              Show all occasions
+            </button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
 }

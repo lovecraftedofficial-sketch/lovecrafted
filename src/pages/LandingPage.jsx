@@ -1,417 +1,376 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-    ArrowRight,
-    Sparkles,
-    Heart,
-    ShieldCheck,
-    Wand2,
-    Palette,
-    Music2,
-    ChevronDown,
+  ArrowRight,
+  ChevronDown,
+  Crown,
+  Heart,
+  Music,
+  Palette,
+  ShieldCheck,
+  Sparkles,
+  Wand2,
+  Lock,
 } from "lucide-react";
-import { LANDING } from "@/constants/testIds";
-import { listTemplates } from "@/data/templateRegistry";
-import TemplateCard from "@/components/TemplateCard";
+import TemplateCard from "../components/TemplateCard";
+import { TEMPLATE_SUITES } from "../data/suitesConfig";
+
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1612611450392-826af708c34a?auto=format&fit=crop&w=1200&q=85";
+
+const ATMOSPHERE_IMAGE =
+  "https://images.pexels.com/photos/33968050/pexels-photo-33968050.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
+
+const HOW_IT_WORKS_STEPS = [
+  {
+    step: "01",
+    icon: Palette,
+    title: "Pick a template",
+    body: "Browse a handcrafted collection. Preview live. Choose the one that feels most like the two of you.",
+  },
+  {
+    step: "02",
+    icon: Wand2,
+    title: "Make it yours",
+    body: "Personalize names, messages, photos, memories and music through a beautiful visual editor. No code.",
+  },
+  {
+    step: "03",
+    icon: Heart,
+    title: "Share the link",
+    body: "Publish and share a private link. Only the two of you know what waits behind it.",
+  },
+];
+
+const WHY_US_CARDS = [
+  {
+    icon: Lock,
+    title: "Private by design",
+    body: "Share only through a private link. Optional password protection is coming.",
+  },
+  {
+    icon: Sparkles,
+    title: "Editorial visuals",
+    body: "Editorial typography, controlled palettes, restrained animation.",
+  },
+  {
+    icon: Music,
+    title: "A song, together",
+    body: "Add a Spotify, YouTube or Apple Music track — or your own audio.",
+  },
+  {
+    icon: Heart,
+    title: "Made to last",
+    body: "Not another Valentine's Day gimmick. A keepsake you can revisit any evening.",
+  },
+];
+
+const FAQS = [
+  {
+    question: "Can I upload my own template design?",
+    answer:
+      "No. Every template is coded by the studio. You personalize the words, photos and music inside a template you choose.",
+  },
+  {
+    question: "What can I edit?",
+    answer:
+      "Each template lists exactly what's editable — names, messages, dates, photos, memories, reasons, open-when messages, music, letters. The visual editor adapts to the template you pick.",
+  },
+  {
+    question: "Is my keepsake private?",
+    answer:
+      "Yes. Your love keepsake lives at a private secret link meant only for the two of you.",
+  },
+  {
+    question: "How do I pay & get my keepsake?",
+    answer:
+      "You can pay securely through Razorpay using the payment options available at checkout. Once your payment is successfully completed and confirmed, you'll get access to create your personalized LoveCrafted keepsake.",
+  },
+];
+
+const DEMO_SUITES = TEMPLATE_SUITES.filter((suite) => !suite.archived);
+
+const SECTION_REVEAL = {
+  initial: { opacity: 0, y: 18 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.55, ease: "easeOut" },
+};
 
 export default function LandingPage() {
-    const templates = listTemplates();
-    const featured = templates.slice(0, 3);
+  const [openFaq, setOpenFaq] = useState(null);
 
-    return (
-        <div data-testid={LANDING.root}>
-            {/* HERO */}
-            <section className="relative overflow-hidden">
-                <div className="pointer-events-none absolute inset-0">
-                    {Array.from({ length: 10 }).map((_, i) => (
-                        <span
-                            key={i}
-                            className="floating-heart"
-                            style={{
-                                left: `${(i * 11 + 4) % 100}%`,
-                                animationDelay: `${i * 1.9}s`,
-                                fontSize: `${14 + (i % 4) * 5}px`,
-                            }}
-                        >
-                            ❤
-                        </span>
-                    ))}
-                </div>
+  return (
+    <div className="min-h-screen bg-[#0a0507] text-[#f5e6d3] font-sans antialiased selection:bg-[#d48b95]/30 selection:text-[#f5e6d3]">
+      {/* ---------- Hero Section ---------- */}
+      <section className="relative overflow-hidden bg-luxe-radial pt-16 pb-24 lg:pt-28 lg:pb-36">
+        <div
+          className="pointer-events-none absolute -left-40 top-10 size-[32rem] rounded-full opacity-30 blur-[120px]"
+          style={{ background: "radial-gradient(circle, rgba(212,139,149,0.35), transparent 70%)" }}
+        />
 
-                <div className="relative max-w-6xl mx-auto px-6 pt-24 md:pt-36 pb-16 md:pb-24">
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="max-w-3xl"
-                    >
-                        <div className="lws-pill mb-6">
-                            <Sparkles size={12} /> Premium romantic websites, handcrafted
-                        </div>
-                        <h1
-                            data-testid={LANDING.heroTitle}
-                            className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-6"
-                        >
-                            <span className="sheen-text">Turn your love story</span>
-                            <br />
-                            <span className="font-italic-display text-[color:var(--lws-cream)] opacity-90">
-                                into a website.
-                            </span>
-                        </h1>
-                        <p className="text-lg md:text-xl text-[color:var(--lws-text-muted)] max-w-2xl leading-relaxed mb-10">
-                            LoveCrafted hands you a small collection of
-                            hand-designed romantic templates. Pick one. Personalize
-                            the words, photos, memories and music that matter. Share
-                            a private link with the person you love.
-                        </p>
-                        <div className="flex flex-wrap gap-4">
-                            <Link
-                                to="/templates"
-                                data-testid={LANDING.heroExploreBtn}
-                                className="lws-btn-primary"
-                            >
-                                Explore Templates <ArrowRight size={16} />
-                            </Link>
-                            <a
-                                href="#how"
-                                data-testid={LANDING.heroHowItWorksBtn}
-                                className="lws-btn-ghost"
-                            >
-                                See How It Works
-                            </a>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 lg:grid-cols-12 lg:gap-12 lg:px-8">
+          {/* Hero Left Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-7 space-y-7"
+          >
+            {/* Pill Eyebrow */}
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/30 bg-[#140a0f]/80 px-4 py-1.5 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
+              <Sparkles className="size-3.5 text-[#e8b4b8]" />
+              HANDCRAFTED ROMANTIC KEEPSAKES
+            </span>
 
-            {/* FEATURED TEMPLATES */}
-            <section
-                data-testid={LANDING.featuredSection}
-                className="max-w-7xl mx-auto px-6 py-16 md:py-24"
-            >
-                <div className="flex items-end justify-between mb-10 md:mb-14 flex-wrap gap-4">
-                    <div>
-                        <div className="lws-pill mb-4">Featured</div>
-                        <h2 className="font-display text-4xl md:text-5xl">
-                            <span className="lws-gradient-text">
-                                A small, obsessive collection
-                            </span>
-                        </h2>
-                        <p className="text-[color:var(--lws-text-muted)] mt-3 max-w-xl">
-                            Every template is crafted from scratch. No dashboards
-                            full of copies. Just a few, made carefully.
-                        </p>
-                    </div>
-                    <Link to="/templates" className="lws-btn-ghost text-sm">
-                        View all templates <ArrowRight size={14} />
-                    </Link>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {featured.map((t) => (
-                        <TemplateCard key={t.config.slug} entry={t} />
-                    ))}
-                </div>
-            </section>
+            {/* Headline */}
+            <h1 className="font-serif text-4xl sm:text-6xl lg:text-[4.25rem] font-medium leading-[1.08] tracking-tight text-white">
+              Turn your memories{" "}
+              <span className="block italic text-[#e8b4b8] font-normal mt-1">
+                into a digital keepsake they&apos;ll never forget.
+              </span>
+            </h1>
 
-            {/* HOW IT WORKS */}
-            <section
-                id="how"
-                data-testid={LANDING.howItWorksSection}
-                className="max-w-6xl mx-auto px-6 py-16 md:py-24"
-            >
-                <div className="lws-pill mb-4">How it works</div>
-                <h2 className="font-display text-4xl md:text-5xl mb-14">
-                    <span className="lws-gradient-text">Three quiet steps</span>
-                </h2>
-                <div className="grid md:grid-cols-3 gap-6">
-                    {[
-                        {
-                            n: "01",
-                            t: "Pick a template",
-                            d: "Browse a handcrafted collection. Preview live. Choose the one that feels most like the two of you.",
-                            icon: <Palette size={18} />,
-                        },
-                        {
-                            n: "02",
-                            t: "Make it yours",
-                            d: "Personalize names, messages, photos, memories and music through a beautiful visual editor. No code.",
-                            icon: <Wand2 size={18} />,
-                        },
-                        {
-                            n: "03",
-                            t: "Share the link",
-                            d: "Publish and share a private link. Only the two of you know what waits behind it.",
-                            icon: <Heart size={18} />,
-                        },
-                    ].map((s, i) => (
-                        <motion.article
-                            key={s.n}
-                            initial={{ opacity: 0, y: 24 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-60px" }}
-                            transition={{ duration: 0.5, delay: i * 0.08 }}
-                            className="lws-card p-7"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="text-[color:var(--lws-pink)] text-xs tracking-widest">
-                                    {s.n}
-                                </span>
-                                <span
-                                    className="w-9 h-9 rounded-full flex items-center justify-center"
-                                    style={{
-                                        background:
-                                            "linear-gradient(120deg, #f8b5c4, #d4a574)",
-                                        color: "#2a0714",
-                                    }}
-                                >
-                                    {s.icon}
-                                </span>
-                            </div>
-                            <h3 className="font-display text-2xl mb-2">
-                                {s.t}
-                            </h3>
-                            <p className="text-[color:var(--lws-text-muted)] leading-relaxed">
-                                {s.d}
-                            </p>
-                        </motion.article>
-                    ))}
-                </div>
-            </section>
+            {/* Paragraph */}
+            <p className="max-w-xl text-base leading-relaxed text-[#c5b0a5] sm:text-lg">
+              Choose a handcrafted romantic template, customize your love letter, open-when notes,
+              memory gallery and background songs in real-time — no designer needed.
+            </p>
 
-            {/* WHY */}
-            <section
-                data-testid={LANDING.whySection}
-                className="max-w-6xl mx-auto px-6 py-16 md:py-24"
-            >
-                <div className="grid md:grid-cols-[1fr_1.2fr] gap-12 items-center">
-                    <div>
-                        <div className="lws-pill mb-4">Why us</div>
-                        <h2 className="font-display text-4xl md:text-5xl mb-6">
-                            <span className="lws-gradient-text">
-                                Made by one person.
-                            </span>
-                            <br />
-                            <span className="font-italic-display text-[color:var(--lws-cream)] opacity-90">
-                                For one person.
-                            </span>
-                        </h2>
-                        <p className="text-[color:var(--lws-text-muted)] leading-relaxed">
-                            Every design here is coded by hand. No generic
-                            drag-and-drop themes. No filler features. Every
-                            interaction, animation and typographic detail is chosen
-                            because it makes the finished website feel a little
-                            more like a love letter — and a little less like a
-                            product.
-                        </p>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        {[
-                            {
-                                icon: <ShieldCheck size={16} />,
-                                t: "Private by design",
-                                d: "Share only through a private link. Optional password protection is coming.",
-                            },
-                            {
-                                icon: <Palette size={16} />,
-                                t: "Editorial visuals",
-                                d: "Editorial typography, controlled palettes, restrained animation.",
-                            },
-                            {
-                                icon: <Music2 size={16} />,
-                                t: "A song, together",
-                                d: "Add a Spotify, YouTube or Apple Music track — or your own audio.",
-                            },
-                            {
-                                icon: <Heart size={16} />,
-                                t: "Made to last",
-                                d: "Not another Valentine's Day gimmick. A keepsake you can revisit any evening.",
-                            },
-                        ].map((f) => (
-                            <div key={f.t} className="lws-card p-5">
-                                <span className="text-[color:var(--lws-pink)] mb-3 inline-flex">
-                                    {f.icon}
-                                </span>
-                                <h4 className="font-display text-lg mb-1">{f.t}</h4>
-                                <p className="text-sm text-[color:var(--lws-text-muted)] leading-relaxed">
-                                    {f.d}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            {/* Pill CTA Bar */}
+            <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f]/70 p-2.5 backdrop-blur-xl sm:flex-row sm:items-center sm:rounded-full max-w-xl">
+              <Link
+                to="/marketplace"
+                className="group relative inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#d48b95] px-7 text-sm font-medium text-[#0a0507] transition-all duration-300 hover:bg-[#e8b4b8] hover:shadow-[0_0_25px_rgba(212,139,149,0.35)] sm:w-auto"
+              >
+                <span>Explore the collection</span>
+                <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
 
-            {/* TIERS */}
-            <section
-                data-testid={LANDING.tiersSection}
-                className="max-w-6xl mx-auto px-6 py-16 md:py-24"
-            >
-                <div className="lws-pill mb-4">Quality tiers</div>
-                <h2 className="font-display text-4xl md:text-5xl mb-10 lws-gradient-text">
-                    Choose your level of luxury
-                </h2>
-                <div className="grid md:grid-cols-3 gap-6">
-                    {[
-                        {
-                            tier: "Basic",
-                            price: 999,
-                            desc: "Warm, simple keepsakes with a handful of sections.",
-                            accent: "#a08a95",
-                        },
-                        {
-                            tier: "Premium",
-                            price: 1999,
-                            desc: "Full-length experiences with rich sections and animation.",
-                            accent: "#f8b5c4",
-                        },
-                        {
-                            tier: "Luxury",
-                            price: 3499,
-                            desc: "Deeply crafted designs with signature interactions.",
-                            accent: "#d4a574",
-                        },
-                    ].map((p) => (
-                        <div
-                            key={p.tier}
-                            className="lws-card p-7 relative overflow-hidden"
-                            style={{
-                                boxShadow: `0 40px 100px -40px ${p.accent}44 inset`,
-                            }}
-                        >
-                            <div
-                                className="text-xs uppercase tracking-widest mb-3"
-                                style={{ color: p.accent }}
-                            >
-                                {p.tier}
-                            </div>
-                            <div className="font-display text-4xl mb-2">
-                                ₹{p.price.toLocaleString("en-IN")}
-                            </div>
-                            <p className="text-[color:var(--lws-text-muted)] leading-relaxed">
-                                {p.desc}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-                <p className="text-xs text-[color:var(--lws-text-dim)] mt-4">
-                    Demo pricing shown. Each template has its own price set by the
-                    studio.
-                </p>
-            </section>
+              <p className="px-4 text-center text-xs text-[#c5b0a5] sm:text-left">
+                Handcrafted romantic keepsakes <span className="mx-2 text-[#dfc19c]/30">|</span> Live customisation studio
+              </p>
+            </div>
+          </motion.div>
 
-            {/* TESTIMONIALS PLACEHOLDER */}
-            <section
-                data-testid={LANDING.testimonialsSection}
-                className="max-w-6xl mx-auto px-6 py-16 md:py-24"
-            >
-                <div className="lws-pill mb-4">Kind words</div>
-                <h2 className="font-display text-4xl md:text-5xl mb-10 lws-gradient-text">
-                    From the people who mattered
-                </h2>
-                <div className="grid md:grid-cols-3 gap-6">
-                    {[
-                        {
-                            q: "The most thoughtful gift I've ever received. I cried at a website. Twice.",
-                            a: "— A very lucky partner",
-                        },
-                        {
-                            q: "It felt like a love letter, but I could open it on my phone.",
-                            a: "— A romantic somewhere",
-                        },
-                        {
-                            q: "Not a Canva template. Not an app. Something that felt made.",
-                            a: "— A designer with high standards",
-                        },
-                    ].map((t) => (
-                        <blockquote key={t.q} className="lws-card p-6">
-                            <p className="font-italic-display text-lg leading-relaxed text-[color:var(--lws-cream)]">
-                                “{t.q}”
-                            </p>
-                            <footer className="text-xs uppercase tracking-widest text-[color:var(--lws-text-dim)] mt-4">
-                                {t.a}
-                            </footer>
-                        </blockquote>
-                    ))}
-                </div>
-                <p className="text-xs text-[color:var(--lws-text-dim)] mt-4">
-                    Illustrative placeholders — real testimonials will appear here
-                    as customers publish their websites.
-                </p>
-            </section>
+          {/* Hero Right Showcase */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="relative lg:col-span-5"
+          >
+            <div className="relative overflow-hidden rounded-3xl border border-[#dfc19c]/20 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)]">
+              <img
+                src={HERO_IMAGE}
+                alt="Handcrafted romantic keepsake"
+                className="w-full aspect-[4/3] object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0507]/80 via-transparent to-transparent" />
+            </div>
 
-            {/* FAQ */}
-            <section
-                data-testid={LANDING.faqSection}
-                className="max-w-4xl mx-auto px-6 py-16 md:py-24"
-            >
-                <div className="lws-pill mb-4">FAQ</div>
-                <h2 className="font-display text-4xl md:text-5xl mb-8 lws-gradient-text">
-                    Questions people have asked
-                </h2>
-                <div className="space-y-2">
-                    {[
-                        {
-                            q: "Can I upload my own template design?",
-                            a: "No. Every template is coded by the studio. You personalize the words, photos and music inside a template you choose.",
-                        },
-                        {
-                            q: "What can I edit?",
-                            a: "Each template lists exactly what's editable — names, messages, dates, photos, memories, reasons, open-when messages, music, letters. The visual editor adapts to the template you pick.",
-                        },
-                        {
-                            q: "Is my website private?",
-                            a: "Yes. Your website lives at a private random link. Password protection is coming.",
-                        },
-                        {
-                            q: "How do I pay & get my link?",
-                            a: (
-                                <span>
-                                    You pay directly via UPI QR Code (<strong className="text-[color:var(--lws-pink)]">8618379301@pz</strong>). After payment, enter your 12-digit UTR transaction ref and click <strong>1-Click WhatsApp Order</strong> or <strong>Email Order</strong> at{" "}
-                                    <a
-                                        href="mailto:lovecrafted.official@gmail.com"
-                                        className="text-[color:var(--lws-pink)] underline font-medium hover:opacity-80 transition-opacity"
-                                    >
-                                        lovecrafted.official@gmail.com
-                                    </a>. You'll receive your active live link instantly!
-                                </span>
-                            ),
-                        },
-                    ].map((f) => (
-                        <details key={f.q} className="lws-card p-5 group">
-                            <summary className="flex items-center justify-between cursor-pointer list-none">
-                                <span className="font-display text-lg text-[color:var(--lws-cream)]">
-                                    {f.q}
-                                </span>
-                                <ChevronDown
-                                    size={16}
-                                    className="text-[color:var(--lws-pink)] transition-transform group-open:rotate-180"
-                                />
-                            </summary>
-                            <p className="pt-3 text-[color:var(--lws-text-muted)] leading-relaxed">
-                                {f.a}
-                            </p>
-                        </details>
-                    ))}
-                </div>
-            </section>
-
-            {/* FINAL CTA */}
-            <section className="max-w-4xl mx-auto px-6 py-20 md:py-32 text-center">
-                <h2 className="font-display text-5xl md:text-6xl mb-6">
-                    <span className="lws-gradient-text">Say it in a website</span>
-                </h2>
-                <p className="text-[color:var(--lws-text-muted)] text-lg mb-10">
-                    Some feelings deserve more than a text message.
-                </p>
-                <Link
-                    to="/templates"
-                    data-testid={LANDING.finalCtaBtn}
-                    className="lws-btn-primary"
-                >
-                    Choose a Template <ArrowRight size={16} />
-                </Link>
-            </section>
+            {/* Floating Card */}
+            <div className="absolute -bottom-6 -left-4 rounded-2xl border border-[#dfc19c]/20 bg-[#140a0f]/90 p-5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:-left-8 max-w-xs">
+              <p className="text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]/70">
+                OUR LOVE KEEPSAKE
+              </p>
+              <p className="mt-2 font-serif text-lg font-medium text-[#f5e6d3]">You &amp; Me</p>
+              <p className="mt-1 text-xs text-[#c5b0a5]">Together Since 08 Jan — Forever &amp; Always</p>
+            </div>
+          </motion.div>
         </div>
-    );
+      </section>
+
+      {/* ---------- How It Works Section ---------- */}
+      <motion.section
+        {...SECTION_REVEAL}
+        className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24"
+      >
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/20 bg-[#140a0f] px-3.5 py-1 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
+            HOW IT WORKS
+          </span>
+          <h2 className="font-serif mt-5 text-3xl sm:text-4xl text-[#f5e6d3] font-medium">
+            Three quiet steps
+          </h2>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {HOW_IT_WORKS_STEPS.map((stepItem, index) => (
+            <motion.div
+              key={stepItem.step}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.45, ease: "easeOut", delay: index * 0.08 }}
+              whileHover={{ y: -5 }}
+              className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f]/80 p-8 backdrop-blur-xl transition-all duration-300 hover:border-[#e8b4b8]/30 hover:shadow-[0_0_30px_rgba(212,139,149,0.15)] space-y-5"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-mono font-medium text-[#c5b0a5]">{stepItem.step}</span>
+                <span className="grid size-9 place-items-center rounded-full border border-[#dfc19c]/25 bg-[#1b0e15] text-[#e8b4b8]">
+                  <stepItem.icon className="size-4" />
+                </span>
+              </div>
+              <h3 className="font-serif text-xl text-[#f5e6d3] font-medium">{stepItem.title}</h3>
+              <p className="text-xs leading-relaxed text-[#c5b0a5]">{stepItem.body}</p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ---------- Why Us Section ---------- */}
+      <motion.section
+        {...SECTION_REVEAL}
+        className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-24"
+      >
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
+          {/* Left Text */}
+          <div className="lg:col-span-5 space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/20 bg-[#140a0f] px-3.5 py-1 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
+              WHY US
+            </span>
+            <h2 className="font-serif text-3xl sm:text-5xl text-white font-medium leading-[1.1]">
+              Made by one person.{" "}
+              <span className="block italic text-[#e8b4b8] font-normal mt-1">For one person.</span>
+            </h2>
+            <p className="text-sm leading-relaxed text-[#c5b0a5]">
+              Every design here is crafted by hand. No generic drag-and-drop themes. No filler features.
+              Every interaction, animation and typographic detail is chosen because this is never just a website —
+              it is a living emotion, a love letter, and a timeless keepsake to cherish forever.
+            </p>
+          </div>
+
+          {/* Right 2x2 Grid */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {WHY_US_CARDS.map((card, index) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f]/80 p-6 backdrop-blur-xl space-y-3 hover:border-[#e8b4b8]/30 transition-colors"
+              >
+                <span className="grid size-9 place-items-center rounded-full border border-[#dfc19c]/25 bg-[#1b0e15] text-[#e8b4b8]">
+                  <card.icon className="size-4" />
+                </span>
+                <h3 className="font-serif text-base text-[#f5e6d3] font-medium">{card.title}</h3>
+                <p className="text-xs leading-relaxed text-[#c5b0a5]">{card.body}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ---------- Featured Collection Section ---------- */}
+      <motion.section
+        {...SECTION_REVEAL}
+        className="mx-auto max-w-7xl px-6 pb-20 lg:px-8 lg:pb-28"
+      >
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/20 bg-[#140a0f] px-3.5 py-1 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
+              FEATURED
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#f5e6d3] font-medium">
+              A small, obsessive collection
+            </h2>
+            <p className="max-w-xl text-xs sm:text-sm text-[#c5b0a5]">
+              Every template is crafted from scratch. No dashboards full of copies. Just a few, made carefully.
+            </p>
+          </div>
+          <Link
+            to="/marketplace"
+            className="group inline-flex items-center gap-2 text-xs font-medium text-[#e8b4b8] transition-colors hover:text-[#f5e6d3] shrink-0"
+          >
+            View all templates
+            <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          {DEMO_SUITES.map((template, index) => (
+            <TemplateCard key={template.id} template={template} index={index} />
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ---------- FAQ Accordion Section ---------- */}
+      <motion.section
+        {...SECTION_REVEAL}
+        className="mx-auto max-w-4xl px-6 py-20 lg:px-8 lg:py-24"
+      >
+        <div className="text-center space-y-4">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/20 bg-[#140a0f] px-3.5 py-1 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
+            FAQ
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl text-[#f5e6d3] font-medium">
+            Questions people have asked
+          </h2>
+        </div>
+
+        <div className="mt-12 space-y-4">
+          {FAQS.map((faq, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f]/80 overflow-hidden backdrop-blur-xl transition-colors"
+            >
+              <button
+                type="button"
+                onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                className="flex w-full items-center justify-between p-6 text-left font-serif text-lg font-medium text-[#f5e6d3] hover:text-[#e8b4b8] transition-colors"
+              >
+                <span>{faq.question}</span>
+                <ChevronDown
+                  className={`size-5 text-[#dfc19c]/60 transition-transform duration-300 ${
+                    openFaq === index ? "rotate-180 text-[#e8b4b8]" : ""
+                  }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {openFaq === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="border-t border-[#dfc19c]/10 px-6 pb-6 pt-3 text-sm leading-relaxed text-[#c5b0a5]">
+                      {faq.answer}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ---------- Closing Section ---------- */}
+      <motion.section
+        {...SECTION_REVEAL}
+        className="mx-auto max-w-3xl px-6 py-20 text-center lg:px-8"
+      >
+        <Heart className="mx-auto size-6 text-[#d48b95]" />
+        <h2 className="font-serif mt-6 text-3xl sm:text-4xl text-[#f5e6d3]">
+          Your love story deserves a digital keepsake.
+        </h2>
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-[#c5b0a5]">
+          Pick a suite, open the studio, and create a heartfelt romantic keepsake before your coffee cools.
+        </p>
+        <div className="mt-10">
+          <Link
+            to="/marketplace"
+            className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-[#d48b95] px-8 text-sm font-medium text-[#0a0507] transition-all hover:bg-[#e8b4b8] hover:shadow-[0_0_30px_rgba(212,139,149,0.4)]"
+          >
+            Explore the collection
+          </Link>
+        </div>
+      </motion.section>
+    </div>
+  );
 }
