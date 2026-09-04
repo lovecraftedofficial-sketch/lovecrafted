@@ -444,228 +444,36 @@ export default function TemplateEditor() {
 
         {musicOpen && (
           <div className="space-y-4 border-t border-[#dfc19c]/10 px-5 py-5">
-            {/* Mode Switcher Tabs */}
-            <div className="flex gap-2 p-1 rounded-xl border border-[#dfc19c]/15 bg-[#0d0609]">
+            {/* Music Source Mode Switch Tabs */}
+            <div className="flex gap-2 p-1 rounded-lg border border-[#dfc19c]/15 bg-[#0d0609]">
               <button
                 type="button"
                 onClick={() => update("music_type", "spotify")}
-                className={`flex-1 h-10 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  draft.music_type === "spotify"
-                    ? "bg-[#1db954] text-black font-bold shadow-[0_0_15px_rgba(29,185,84,0.3)]"
+                className={`flex-1 h-9 rounded-md text-xs font-medium transition-all ${
+                  draft.music_type !== "mp3"
+                    ? "bg-[#1db954] text-[#0a0507] font-semibold shadow-md"
                     : "text-[#c5b0a5] hover:text-white"
                 }`}
               >
-                <Radio className="size-3.5" />
-                <span>Spotify Embed</span>
+                🎵 Spotify / Web Song (Auto)
               </button>
               <button
                 type="button"
                 onClick={() => update("music_type", "mp3")}
-                className={`flex-1 h-10 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  draft.music_type !== "spotify"
-                    ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] font-bold shadow-[0_0_15px_rgba(212,139,149,0.3)]"
+                className={`flex-1 h-9 rounded-md text-xs font-medium transition-all ${
+                  draft.music_type === "mp3"
+                    ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] font-semibold shadow-md"
                     : "text-[#c5b0a5] hover:text-white"
                 }`}
               >
-                <Music className="size-3.5" />
-                <span>Custom MP3 &amp; Device Audio</span>
+                📁 Custom MP3 / Upload Audio
               </button>
             </div>
 
-            {/* TAB 1: SPOTIFY EMBED FEATURES (Shown ONLY when Spotify Embed is active) */}
-            {draft.music_type === "spotify" && (
-              <div className="space-y-4 pt-1 animate-fadeIn">
-                <div className="p-3 rounded-xl border border-[#1db954]/25 bg-[#0a140d]/80 text-xs text-[#a0dfb5] space-y-1">
-                  <p className="font-semibold flex items-center gap-1.5 text-[#1db954]">
-                    <Radio className="size-4" />
-                    Official Spotify Player Integration
-                  </p>
-                  <p className="text-[0.72rem] text-[#a0dfb5]/80 leading-relaxed">
-                    The official Spotify player widget will be embedded on the keepsake. Visitors can stream directly through Spotify with full song playback for Spotify users.
-                  </p>
-                </div>
-
-                {/* Spotify Quick Presets */}
-                <div className="space-y-1.5">
-                  <span className="text-[0.68rem] uppercase tracking-wider text-[#1db954] font-semibold block">
-                    Popular Romantic Spotify Songs
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = "https://open.spotify.com/track/6nWjTvdzK1hM10y5gRcvPz";
-                        update("bg_music_url", url);
-                        autoDetectSong(url);
-                      }}
-                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
-                    >
-                      💚 Kesariya
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = "https://open.spotify.com/track/1Bxfay2w22B2yMUUu8dKV8";
-                        update("bg_music_url", url);
-                        autoDetectSong(url);
-                      }}
-                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
-                    >
-                      💚 Zaalima
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = "https://open.spotify.com/track/5uUEytfFSWfTzu5EqZxQju";
-                        update("bg_music_url", url);
-                        autoDetectSong(url);
-                      }}
-                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
-                    >
-                      💚 Tum Hi Ho
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const url = "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b";
-                        update("bg_music_url", url);
-                        autoDetectSong(url);
-                      }}
-                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
-                    >
-                      💚 Until I Found You
-                    </button>
-                  </div>
-                </div>
-
-                {/* Spotify Link Input */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-[#1db954]">
-                      Spotify Track Link
-                    </Label>
-                    <button
-                      type="button"
-                      onClick={() => autoDetectSong(draft.bg_music_url)}
-                      disabled={isDetectingSong}
-                      className="text-[0.68rem] text-[#1db954] hover:underline font-medium flex items-center gap-1 cursor-pointer"
-                    >
-                      <Sparkles className="size-3" />
-                      <span>{isDetectingSong ? "Detecting..." : "Sync Spotify Track"}</span>
-                    </button>
-                  </div>
-
-                  <div className="relative flex items-center">
-                    <Input
-                      value={draft.bg_music_url || ""}
-                      onChange={(e) => update("bg_music_url", e.target.value)}
-                      onPaste={(e) => {
-                        const pasted = e.clipboardData.getData("text");
-                        if (pasted) {
-                          update("bg_music_url", pasted);
-                          setTimeout(() => autoDetectSong(pasted), 50);
-                        }
-                      }}
-                      className={`${FIELD_CLASS} border-[#1db954]/30 focus-visible:border-[#1db954] focus-visible:ring-[#1db954]/40 pr-24`}
-                      placeholder="Paste Spotify track link (e.g. https://open.spotify.com/track/...)"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => autoDetectSong(draft.bg_music_url)}
-                      disabled={isDetectingSong || !draft.bg_music_url}
-                      className="absolute right-2 px-2.5 py-1 rounded-md bg-[#1db954]/20 hover:bg-[#1db954]/30 text-[#1db954] text-[0.68rem] font-medium border border-[#1db954]/40 transition-all cursor-pointer disabled:opacity-40"
-                    >
-                      {isDetectingSong ? "Detecting..." : "Auto-Fill ✨"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Live Spotify Embed Widget Preview */}
-                <div className="space-y-2 pt-1">
-                  <span className="text-[0.68rem] uppercase tracking-wider text-[#1db954] font-semibold flex items-center gap-1.5">
-                    <Radio className="size-3.5" />
-                    Live Spotify Player Widget Preview
-                  </span>
-                  <div className="overflow-hidden rounded-2xl border border-[#1db954]/30 bg-[#0b140e] shadow-lg">
-                    <iframe
-                      src={`https://open.spotify.com/embed/track/${spotifyTrackId || "5uUEytfFSWfTzu5EqZxQju"}?utm_source=generator&theme=0`}
-                      width="100%"
-                      height="152"
-                      frameBorder="0"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      title="Spotify Embed Widget"
-                      className="w-full bg-[#121212]"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-[#dfc19c]/80">Song Title (Display Name)</Label>
-                    <Input
-                      value={draft.music_title || ""}
-                      onChange={(e) => update("music_title", e.target.value)}
-                      className={FIELD_CLASS}
-                      placeholder="e.g. Zaalima"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-[#dfc19c]/80">Artist / Singer</Label>
-                    <Input
-                      value={draft.music_artist || ""}
-                      onChange={(e) => update("music_artist", e.target.value)}
-                      className={FIELD_CLASS}
-                      placeholder="e.g. Arijit Singh"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 2: CUSTOM MP3 & DEVICE UPLOAD FEATURES (Shown ONLY when Custom MP3 is active) */}
-            {draft.music_type !== "spotify" && (
-              <div className="space-y-4 pt-1 animate-fadeIn">
-                {/* 1. Direct Full MP3 File Upload from Device */}
-                <div className="p-4 rounded-xl border border-[#dfc19c]/20 bg-[#0e050a] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#dfc19c] flex items-center gap-1.5">
-                      <FileAudio className="size-4 text-[#e8b4b8]" />
-                      Upload Full Song from Device
-                    </span>
-                    <span className="text-[0.62rem] px-2.5 py-0.5 rounded-full bg-[#d48b95]/20 text-[#e8b4b8] border border-[#d48b95]/30 font-semibold">
-                      Full 3–5 min Playback
-                    </span>
-                  </div>
-                  <p className="text-[0.7rem] text-[#c5b0a5]/80 leading-relaxed">
-                    Upload any full-length MP3 song downloaded on your phone or computer. The vinyl record player will play the complete track without any time limits!
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <input
-                      ref={audioInputRef}
-                      type="file"
-                      accept="audio/*,.mp3,.m4a,.wav"
-                      onChange={handleAudioFileUpload}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => audioInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-4 py-2.5 text-xs font-semibold text-[#0a0507] hover:brightness-110 transition-all shadow-md cursor-pointer"
-                    >
-                      <Upload className="size-3.5" />
-                      Choose MP3 from Device
-                    </button>
-                    {draft.audio_preview_url && draft.audio_preview_url.startsWith("blob:") && (
-                      <span className="text-xs text-emerald-300 flex items-center gap-1 font-medium bg-emerald-950/40 px-3 py-1 rounded-md border border-emerald-500/30">
-                        <Check className="size-3.5 text-emerald-400" /> Custom audio file loaded!
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* 2. Popular Romantic Song Presets */}
+            {/* TAB 1: SPOTIFY / WEB LINK (AUTO-FILL MODE) */}
+            {draft.music_type !== "mp3" ? (
+              <div className="space-y-4">
+                {/* Quick Presets */}
                 <div className="space-y-1.5">
                   <span className="text-[0.68rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
                     Popular Romantic Song Presets
@@ -702,11 +510,11 @@ export default function TemplateEditor() {
                   </div>
                 </div>
 
-                {/* 3. Direct MP3 Web Link or Song Name */}
+                {/* Song Link & Instant Auto-Detect */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs text-[#dfc19c]/80">
-                      Or Direct MP3 Audio URL / Song Name
+                      Paste Spotify, JioSaavn, or YouTube Link
                     </Label>
                     <button
                       type="button"
@@ -715,7 +523,7 @@ export default function TemplateEditor() {
                       className="text-[0.68rem] text-[#e8b4b8] hover:text-[#f5e6d3] font-medium flex items-center gap-1 cursor-pointer transition-colors"
                     >
                       <Sparkles className="size-3" />
-                      <span>{isDetectingSong ? "Fetching details..." : "Auto-Detect Song Details"}</span>
+                      <span>{isDetectingSong ? "Fetching details..." : "Auto-Detect Details"}</span>
                     </button>
                   </div>
 
@@ -736,8 +544,13 @@ export default function TemplateEditor() {
                           autoDetectSong(draft.bg_music_url);
                         }
                       }}
+                      onBlur={(e) => {
+                        if (e.target.value && e.target.value !== "/audio/sab-tera.mp3") {
+                          autoDetectSong(e.target.value);
+                        }
+                      }}
                       className={`${FIELD_CLASS} pr-24`}
-                      placeholder="Paste direct .mp3 URL or song name..."
+                      placeholder="Paste Spotify, JioSaavn, or YouTube link..."
                     />
                     <button
                       type="button"
@@ -750,11 +563,11 @@ export default function TemplateEditor() {
                   </div>
 
                   <p className="text-[0.65rem] text-[#c5b0a5]/60 italic">
-                    💡 Tip: Direct MP3 links or uploaded device files play continuously on the spinning vinyl record!
+                    💡 Title, Singer, HD Cover, and continuous 30s audio loop will update automatically!
                   </p>
                 </div>
 
-                {/* 4. Live Detected Vinyl Soundtrack Preview */}
+                {/* Live Detected Song Card Preview */}
                 {draft.music_title && (
                   <div className="flex items-center gap-3 p-3 rounded-xl border border-[#dfc19c]/25 bg-gradient-to-r from-[#1b0c16] to-[#12070e] shadow-md animate-fadeIn">
                     {draft.music_cover ? (
@@ -770,7 +583,7 @@ export default function TemplateEditor() {
                     )}
                     <div className="min-w-0 flex-1">
                       <span className="text-[0.6rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
-                        Vinyl Record Soundtrack
+                        Vinyl Record Soundtrack (Auto-Detected)
                       </span>
                       <p className="text-sm font-serif font-bold text-white truncate">{draft.music_title}</p>
                       <p className="text-xs text-[#e8b4b8] truncate font-serif italic">{draft.music_artist}</p>
@@ -783,26 +596,97 @@ export default function TemplateEditor() {
                     </div>
                   </div>
                 )}
-
-                {/* 5. Title & Singer fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-[#dfc19c]/80">Song Title</Label>
-                    <Input
-                      value={draft.music_title || ""}
-                      onChange={(e) => update("music_title", e.target.value)}
-                      className={FIELD_CLASS}
-                      placeholder="e.g. Sab Tera"
+              </div>
+            ) : (
+              /* TAB 2: CUSTOM MP3 / DEVICE UPLOAD (USER FILLS DETAILS MANUALLY) */
+              <div className="space-y-4 animate-fadeIn">
+                {/* 1. Direct Full MP3 File Upload from Device */}
+                <div className="p-4 rounded-xl border border-[#dfc19c]/25 bg-[#0e050a] space-y-3 shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#dfc19c] flex items-center gap-1.5">
+                      <FileAudio className="size-4 text-[#e8b4b8]" />
+                      Upload Full Song (MP3 / Audio File)
+                    </span>
+                    <span className="text-[0.62rem] px-2.5 py-0.5 rounded-full bg-[#d48b95]/20 text-[#e8b4b8] border border-[#d48b95]/30 font-medium">
+                      Full 3–5 min Playback
+                    </span>
+                  </div>
+                  <p className="text-[0.72rem] text-[#c5b0a5]/80 leading-relaxed">
+                    Upload your downloaded MP3 audio from your phone or computer. You can fill in the song title and singer details below!
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <input
+                      ref={audioInputRef}
+                      type="file"
+                      accept="audio/*,.mp3,.m4a,.wav"
+                      onChange={handleAudioFileUpload}
+                      className="hidden"
                     />
+                    <button
+                      type="button"
+                      onClick={() => audioInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-4 py-2 text-xs font-semibold text-[#0a0507] hover:brightness-110 transition-all shadow-md cursor-pointer"
+                    >
+                      <Upload className="size-3.5" />
+                      Choose MP3 from Device
+                    </button>
+                    {draft.audio_preview_url && draft.audio_preview_url.startsWith("blob:") && (
+                      <span className="text-xs text-emerald-300 flex items-center gap-1 font-medium bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
+                        <Check className="size-3.5" /> Custom audio loaded!
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Direct MP3 URL Input (Optional) */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-[#dfc19c]/80">Or Paste Direct .mp3 Web Link (Optional)</Label>
+                  <Input
+                    value={draft.bg_music_url?.startsWith("blob:") ? "" : (draft.bg_music_url || "")}
+                    onChange={(e) => {
+                      update("bg_music_url", e.target.value);
+                      update("audio_preview_url", e.target.value);
+                    }}
+                    className={FIELD_CLASS}
+                    placeholder="https://example.com/audio/my-song.mp3"
+                  />
+                </div>
+
+                {/* 3. Manual Song Details (User fills themselves) */}
+                <div className="p-4 rounded-xl border border-[#dfc19c]/15 bg-[#12070e] space-y-3">
+                  <span className="text-[0.68rem] uppercase tracking-wider text-[#dfc19c]/80 font-semibold block">
+                    Song Details (Custom Fill)
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-[#dfc19c]/80">Song Title *</Label>
+                      <Input
+                        value={draft.music_title || ""}
+                        onChange={(e) => update("music_title", e.target.value)}
+                        className={FIELD_CLASS}
+                        placeholder="e.g. Zaalima, Kesariya..."
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-[#dfc19c]/80">Artist / Singer *</Label>
+                      <Input
+                        value={draft.music_artist || ""}
+                        onChange={(e) => update("music_artist", e.target.value)}
+                        className={FIELD_CLASS}
+                        placeholder="e.g. Arijit Singh, Harshdeep Kaur"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-[#dfc19c]/80">Artist / Singer</Label>
+                    <Label className="text-xs text-[#dfc19c]/80">Vinyl Artwork / Album Cover (Optional Image URL)</Label>
                     <Input
-                      value={draft.music_artist || ""}
-                      onChange={(e) => update("music_artist", e.target.value)}
+                      value={draft.music_cover || ""}
+                      onChange={(e) => update("music_cover", e.target.value)}
                       className={FIELD_CLASS}
-                      placeholder="e.g. Armaan Malik, Shraddha Kapoor"
+                      placeholder="Paste image link for the vinyl record center"
                     />
                   </div>
                 </div>
