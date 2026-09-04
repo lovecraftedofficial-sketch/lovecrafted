@@ -28,6 +28,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import PublishModal from "../components/PublishModal";
 import AnniversaryKeepsakeView from "../components/AnniversaryKeepsakeView";
+import ImageUploadInput from "../components/ImageUploadInput";
 import { resolveSongDetails } from "../services/songResolver";
 
 import templateOccasions from "../data/templateOccasions.json";
@@ -637,11 +638,10 @@ export default function TemplateEditor() {
                   placeholder="Romantic Caption"
                   className={FIELD_CLASS}
                 />
-                <Input
+                <ImageUploadInput
                   value={mem.image || ""}
-                  onChange={(e) => updateMemory1(idx, "image", e.target.value)}
-                  placeholder="Photo URL"
-                  className={FIELD_CLASS}
+                  onChange={(val) => updateMemory1(idx, "image", val)}
+                  label="Milestone Photo (Upload from Gallery or Paste Link)"
                 />
               </div>
             ))}
@@ -706,11 +706,10 @@ export default function TemplateEditor() {
                   placeholder="Playful / Sweet Caption"
                   className={FIELD_CLASS}
                 />
-                <Input
+                <ImageUploadInput
                   value={mem.image || ""}
-                  onChange={(e) => updateMemory2(idx, "image", e.target.value)}
-                  placeholder="Photo URL"
-                  className={FIELD_CLASS}
+                  onChange={(val) => updateMemory2(idx, "image", val)}
+                  label="Candid Photo (Upload from Gallery or Paste Link)"
                 />
               </div>
             ))}
