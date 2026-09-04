@@ -63,10 +63,10 @@ export default function MarketplacePage() {
         </div>
       </section>
 
-      {/* Sticky Filter Bar */}
-      <div className="sticky top-20 z-40 border-y border-[#dfc19c]/15 bg-[#0a0507]/90 backdrop-blur-xl py-4">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      {/* Filter Bar (Static on mobile so it doesn't block templates, Sticky on desktop) */}
+      <div className="relative lg:sticky lg:top-20 z-40 border-y border-[#dfc19c]/15 bg-[#0a0507] py-3.5 sm:py-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Search Input */}
             <div className="relative w-full lg:w-80">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#dfc19c]/50" />
@@ -74,7 +74,7 @@ export default function MarketplacePage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search suites, settings, moods…"
-                className="h-11 border-[#dfc19c]/20 bg-[#140a0f] pl-10 text-sm text-[#f5e6d3] placeholder:text-[#c5b0a5]/50 focus-visible:border-[#e8b4b8]/50 focus-visible:ring-1 focus-visible:ring-[#e8b4b8]/50 rounded-lg"
+                className="h-10 sm:h-11 border-[#dfc19c]/20 bg-[#140a0f] pl-10 text-xs sm:text-sm text-[#f5e6d3] placeholder:text-[#c5b0a5]/50 focus-visible:border-[#e8b4b8]/50 focus-visible:ring-1 focus-visible:ring-[#e8b4b8]/50 rounded-xl"
               />
               {search && (
                 <button
@@ -87,19 +87,19 @@ export default function MarketplacePage() {
               )}
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+            {/* Category Filter Pills (Single Sleek Horizontal Scroll on Mobile) */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none w-full lg:w-auto">
               <SlidersHorizontal className="size-4 shrink-0 text-[#dfc19c]/40 mr-1 hidden sm:block" />
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-nowrap shrink-0">
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setSelectedCategory(cat)}
-                    className={`h-9 whitespace-nowrap rounded-full border px-4 text-xs font-medium tracking-wide transition-all duration-200 ${
+                    className={`h-8 sm:h-9 whitespace-nowrap rounded-full border px-3 sm:px-4 text-xs font-medium tracking-wide transition-all duration-200 shrink-0 cursor-pointer ${
                       selectedCategory === cat
-                        ? "border-[#e8b4b8]/50 bg-[#d48b95]/20 text-[#e8b4b8] shadow-[0_0_20px_rgba(212,139,149,0.25)]"
-                        : "border-[#dfc19c]/15 bg-[#140a0f]/60 text-[#c5b0a5] hover:border-[#dfc19c]/30 hover:text-[#f5e6d3]"
+                        ? "border-[#e8b4b8]/50 bg-[#d48b95]/25 text-[#e8b4b8] shadow-[0_0_20px_rgba(212,139,149,0.25)]"
+                        : "border-[#dfc19c]/15 bg-[#140a0f]/80 text-[#c5b0a5] hover:border-[#dfc19c]/30 hover:text-[#f5e6d3]"
                     }`}
                   >
                     {cat}
