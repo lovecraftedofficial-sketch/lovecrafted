@@ -444,214 +444,370 @@ export default function TemplateEditor() {
 
         {musicOpen && (
           <div className="space-y-4 border-t border-[#dfc19c]/10 px-5 py-5">
-            <div className="flex gap-2 p-1 rounded-lg border border-[#dfc19c]/15 bg-[#0d0609]">
+            {/* Mode Switcher Tabs */}
+            <div className="flex gap-2 p-1 rounded-xl border border-[#dfc19c]/15 bg-[#0d0609]">
               <button
                 type="button"
                 onClick={() => update("music_type", "spotify")}
-                className={`flex-1 h-9 rounded-md text-xs font-medium transition-all ${
+                className={`flex-1 h-10 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   draft.music_type === "spotify"
-                    ? "bg-[#1db954] text-[#0a0507] font-semibold"
-                    : "text-[#c5b0a5]"
+                    ? "bg-[#1db954] text-black font-bold shadow-[0_0_15px_rgba(29,185,84,0.3)]"
+                    : "text-[#c5b0a5] hover:text-white"
                 }`}
               >
-                Spotify Embed
+                <Radio className="size-3.5" />
+                <span>Spotify Embed</span>
               </button>
               <button
                 type="button"
                 onClick={() => update("music_type", "mp3")}
-                className={`flex-1 h-9 rounded-md text-xs font-medium transition-all ${
-                  draft.music_type === "mp3"
-                    ? "bg-[#d48b95] text-[#0a0507] font-semibold"
-                    : "text-[#c5b0a5]"
+                className={`flex-1 h-10 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  draft.music_type !== "spotify"
+                    ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] font-bold shadow-[0_0_15px_rgba(212,139,149,0.3)]"
+                    : "text-[#c5b0a5] hover:text-white"
                 }`}
               >
-                Custom MP3 Link
+                <Music className="size-3.5" />
+                <span>Custom MP3 &amp; Device Audio</span>
               </button>
             </div>
 
-            {/* Quick Presets */}
-            <div className="space-y-1.5">
-              <span className="text-[0.68rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
-                Popular Romantic Song Presets
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => autoDetectSong("Sab Tera Armaan Malik")}
-                  className="px-3 py-1.5 rounded-lg border border-[#e8b4b8]/40 bg-[#e8b4b8]/15 text-[#e8b4b8] text-xs font-medium hover:bg-[#e8b4b8]/25 transition-all cursor-pointer"
-                >
-                  🎵 Sab Tera
-                </button>
-                <button
-                  type="button"
-                  onClick={() => autoDetectSong("Kesariya Pritam Arijit Singh")}
-                  className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
-                >
-                  🧡 Kesariya
-                </button>
-                <button
-                  type="button"
-                  onClick={() => autoDetectSong("Until I Found You Stephen Sanchez")}
-                  className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
-                >
-                  🎻 Until I Found You
-                </button>
-                <button
-                  type="button"
-                  onClick={() => autoDetectSong("Tum Hi Ho Arijit Singh")}
-                  className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
-                >
-                  ✨ Tum Hi Ho
-                </button>
-              </div>
-            </div>
-
-            {/* Direct Full MP3 File Upload from Device */}
-            <div className="p-3.5 rounded-xl border border-[#dfc19c]/20 bg-[#0e050a] space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#dfc19c] flex items-center gap-1.5">
-                  <FileAudio className="size-4 text-[#e8b4b8]" />
-                  Upload Full Song (MP3 / Audio File)
-                </span>
-                <span className="text-[0.62rem] px-2 py-0.5 rounded-full bg-[#d48b95]/20 text-[#e8b4b8] border border-[#d48b95]/30 font-medium">
-                  Full 3–5 min Playback
-                </span>
-              </div>
-              <p className="text-[0.7rem] text-[#c5b0a5]/80 leading-relaxed">
-                Spotify/Apple web links are limited to 30-second preview clips due to music copyright laws. For the <strong>complete full song</strong>, upload your downloaded MP3 audio from your phone or device:
-              </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <input
-                  ref={audioInputRef}
-                  type="file"
-                  accept="audio/*,.mp3,.m4a,.wav"
-                  onChange={handleAudioFileUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => audioInputRef.current?.click()}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-4 py-2 text-xs font-semibold text-[#0a0507] hover:brightness-110 transition-all shadow-md cursor-pointer"
-                >
-                  <Upload className="size-3.5" />
-                  Choose MP3 from Device
-                </button>
-                {draft.audio_preview_url && draft.audio_preview_url.startsWith("blob:") && (
-                  <span className="text-xs text-emerald-300 flex items-center gap-1">
-                    <Check className="size-3.5" /> Custom audio file loaded!
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Song Link & Instant Auto-Detect */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-[#dfc19c]/80">
-                  Or Paste Song Link / Track Name (Spotify, JioSaavn, YouTube, MP3)
-                </Label>
-                <button
-                  type="button"
-                  onClick={() => autoDetectSong()}
-                  disabled={isDetectingSong}
-                  className="text-[0.68rem] text-[#e8b4b8] hover:text-[#f5e6d3] font-medium flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <Sparkles className="size-3" />
-                  <span>{isDetectingSong ? "Fetching details..." : "Auto-Detect Song Details"}</span>
-                </button>
-              </div>
-
-              <div className="relative flex items-center">
-                <Input
-                  value={draft.bg_music_url || ""}
-                  onChange={(e) => update("bg_music_url", e.target.value)}
-                  onPaste={(e) => {
-                    const pasted = e.clipboardData.getData("text");
-                    if (pasted) {
-                      update("bg_music_url", pasted);
-                      setTimeout(() => autoDetectSong(pasted), 50);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      autoDetectSong(draft.bg_music_url);
-                    }
-                  }}
-                  onBlur={(e) => {
-                    if (e.target.value && e.target.value !== "/audio/sab-tera.mp3") {
-                      autoDetectSong(e.target.value);
-                    }
-                  }}
-                  className={`${FIELD_CLASS} pr-24`}
-                  placeholder="Paste Spotify, JioSaavn, YouTube link or type song name..."
-                />
-                <button
-                  type="button"
-                  onClick={() => autoDetectSong(draft.bg_music_url)}
-                  disabled={isDetectingSong || !draft.bg_music_url}
-                  className="absolute right-2 px-2.5 py-1 rounded-md bg-[#d48b95]/20 hover:bg-[#d48b95]/30 text-[#e8b4b8] text-[0.68rem] font-medium border border-[#d48b95]/30 transition-all cursor-pointer disabled:opacity-40"
-                >
-                  {isDetectingSong ? "Detecting..." : "Auto-Fill ✨"}
-                </button>
-              </div>
-
-              <p className="text-[0.65rem] text-[#c5b0a5]/60 italic">
-                💡 Spotify/JioSaavn web links play an official 30s preview loop. For full 4–5 minute track playback, upload your MP3 file above or paste a direct .mp3 URL!
-              </p>
-            </div>
-
-            {/* Live Detected Song Card Preview */}
-            {draft.music_title && (
-              <div className="flex items-center gap-3 p-3 rounded-xl border border-[#dfc19c]/25 bg-gradient-to-r from-[#1b0c16] to-[#12070e] shadow-md animate-fadeIn">
-                {draft.music_cover ? (
-                  <img
-                    src={draft.music_cover}
-                    alt={draft.music_title}
-                    className="size-12 rounded-lg object-cover border border-[#dfc19c]/30 shadow-md shrink-0"
-                  />
-                ) : (
-                  <div className="size-12 rounded-lg bg-[#200d1a] border border-[#dfc19c]/20 flex items-center justify-center text-lg shrink-0">
-                    🎵
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <span className="text-[0.6rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
-                    Vinyl Record Soundtrack
-                  </span>
-                  <p className="text-sm font-serif font-bold text-white truncate">{draft.music_title}</p>
-                  <p className="text-xs text-[#e8b4b8] truncate font-serif italic">{draft.music_artist}</p>
+            {/* TAB 1: SPOTIFY EMBED FEATURES (Shown ONLY when Spotify Embed is active) */}
+            {draft.music_type === "spotify" && (
+              <div className="space-y-4 pt-1 animate-fadeIn">
+                <div className="p-3 rounded-xl border border-[#1db954]/25 bg-[#0a140d]/80 text-xs text-[#a0dfb5] space-y-1">
+                  <p className="font-semibold flex items-center gap-1.5 text-[#1db954]">
+                    <Radio className="size-4" />
+                    Official Spotify Player Integration
+                  </p>
+                  <p className="text-[0.72rem] text-[#a0dfb5]/80 leading-relaxed">
+                    The official Spotify player widget will be embedded on the keepsake. Visitors can stream directly through Spotify with full song playback for Spotify users.
+                  </p>
                 </div>
-                <div className="shrink-0 text-right">
-                  <span className="inline-flex items-center gap-1 text-[0.65rem] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-medium">
-                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Auto-Loaded
+
+                {/* Spotify Quick Presets */}
+                <div className="space-y-1.5">
+                  <span className="text-[0.68rem] uppercase tracking-wider text-[#1db954] font-semibold block">
+                    Popular Romantic Spotify Songs
                   </span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = "https://open.spotify.com/track/6nWjTvdzK1hM10y5gRcvPz";
+                        update("bg_music_url", url);
+                        autoDetectSong(url);
+                      }}
+                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
+                    >
+                      💚 Kesariya
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = "https://open.spotify.com/track/1Bxfay2w22B2yMUUu8dKV8";
+                        update("bg_music_url", url);
+                        autoDetectSong(url);
+                      }}
+                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
+                    >
+                      💚 Zaalima
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = "https://open.spotify.com/track/5uUEytfFSWfTzu5EqZxQju";
+                        update("bg_music_url", url);
+                        autoDetectSong(url);
+                      }}
+                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
+                    >
+                      💚 Tum Hi Ho
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b";
+                        update("bg_music_url", url);
+                        autoDetectSong(url);
+                      }}
+                      className="px-3 py-1.5 rounded-lg border border-[#1db954]/30 bg-[#0a180f] text-[#1db954] text-xs font-medium hover:bg-[#122417] transition-all cursor-pointer"
+                    >
+                      💚 Until I Found You
+                    </button>
+                  </div>
+                </div>
+
+                {/* Spotify Link Input */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-[#1db954]">
+                      Spotify Track Link
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong(draft.bg_music_url)}
+                      disabled={isDetectingSong}
+                      className="text-[0.68rem] text-[#1db954] hover:underline font-medium flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles className="size-3" />
+                      <span>{isDetectingSong ? "Detecting..." : "Sync Spotify Track"}</span>
+                    </button>
+                  </div>
+
+                  <div className="relative flex items-center">
+                    <Input
+                      value={draft.bg_music_url || ""}
+                      onChange={(e) => update("bg_music_url", e.target.value)}
+                      onPaste={(e) => {
+                        const pasted = e.clipboardData.getData("text");
+                        if (pasted) {
+                          update("bg_music_url", pasted);
+                          setTimeout(() => autoDetectSong(pasted), 50);
+                        }
+                      }}
+                      className={`${FIELD_CLASS} border-[#1db954]/30 focus-visible:border-[#1db954] focus-visible:ring-[#1db954]/40 pr-24`}
+                      placeholder="Paste Spotify track link (e.g. https://open.spotify.com/track/...)"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong(draft.bg_music_url)}
+                      disabled={isDetectingSong || !draft.bg_music_url}
+                      className="absolute right-2 px-2.5 py-1 rounded-md bg-[#1db954]/20 hover:bg-[#1db954]/30 text-[#1db954] text-[0.68rem] font-medium border border-[#1db954]/40 transition-all cursor-pointer disabled:opacity-40"
+                    >
+                      {isDetectingSong ? "Detecting..." : "Auto-Fill ✨"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Spotify Embed Widget Preview */}
+                <div className="space-y-2 pt-1">
+                  <span className="text-[0.68rem] uppercase tracking-wider text-[#1db954] font-semibold flex items-center gap-1.5">
+                    <Radio className="size-3.5" />
+                    Live Spotify Player Widget Preview
+                  </span>
+                  <div className="overflow-hidden rounded-2xl border border-[#1db954]/30 bg-[#0b140e] shadow-lg">
+                    <iframe
+                      src={`https://open.spotify.com/embed/track/${spotifyTrackId || "5uUEytfFSWfTzu5EqZxQju"}?utm_source=generator&theme=0`}
+                      width="100%"
+                      height="152"
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      title="Spotify Embed Widget"
+                      className="w-full bg-[#121212]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-[#dfc19c]/80">Song Title (Display Name)</Label>
+                    <Input
+                      value={draft.music_title || ""}
+                      onChange={(e) => update("music_title", e.target.value)}
+                      className={FIELD_CLASS}
+                      placeholder="e.g. Zaalima"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-[#dfc19c]/80">Artist / Singer</Label>
+                    <Input
+                      value={draft.music_artist || ""}
+                      onChange={(e) => update("music_artist", e.target.value)}
+                      className={FIELD_CLASS}
+                      placeholder="e.g. Arijit Singh"
+                    />
+                  </div>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-[#dfc19c]/80">Song Title</Label>
-                <Input
-                  value={draft.music_title || ""}
-                  onChange={(e) => update("music_title", e.target.value)}
-                  className={FIELD_CLASS}
-                  placeholder="e.g. Sab Tera"
-                />
-              </div>
+            {/* TAB 2: CUSTOM MP3 & DEVICE UPLOAD FEATURES (Shown ONLY when Custom MP3 is active) */}
+            {draft.music_type !== "spotify" && (
+              <div className="space-y-4 pt-1 animate-fadeIn">
+                {/* 1. Direct Full MP3 File Upload from Device */}
+                <div className="p-4 rounded-xl border border-[#dfc19c]/20 bg-[#0e050a] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#dfc19c] flex items-center gap-1.5">
+                      <FileAudio className="size-4 text-[#e8b4b8]" />
+                      Upload Full Song from Device
+                    </span>
+                    <span className="text-[0.62rem] px-2.5 py-0.5 rounded-full bg-[#d48b95]/20 text-[#e8b4b8] border border-[#d48b95]/30 font-semibold">
+                      Full 3–5 min Playback
+                    </span>
+                  </div>
+                  <p className="text-[0.7rem] text-[#c5b0a5]/80 leading-relaxed">
+                    Upload any full-length MP3 song downloaded on your phone or computer. The vinyl record player will play the complete track without any time limits!
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <input
+                      ref={audioInputRef}
+                      type="file"
+                      accept="audio/*,.mp3,.m4a,.wav"
+                      onChange={handleAudioFileUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => audioInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-4 py-2.5 text-xs font-semibold text-[#0a0507] hover:brightness-110 transition-all shadow-md cursor-pointer"
+                    >
+                      <Upload className="size-3.5" />
+                      Choose MP3 from Device
+                    </button>
+                    {draft.audio_preview_url && draft.audio_preview_url.startsWith("blob:") && (
+                      <span className="text-xs text-emerald-300 flex items-center gap-1 font-medium bg-emerald-950/40 px-3 py-1 rounded-md border border-emerald-500/30">
+                        <Check className="size-3.5 text-emerald-400" /> Custom audio file loaded!
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs text-[#dfc19c]/80">Artist / Singer</Label>
-                <Input
-                  value={draft.music_artist || ""}
-                  onChange={(e) => update("music_artist", e.target.value)}
-                  className={FIELD_CLASS}
-                  placeholder="e.g. Armaan Malik, Shraddha Kapoor"
-                />
+                {/* 2. Popular Romantic Song Presets */}
+                <div className="space-y-1.5">
+                  <span className="text-[0.68rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
+                    Popular Romantic Song Presets
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong("Sab Tera Armaan Malik")}
+                      className="px-3 py-1.5 rounded-lg border border-[#e8b4b8]/40 bg-[#e8b4b8]/15 text-[#e8b4b8] text-xs font-medium hover:bg-[#e8b4b8]/25 transition-all cursor-pointer"
+                    >
+                      🎵 Sab Tera
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong("Kesariya Pritam Arijit Singh")}
+                      className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
+                    >
+                      🧡 Kesariya
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong("Until I Found You Stephen Sanchez")}
+                      className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
+                    >
+                      🎻 Until I Found You
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong("Tum Hi Ho Arijit Singh")}
+                      className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
+                    >
+                      ✨ Tum Hi Ho
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Direct MP3 Web Link or Song Name */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-[#dfc19c]/80">
+                      Or Direct MP3 Audio URL / Song Name
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong()}
+                      disabled={isDetectingSong}
+                      className="text-[0.68rem] text-[#e8b4b8] hover:text-[#f5e6d3] font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Sparkles className="size-3" />
+                      <span>{isDetectingSong ? "Fetching details..." : "Auto-Detect Song Details"}</span>
+                    </button>
+                  </div>
+
+                  <div className="relative flex items-center">
+                    <Input
+                      value={draft.bg_music_url || ""}
+                      onChange={(e) => update("bg_music_url", e.target.value)}
+                      onPaste={(e) => {
+                        const pasted = e.clipboardData.getData("text");
+                        if (pasted) {
+                          update("bg_music_url", pasted);
+                          setTimeout(() => autoDetectSong(pasted), 50);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          autoDetectSong(draft.bg_music_url);
+                        }
+                      }}
+                      className={`${FIELD_CLASS} pr-24`}
+                      placeholder="Paste direct .mp3 URL or song name..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => autoDetectSong(draft.bg_music_url)}
+                      disabled={isDetectingSong || !draft.bg_music_url}
+                      className="absolute right-2 px-2.5 py-1 rounded-md bg-[#d48b95]/20 hover:bg-[#d48b95]/30 text-[#e8b4b8] text-[0.68rem] font-medium border border-[#d48b95]/30 transition-all cursor-pointer disabled:opacity-40"
+                    >
+                      {isDetectingSong ? "Detecting..." : "Auto-Fill ✨"}
+                    </button>
+                  </div>
+
+                  <p className="text-[0.65rem] text-[#c5b0a5]/60 italic">
+                    💡 Tip: Direct MP3 links or uploaded device files play continuously on the spinning vinyl record!
+                  </p>
+                </div>
+
+                {/* 4. Live Detected Vinyl Soundtrack Preview */}
+                {draft.music_title && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-[#dfc19c]/25 bg-gradient-to-r from-[#1b0c16] to-[#12070e] shadow-md animate-fadeIn">
+                    {draft.music_cover ? (
+                      <img
+                        src={draft.music_cover}
+                        alt={draft.music_title}
+                        className="size-12 rounded-lg object-cover border border-[#dfc19c]/30 shadow-md shrink-0"
+                      />
+                    ) : (
+                      <div className="size-12 rounded-lg bg-[#200d1a] border border-[#dfc19c]/20 flex items-center justify-center text-lg shrink-0">
+                        🎵
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[0.6rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
+                        Vinyl Record Soundtrack
+                      </span>
+                      <p className="text-sm font-serif font-bold text-white truncate">{draft.music_title}</p>
+                      <p className="text-xs text-[#e8b4b8] truncate font-serif italic">{draft.music_artist}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="inline-flex items-center gap-1 text-[0.65rem] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-medium">
+                        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Auto-Loaded
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Title & Singer fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-[#dfc19c]/80">Song Title</Label>
+                    <Input
+                      value={draft.music_title || ""}
+                      onChange={(e) => update("music_title", e.target.value)}
+                      className={FIELD_CLASS}
+                      placeholder="e.g. Sab Tera"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-[#dfc19c]/80">Artist / Singer</Label>
+                    <Input
+                      value={draft.music_artist || ""}
+                      onChange={(e) => update("music_artist", e.target.value)}
+                      className={FIELD_CLASS}
+                      placeholder="e.g. Armaan Malik, Shraddha Kapoor"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </section>

@@ -21,6 +21,7 @@ import {
   Coffee,
   X,
   Maximize2,
+  Radio,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -554,130 +555,155 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
             </p>
           </div>
 
-          {/* Luxury Vinyl Record Card — Single Unified Audio Player */}
-          <div className="rounded-3xl border border-[#dfc19c]/25 bg-gradient-to-b from-[#180a13]/90 via-[#10050c]/95 to-[#090306] p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row items-center gap-8 justify-center">
-              {/* Spinning Vinyl Record */}
-              <div className="relative flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: isPlaying ? 360 : 0 }}
-                  transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                  className="size-36 sm:size-44 rounded-full bg-gradient-to-tr from-[#050505] via-[#1a1a1a] to-[#0a0a0a] border-4 border-[#222] shadow-[0_15px_35px_rgba(0,0,0,0.8)] relative flex items-center justify-center"
-                >
-                  {/* Vinyl Grooves */}
-                  <div className="absolute inset-2 rounded-full border border-white/5" />
-                  <div className="absolute inset-5 rounded-full border border-white/5" />
-                  <div className="absolute inset-8 rounded-full border border-white/5" />
-                  <div className="absolute inset-11 rounded-full border border-white/5" />
-
-                  {/* Vinyl Center Label */}
-                  <div className="size-14 sm:size-16 rounded-full bg-gradient-to-tr from-[#d48b95] to-[#e8b4b8] border-2 border-[#0a0507] flex flex-col items-center justify-center shadow-inner text-center px-1 overflow-hidden relative">
-                    {draft?.music_cover ? (
-                      <img
-                        src={draft.music_cover}
-                        alt={songTitle}
-                        className="size-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <>
-                        <span className="font-serif text-[0.68rem] font-bold text-[#0a0507] tracking-wider leading-tight">
-                          {partner1[0]} &amp; {partner2[0]}
-                        </span>
-                        <span className="text-[0.48rem] uppercase font-sans font-bold text-[#0a0507]/80 tracking-tighter truncate max-w-full">
-                          {songTitle}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </motion.div>
-
-                {/* Stylus Needle Indicator */}
-                <div
-                  className={`absolute -top-2 -right-1 w-10 h-16 pointer-events-none transition-transform duration-500 origin-top-right ${
-                    isPlaying ? "rotate-[20deg]" : "rotate-0 opacity-60"
-                  }`}
-                >
-                  <div className="w-1.5 h-12 bg-gradient-to-b from-[#dfc19c] to-[#997f62] rounded-full mx-auto shadow-md" />
-                  <div className="size-3 rounded-full bg-[#dfc19c] border border-white/40 mx-auto" />
-                </div>
+          {draft?.music_type === "spotify" ? (
+            /* Official Spotify Embed Player Card */
+            <div className="rounded-3xl border border-[#1db954]/30 bg-gradient-to-b from-[#0a180f]/95 via-[#07100a]/95 to-[#040905] p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-xs font-semibold tracking-wider text-[#1db954] uppercase">
+                <Radio className="size-4" />
+                <span>Official Spotify Soundtrack</span>
               </div>
+              <div className="mx-auto max-w-lg overflow-hidden rounded-2xl border border-[#1db954]/30 shadow-[0_10px_35px_rgba(29,185,84,0.2)] bg-[#121212]">
+                <iframe
+                  src={`https://open.spotify.com/embed/track/${spotifyTrackId || "5uUEytfFSWfTzu5EqZxQju"}?utm_source=generator&theme=0`}
+                  width="100%"
+                  height="152"
+                  frameBorder="0"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  title="Official Spotify Player"
+                  className="w-full"
+                />
+              </div>
+              <p className="text-[0.72rem] text-[#a0dfb5]/70">
+                Continuous romantic streaming powered directly by Spotify.
+              </p>
+            </div>
+          ) : (
+            /* Luxury Vinyl Record Card — Single Unified Audio Player */
+            <div className="rounded-3xl border border-[#dfc19c]/25 bg-gradient-to-b from-[#180a13]/90 via-[#10050c]/95 to-[#090306] p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-center gap-8 justify-center">
+                {/* Spinning Vinyl Record */}
+                <div className="relative flex items-center justify-center">
+                  <motion.div
+                    animate={{ rotate: isPlaying ? 360 : 0 }}
+                    transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
+                    className="size-36 sm:size-44 rounded-full bg-gradient-to-tr from-[#050505] via-[#1a1a1a] to-[#0a0a0a] border-4 border-[#222] shadow-[0_15px_35px_rgba(0,0,0,0.8)] relative flex items-center justify-center"
+                  >
+                    {/* Vinyl Grooves */}
+                    <div className="absolute inset-2 rounded-full border border-white/5" />
+                    <div className="absolute inset-5 rounded-full border border-white/5" />
+                    <div className="absolute inset-8 rounded-full border border-white/5" />
+                    <div className="absolute inset-11 rounded-full border border-white/5" />
 
-              {/* Vinyl Player Controls */}
-              <div className="space-y-4 text-center sm:text-left flex-1 max-w-xs">
-                <div>
-                  <span className="text-[0.65rem] uppercase tracking-widest text-[#dfc19c]/70 font-semibold block">
-                    NOW PLAYING
-                  </span>
-                  <h3 className="font-serif text-lg sm:text-xl text-white font-medium line-clamp-1">
-                    {songTitle}
-                  </h3>
-                  <p className="text-xs text-[#e8b4b8] italic font-serif">
-                    {songArtist}
-                  </p>
-                  <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5 flex items-center gap-1.5 justify-center sm:justify-start">
-                    <span className="size-1.5 rounded-full bg-[#d48b95] animate-pulse" />
-                    {audioRef.current?.duration && audioRef.current.duration <= 35
-                      ? "Continuous romantic loop • 30s preview"
-                      : "Continuous full soundtrack playback"}
-                  </p>
-                </div>
+                    {/* Vinyl Center Label */}
+                    <div className="size-14 sm:size-16 rounded-full bg-gradient-to-tr from-[#d48b95] to-[#e8b4b8] border-2 border-[#0a0507] flex flex-col items-center justify-center shadow-inner text-center px-1 overflow-hidden relative">
+                      {draft?.music_cover ? (
+                        <img
+                          src={draft.music_cover}
+                          alt={songTitle}
+                          className="size-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <>
+                          <span className="font-serif text-[0.68rem] font-bold text-[#0a0507] tracking-wider leading-tight">
+                            {partner1[0]} &amp; {partner2[0]}
+                          </span>
+                          <span className="text-[0.48rem] uppercase font-sans font-bold text-[#0a0507]/80 tracking-tighter truncate max-w-full">
+                            {songTitle}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
 
-                {/* Waveform Soundwave Equalizer */}
-                <div className="flex items-center gap-1 h-7">
-                  {[40, 80, 30, 95, 60, 85, 45, 100, 70, 40, 90, 50, 80, 30, 95, 60, 40, 85, 30, 70].map((h, i) => (
-                    <span
-                      key={i}
-                      style={{ height: isPlaying ? `${h}%` : "20%" }}
-                      className="flex-1 bg-gradient-to-t from-[#d48b95] to-[#e8b4b8] rounded-full transition-all duration-300"
-                    />
-                  ))}
-                </div>
-
-                {/* Interactive Scrubber & Time */}
-                <div className="space-y-1 pt-0.5">
+                  {/* Stylus Needle Indicator */}
                   <div
-                    className="w-full bg-[#200d1a] h-1.5 rounded-full overflow-hidden border border-[#dfc19c]/20 cursor-pointer"
-                    onClick={(e) => {
-                      if (!audioRef.current || !audioRef.current.duration) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                      audioRef.current.currentTime = pos * audioRef.current.duration;
-                    }}
+                    className={`absolute -top-2 -right-1 w-10 h-16 pointer-events-none transition-transform duration-500 origin-top-right ${
+                      isPlaying ? "rotate-[20deg]" : "rotate-0 opacity-60"
+                    }`}
                   >
-                    <div
-                      style={{ width: `${audioProgress}%` }}
-                      className="h-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] transition-all duration-100"
-                    />
-                  </div>
-                  <div className="flex justify-between text-[0.62rem] text-[#c5b0a5]/80 font-mono">
-                    <span>{currentTimeStr}</span>
-                    <span className="text-[#e8b4b8]">{isPlaying ? "Playing 🎵" : "Paused"}</span>
-                    <span>{durationStr}</span>
+                    <div className="w-1.5 h-12 bg-gradient-to-b from-[#dfc19c] to-[#997f62] rounded-full mx-auto shadow-md" />
+                    <div className="size-3 rounded-full bg-[#dfc19c] border border-white/40 mx-auto" />
                   </div>
                 </div>
 
-                {/* Buttons */}
-                <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    className="h-11 px-6 rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-rose-950/40 cursor-pointer"
-                  >
-                    {isPlaying ? <Pause className="size-4" /> : <Play className="size-4 ml-0.5" />}
-                    <span>{isPlaying ? "Pause Song" : "Play Our Song"}</span>
-                  </button>
+                {/* Vinyl Player Controls */}
+                <div className="space-y-4 text-center sm:text-left flex-1 max-w-xs">
+                  <div>
+                    <span className="text-[0.65rem] uppercase tracking-widest text-[#dfc19c]/70 font-semibold block">
+                      NOW PLAYING
+                    </span>
+                    <h3 className="font-serif text-lg sm:text-xl text-white font-medium line-clamp-1">
+                      {songTitle}
+                    </h3>
+                    <p className="text-xs text-[#e8b4b8] italic font-serif">
+                      {songArtist}
+                    </p>
+                    <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5 flex items-center gap-1.5 justify-center sm:justify-start">
+                      <span className="size-1.5 rounded-full bg-[#d48b95] animate-pulse" />
+                      {audioRef.current?.duration && audioRef.current.duration <= 35
+                        ? "Continuous romantic loop • 30s preview"
+                        : "Continuous full soundtrack playback"}
+                    </p>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setIsMuted(!isMuted)}
-                    className="size-11 rounded-full border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] flex items-center justify-center hover:bg-[#200f1a] transition-all cursor-pointer"
-                  >
-                    {isMuted ? <VolumeX className="size-4 text-rose-400" /> : <Volume2 className="size-4" />}
-                  </button>
+                  {/* Waveform Soundwave Equalizer */}
+                  <div className="flex items-center gap-1 h-7">
+                    {[40, 80, 30, 95, 60, 85, 45, 100, 70, 40, 90, 50, 80, 30, 95, 60, 40, 85, 30, 70].map((h, i) => (
+                      <span
+                        key={i}
+                        style={{ height: isPlaying ? `${h}%` : "20%" }}
+                        className="flex-1 bg-gradient-to-t from-[#d48b95] to-[#e8b4b8] rounded-full transition-all duration-300"
+                      />
+                    ))}
+                  </div>
+
+                  {/* Interactive Scrubber & Time */}
+                  <div className="space-y-1 pt-0.5">
+                    <div
+                      className="w-full bg-[#200d1a] h-1.5 rounded-full overflow-hidden border border-[#dfc19c]/20 cursor-pointer"
+                      onClick={(e) => {
+                        if (!audioRef.current || !audioRef.current.duration) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                        audioRef.current.currentTime = pos * audioRef.current.duration;
+                      }}
+                    >
+                      <div
+                        style={{ width: `${audioProgress}%` }}
+                        className="h-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] transition-all duration-100"
+                      />
+                    </div>
+                    <div className="flex justify-between text-[0.62rem] text-[#c5b0a5]/80 font-mono">
+                      <span>{currentTimeStr}</span>
+                      <span className="text-[#e8b4b8]">{isPlaying ? "Playing 🎵" : "Paused"}</span>
+                      <span>{durationStr}</span>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex items-center gap-3 justify-center sm:justify-start">
+                    <button
+                      type="button"
+                      onClick={togglePlay}
+                      className="h-11 px-6 rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-rose-950/40 cursor-pointer"
+                    >
+                      {isPlaying ? <Pause className="size-4" /> : <Play className="size-4 ml-0.5" />}
+                      <span>{isPlaying ? "Pause Song" : "Play Our Song"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsMuted(!isMuted)}
+                      className="size-11 rounded-full border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] flex items-center justify-center hover:bg-[#200f1a] transition-all cursor-pointer"
+                    >
+                      {isMuted ? <VolumeX className="size-4 text-rose-400" /> : <Volume2 className="size-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
 
         {/* Elegant Golden Divider */}
