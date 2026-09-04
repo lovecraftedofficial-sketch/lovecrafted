@@ -305,7 +305,12 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
         muted={isMuted}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play().catch(() => {});
+          }
+        }}
       />
 
       {/* Floating Hearts Particle Layer */}
@@ -609,8 +614,11 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
                   <p className="text-xs text-[#e8b4b8] italic font-serif">
                     {songArtist}
                   </p>
-                  <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5">
-                    Continuous romantic playback
+                  <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5 flex items-center gap-1.5 justify-center sm:justify-start">
+                    <span className="size-1.5 rounded-full bg-[#d48b95] animate-pulse" />
+                    {audioRef.current?.duration && audioRef.current.duration <= 35
+                      ? "Continuous romantic loop • 30s preview"
+                      : "Continuous full soundtrack playback"}
                   </p>
                 </div>
 

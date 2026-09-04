@@ -24,10 +24,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AnniversaryKeepsakeView({ draft, isStandalone = false }) {
+export default function AnniversaryKeepsakeView({ draft: draftProp, content: contentProp, isStandalone = false }) {
+  // Support both draft and content props
+  const draft = contentProp || draftProp || {};
+
   // Safe Fallback Data
-  const partner1 = draft?.partner1_name || "Kabir";
-  const partner2 = draft?.partner2_name || "Ananya";
+  const partner1 = draft?.partner1_name || draft?.partner1 || "Kabir";
+  const partner2 = draft?.partner2_name || draft?.partner2 || "Ananya";
   const anniversaryDate = draft?.relationship_date || "2023-11-24";
   const occasionBadge = draft?.occasion_badge || "🥂 Happy Anniversary, My Favorite Human ❤️";
   const greetingTeaser =
@@ -36,7 +39,32 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
     "Can you believe we've made it another year without driving each other crazy? Happy Anniversary, my love! You're still the only person I'd willingly share my fries and blanket with (and you know that's saying a lot!). Here's to surviving each other, laughing till our stomachs hurt, and falling harder in love every single day.";
 
   const specialNotes =
-    draft?.special_notes || draft?.open_when_notes || [
+    draft?.special_notes || (draft?.note1Title ? [
+      {
+        id: 1,
+        emoji: draft?.note1Emoji || "🥰",
+        title: draft?.note1Title || "Your Sleepy Morning Smile",
+        content: draft?.note1Content || "The adorable squint you make when the alarm rings and you stubbornly pull the blanket over your head.",
+      },
+      {
+        id: 2,
+        emoji: draft?.note2Emoji || "✨",
+        title: draft?.note2Title || "That Unfiltered Laugh",
+        content: draft?.note2Content || "The way you laugh so hard you lose your breath at silly inside jokes that nobody else understands.",
+      },
+      {
+        id: 3,
+        emoji: draft?.note3Emoji || "🤝",
+        title: draft?.note3Title || "How You Reach For My Hand",
+        content: draft?.note3Content || "The unconscious way you find my fingers whenever we're in crowded places or crossing the street.",
+      },
+      {
+        id: 4,
+        emoji: draft?.note4Emoji || "🍟",
+        title: draft?.note4Title || "Our Midnight Cravings",
+        content: draft?.note4Content || "How a random 1 AM Maggi run or ice cream drive feels like the sweetest adventure when I'm with you.",
+      },
+    ] : (draft?.open_when_notes || [
       {
         id: 1,
         emoji: "🥰",
@@ -61,10 +89,23 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
         title: "Our Midnight Cravings",
         content: "How a random 1 AM Maggi run or ice cream drive feels like the sweetest adventure when I'm with you.",
       },
-    ];
+    ]));
 
   const memories1 =
-    draft?.memories_section1 || (draft?.memories ? draft.memories.slice(0, 2) : [
+    draft?.memories_section1 || (draft?.card1Image ? [
+      {
+        id: 1,
+        title: draft?.card1Title || "Our Very First Date",
+        caption: draft?.card1Caption || "The rainy evening where two hours felt like two seconds.",
+        image: draft?.card1Image || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
+      },
+      {
+        id: 2,
+        title: draft?.card2Title || "The First Roadtrip",
+        caption: draft?.card2Caption || "Bad singing, wrong turns, and the most unforgettable sunset.",
+        image: draft?.card2Image || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+      },
+    ] : (draft?.memories ? draft.memories.slice(0, 2) : [
       {
         id: 1,
         title: "Our Very First Date",
@@ -77,10 +118,23 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
         caption: "Bad singing, wrong turns, and the most unforgettable sunset.",
         image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
       },
-    ]);
+    ]));
 
   const memories2 =
-    draft?.memories_section2 || (draft?.memories ? draft.memories.slice(2, 4) : [
+    draft?.memories_section2 || (draft?.card3Image ? [
+      {
+        id: 1,
+        title: draft?.card3Title || "Goofy Afternoon",
+        caption: draft?.card3Caption || "You trying to take a serious aesthetic picture while I couldn't stop teasing you.",
+        image: draft?.card3Image || "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+      },
+      {
+        id: 2,
+        title: draft?.card4Title || "Coffee & Cozy Chaos",
+        caption: draft?.card4Caption || "Messy hair, oversized hoodies, and pure comfort.",
+        image: draft?.card4Image || "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80",
+      },
+    ] : (draft?.memories ? draft.memories.slice(2, 4) : [
       {
         id: 1,
         title: "Goofy Afternoon",
@@ -93,7 +147,7 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
         caption: "Messy hair, oversized hoodies, and pure comfort.",
         image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80",
       },
-    ]);
+    ]));
 
   const proposalTitle = draft?.proposal_letter_title || "Will You Keep Choosing Me? (A Proposal All Over Again) 💍";
   const loveLetter =
@@ -145,6 +199,15 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
   }, [anniversaryDate]);
+
+  // Reload audio stream when song changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      audioRef.current.load();
+    }
+  }, [draft?.audio_preview_url, draft?.bg_music_url]);
 
   // Audio Time & Scrubber State
   const [audioProgress, setAudioProgress] = useState(0);
@@ -233,15 +296,21 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
       <audio
         ref={audioRef}
         src={
-          draft?.bg_music_url && (draft.bg_music_url.includes(".mp3") || draft.bg_music_url.startsWith("/"))
-            ? draft.bg_music_url
+          draft?.audio_preview_url ||
+          (draft?.bg_music_url && (draft.bg_music_url.includes(".mp3") || draft.bg_music_url.includes(".m4a") || draft.bg_music_url.startsWith("/audio/")))
+            ? (draft?.audio_preview_url || draft.bg_music_url)
             : "/audio/sab-tera.mp3"
         }
         loop
         muted={isMuted}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play().catch(() => {});
+          }
+        }}
       />
 
       {/* Floating Hearts Particle Layer */}
@@ -502,13 +571,23 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
                   <div className="absolute inset-11 rounded-full border border-white/5" />
 
                   {/* Vinyl Center Label */}
-                  <div className="size-14 sm:size-16 rounded-full bg-gradient-to-tr from-[#d48b95] to-[#e8b4b8] border-2 border-[#0a0507] flex flex-col items-center justify-center shadow-inner text-center px-1">
-                    <span className="font-serif text-[0.68rem] font-bold text-[#0a0507] tracking-wider leading-tight">
-                      {partner1[0]} &amp; {partner2[0]}
-                    </span>
-                    <span className="text-[0.48rem] uppercase font-sans font-bold text-[#0a0507]/80 tracking-tighter truncate max-w-full">
-                      {songTitle}
-                    </span>
+                  <div className="size-14 sm:size-16 rounded-full bg-gradient-to-tr from-[#d48b95] to-[#e8b4b8] border-2 border-[#0a0507] flex flex-col items-center justify-center shadow-inner text-center px-1 overflow-hidden relative">
+                    {draft?.music_cover ? (
+                      <img
+                        src={draft.music_cover}
+                        alt={songTitle}
+                        className="size-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <>
+                        <span className="font-serif text-[0.68rem] font-bold text-[#0a0507] tracking-wider leading-tight">
+                          {partner1[0]} &amp; {partner2[0]}
+                        </span>
+                        <span className="text-[0.48rem] uppercase font-sans font-bold text-[#0a0507]/80 tracking-tighter truncate max-w-full">
+                          {songTitle}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </motion.div>
 
@@ -535,8 +614,11 @@ export default function AnniversaryKeepsakeView({ draft, isStandalone = false })
                   <p className="text-xs text-[#e8b4b8] italic font-serif">
                     {songArtist}
                   </p>
-                  <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5">
-                    Continuous romantic playback
+                  <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5 flex items-center gap-1.5 justify-center sm:justify-start">
+                    <span className="size-1.5 rounded-full bg-[#d48b95] animate-pulse" />
+                    {audioRef.current?.duration && audioRef.current.duration <= 35
+                      ? "Continuous romantic loop • 30s preview"
+                      : "Continuous full soundtrack playback"}
                   </p>
                 </div>
 

@@ -22,12 +22,16 @@ import {
   Trash2,
   Smile,
   Radio,
+  Upload,
+  FileAudio,
 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import PublishModal from "../components/PublishModal";
 import AnniversaryKeepsakeView from "../components/AnniversaryKeepsakeView";
+import ImageUploadInput from "../components/ImageUploadInput";
+import { resolveSongDetails } from "../services/songResolver";
 
 import templateOccasions from "../data/templateOccasions.json";
 
@@ -196,88 +200,55 @@ export default function TemplateEditor() {
   const autoDetectSong = async (inputUrl) => {
     const url = (inputUrl !== undefined ? inputUrl : draft.bg_music_url || "").trim();
     if (!url) {
-      toast.info("Please paste a song link first (Spotify, JioSaavn, or MP3).");
+      toast.info("Please paste a song link (Spotify, JioSaavn, YouTube, or MP3).");
       return;
     }
 
     setIsDetectingSong(true);
     try {
-      // 1. Spotify Track URL
-      if (url.includes("spotify.com/track/")) {
-        try {
-          const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
-          if (res.ok) {
-            const data = await res.json();
-            let title = data.title || "Spotify Song";
-            let artist = "Original Soundtrack";
-
-            if (title.toLowerCase().includes("sab tera") || url.includes("5uUEytfFSWfTzu5EqZxQju")) {
-              title = "Sab Tera";
-              artist = "Armaan Malik, Shraddha Kapoor";
-            } else if (title.includes(" - ")) {
-              const parts = title.split(" - ");
-              title = parts[0].trim();
-              artist = parts.slice(1).join(" - ").trim();
-            }
-
-            update("music_title", title);
-            update("music_artist", artist);
-            if (data.thumbnail_url) update("music_cover", data.thumbnail_url);
-            toast.success(`✨ Auto-detected from Spotify: "${title}" by ${artist}`);
-            setIsDetectingSong(false);
-            return;
-          }
-        } catch (e) {
-          console.warn("Spotify oEmbed error:", e);
-        }
+      const songInfo = await resolveSongDetails(url);
+      if (songInfo && songInfo.title) {
+        update("music_title", songInfo.title);
+        update("music_artist", songInfo.artist);
+        if (songInfo.cover) update("music_cover", songInfo.cover);
+        if (songInfo.audioUrl) update("audio_preview_url", songInfo.audioUrl);
+        toast.success(`✨ Auto-detected: "${songInfo.title}" by ${songInfo.artist}!`);
+      } else {
+        toast.info("Song link updated! You can refine the title and singer below.");
       }
-
-      // 2. JioSaavn Song URL
-      if (url.includes("jiosaavn.com/song/")) {
-        const match = url.match(/song\/([^\/]+)/);
-        if (match) {
-          const slug = match[1].replace(/-/g, " ");
-          const words = slug.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1));
-          const cleanTitle = words.join(" ");
-          update("music_title", cleanTitle);
-          if (cleanTitle.toLowerCase().includes("sab tera")) {
-            update("music_artist", "Armaan Malik, Shraddha Kapoor");
-          } else {
-            update("music_artist", "JioSaavn Artist");
-          }
-          toast.success(`✨ Auto-detected from JioSaavn: "${cleanTitle}"`);
-          setIsDetectingSong(false);
-          return;
-        }
-      }
-
-      // 3. Direct Audio / MP3 URL
-      if (url.includes(".mp3") || url.includes(".m4a") || url.includes("/audio/")) {
-        const filename = url.split("/").pop().split("?")[0];
-        const rawName = decodeURIComponent(filename)
-          .replace(/\.[^/.]+$/, "")
-          .replace(/[-_]/g, " ")
-          .trim();
-        const words = rawName.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1));
-        const cleanTitle = words.join(" ");
-        update("music_title", cleanTitle);
-        if (cleanTitle.toLowerCase().includes("sab tera")) {
-          update("music_artist", "Armaan Malik, Shraddha Kapoor");
-        } else {
-          update("music_artist", "Original Soundtrack");
-        }
-        toast.success(`✨ Auto-detected audio file: "${cleanTitle}"`);
-        setIsDetectingSong(false);
-        return;
-      }
-
-      toast.info("Song link updated! You can refine the title and singer below.");
     } catch (err) {
       console.error("Auto detect failed:", err);
       toast.error("Could not fetch song details automatically. Please enter title manually.");
     } finally {
       setIsDetectingSong(false);
     }
+  };
+
+  const audioInputRef = useRef(null);
+
+  const handleAudioFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("audio/") && !file.name.endsWith(".mp3") && !file.name.endsWith(".m4a")) {
+      toast.error("Please select a valid audio file (.mp3, .m4a, .wav).");
+      return;
+    }
+
+    // Convert file to local object URL for instant, full playback
+    const audioBlobUrl = URL.createObjectURL(file);
+    update("audio_preview_url", audioBlobUrl);
+    update("bg_music_url", file.name);
+
+    // Extract clean title from filename
+    const cleanTitle = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim();
+
+    update("music_title", cleanTitle);
+    toast.success(`Full audio loaded: "${cleanTitle}"! Full song playback enabled 🎶`);
   };
 
   const [isSaved, setIsSaved] = useState(false);
@@ -501,43 +472,83 @@ export default function TemplateEditor() {
             {/* Quick Presets */}
             <div className="space-y-1.5">
               <span className="text-[0.68rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
-                Quick Song Presets
+                Popular Romantic Song Presets
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    update("music_title", "Sab Tera");
-                    update("music_artist", "Armaan Malik, Shraddha Kapoor");
-                    update("music_type", "mp3");
-                    update("bg_music_url", "/audio/sab-tera.mp3");
-                    toast.success("Loaded Sab Tera (Armaan Malik, Shraddha Kapoor)!");
-                  }}
+                  onClick={() => autoDetectSong("Sab Tera Armaan Malik")}
                   className="px-3 py-1.5 rounded-lg border border-[#e8b4b8]/40 bg-[#e8b4b8]/15 text-[#e8b4b8] text-xs font-medium hover:bg-[#e8b4b8]/25 transition-all cursor-pointer"
                 >
-                  🎵 Sab Tera (Armaan Malik, Shraddha Kapoor)
+                  🎵 Sab Tera
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    update("music_title", "Until I Found You");
-                    update("music_artist", "Stephen Sanchez");
-                    update("music_type", "mp3");
-                    update("bg_music_url", "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3");
-                    toast.success("Loaded Until I Found You!");
-                  }}
+                  onClick={() => autoDetectSong("Kesariya Pritam Arijit Singh")}
+                  className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
+                >
+                  🧡 Kesariya
+                </button>
+                <button
+                  type="button"
+                  onClick={() => autoDetectSong("Until I Found You Stephen Sanchez")}
                   className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
                 >
                   🎻 Until I Found You
                 </button>
+                <button
+                  type="button"
+                  onClick={() => autoDetectSong("Tum Hi Ho Arijit Singh")}
+                  className="px-3 py-1.5 rounded-lg border border-[#dfc19c]/30 bg-[#160b11] text-[#dfc19c] text-xs font-medium hover:bg-[#200f19] transition-all cursor-pointer"
+                >
+                  ✨ Tum Hi Ho
+                </button>
               </div>
             </div>
 
-            {/* Song Link & Auto-Detect */}
+            {/* Direct Full MP3 File Upload from Device */}
+            <div className="p-3.5 rounded-xl border border-[#dfc19c]/20 bg-[#0e050a] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#dfc19c] flex items-center gap-1.5">
+                  <FileAudio className="size-4 text-[#e8b4b8]" />
+                  Upload Full Song (MP3 / Audio File)
+                </span>
+                <span className="text-[0.62rem] px-2 py-0.5 rounded-full bg-[#d48b95]/20 text-[#e8b4b8] border border-[#d48b95]/30 font-medium">
+                  Full 3–5 min Playback
+                </span>
+              </div>
+              <p className="text-[0.7rem] text-[#c5b0a5]/80 leading-relaxed">
+                Spotify/Apple web links are limited to 30-second preview clips due to music copyright laws. For the <strong>complete full song</strong>, upload your downloaded MP3 audio from your phone or device:
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <input
+                  ref={audioInputRef}
+                  type="file"
+                  accept="audio/*,.mp3,.m4a,.wav"
+                  onChange={handleAudioFileUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => audioInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-4 py-2 text-xs font-semibold text-[#0a0507] hover:brightness-110 transition-all shadow-md cursor-pointer"
+                >
+                  <Upload className="size-3.5" />
+                  Choose MP3 from Device
+                </button>
+                {draft.audio_preview_url && draft.audio_preview_url.startsWith("blob:") && (
+                  <span className="text-xs text-emerald-300 flex items-center gap-1">
+                    <Check className="size-3.5" /> Custom audio file loaded!
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Song Link & Instant Auto-Detect */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs text-[#dfc19c]/80">
-                  Song Link (Spotify, JioSaavn, or MP3)
+                  Or Paste Song Link / Track Name (Spotify, JioSaavn, YouTube, MP3)
                 </Label>
                 <button
                   type="button"
@@ -546,24 +557,79 @@ export default function TemplateEditor() {
                   className="text-[0.68rem] text-[#e8b4b8] hover:text-[#f5e6d3] font-medium flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <Sparkles className="size-3" />
-                  <span>{isDetectingSong ? "Detecting..." : "Auto-Detect Song Details"}</span>
+                  <span>{isDetectingSong ? "Fetching details..." : "Auto-Detect Song Details"}</span>
                 </button>
               </div>
-              <Input
-                value={draft.bg_music_url || ""}
-                onChange={(e) => update("bg_music_url", e.target.value)}
-                onBlur={(e) => {
-                  if (e.target.value && e.target.value !== "/audio/sab-tera.mp3") {
-                    autoDetectSong(e.target.value);
-                  }
-                }}
-                className={FIELD_CLASS}
-                placeholder="Paste Spotify track, JioSaavn, or MP3 URL..."
-              />
+
+              <div className="relative flex items-center">
+                <Input
+                  value={draft.bg_music_url || ""}
+                  onChange={(e) => update("bg_music_url", e.target.value)}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData.getData("text");
+                    if (pasted) {
+                      update("bg_music_url", pasted);
+                      setTimeout(() => autoDetectSong(pasted), 50);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      autoDetectSong(draft.bg_music_url);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value && e.target.value !== "/audio/sab-tera.mp3") {
+                      autoDetectSong(e.target.value);
+                    }
+                  }}
+                  className={`${FIELD_CLASS} pr-24`}
+                  placeholder="Paste Spotify, JioSaavn, YouTube link or type song name..."
+                />
+                <button
+                  type="button"
+                  onClick={() => autoDetectSong(draft.bg_music_url)}
+                  disabled={isDetectingSong || !draft.bg_music_url}
+                  className="absolute right-2 px-2.5 py-1 rounded-md bg-[#d48b95]/20 hover:bg-[#d48b95]/30 text-[#e8b4b8] text-[0.68rem] font-medium border border-[#d48b95]/30 transition-all cursor-pointer disabled:opacity-40"
+                >
+                  {isDetectingSong ? "Detecting..." : "Auto-Fill ✨"}
+                </button>
+              </div>
+
               <p className="text-[0.65rem] text-[#c5b0a5]/60 italic">
-                💡 Paste any Spotify, JioSaavn, or MP3 link — song title &amp; singer details auto-populate!
+                💡 Spotify/JioSaavn web links play an official 30s preview loop. For full 4–5 minute track playback, upload your MP3 file above or paste a direct .mp3 URL!
               </p>
             </div>
+
+            {/* Live Detected Song Card Preview */}
+            {draft.music_title && (
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-[#dfc19c]/25 bg-gradient-to-r from-[#1b0c16] to-[#12070e] shadow-md animate-fadeIn">
+                {draft.music_cover ? (
+                  <img
+                    src={draft.music_cover}
+                    alt={draft.music_title}
+                    className="size-12 rounded-lg object-cover border border-[#dfc19c]/30 shadow-md shrink-0"
+                  />
+                ) : (
+                  <div className="size-12 rounded-lg bg-[#200d1a] border border-[#dfc19c]/20 flex items-center justify-center text-lg shrink-0">
+                    🎵
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <span className="text-[0.6rem] uppercase tracking-wider text-[#dfc19c]/70 font-semibold block">
+                    Vinyl Record Soundtrack
+                  </span>
+                  <p className="text-sm font-serif font-bold text-white truncate">{draft.music_title}</p>
+                  <p className="text-xs text-[#e8b4b8] truncate font-serif italic">{draft.music_artist}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="inline-flex items-center gap-1 text-[0.65rem] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-medium">
+                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Auto-Loaded
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -639,11 +705,10 @@ export default function TemplateEditor() {
                   placeholder="Romantic Caption"
                   className={FIELD_CLASS}
                 />
-                <Input
+                <ImageUploadInput
                   value={mem.image || ""}
-                  onChange={(e) => updateMemory1(idx, "image", e.target.value)}
-                  placeholder="Photo URL"
-                  className={FIELD_CLASS}
+                  onChange={(val) => updateMemory1(idx, "image", val)}
+                  label="Milestone Photo (Upload from Gallery or Paste Link)"
                 />
               </div>
             ))}
@@ -708,11 +773,10 @@ export default function TemplateEditor() {
                   placeholder="Playful / Sweet Caption"
                   className={FIELD_CLASS}
                 />
-                <Input
+                <ImageUploadInput
                   value={mem.image || ""}
-                  onChange={(e) => updateMemory2(idx, "image", e.target.value)}
-                  placeholder="Photo URL"
-                  className={FIELD_CLASS}
+                  onChange={(val) => updateMemory2(idx, "image", val)}
+                  label="Candid Photo (Upload from Gallery or Paste Link)"
                 />
               </div>
             ))}
@@ -821,43 +885,43 @@ export default function TemplateEditor() {
 
   // Right Side Live Preview (Expansive, beautifully aligned & 100% interactive)
   const preview = (
-    <div className="w-full max-w-2xl min-h-full pb-16">
+    <div className="w-full max-w-2xl min-h-full pb-20 px-1 sm:px-0">
       <AnniversaryKeepsakeView draft={draft} />
     </div>
   );
 
   return (
     <div className="flex h-screen flex-col bg-[#070304] text-[#f5e6d3] overflow-hidden">
-      <header className="sticky top-0 z-40 border-b border-[#dfc19c]/15 bg-[#140a0f]/90 backdrop-blur-xl shrink-0">
-        <div className="flex h-16 items-center justify-between gap-4 px-6">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-[#dfc19c]/15 bg-[#140a0f]/95 backdrop-blur-xl shrink-0">
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6">
+          <div className="flex items-center gap-2 sm:gap-3 shrink min-w-0">
             <Link
               to="/marketplace"
-              className="grid size-9 place-items-center rounded-full border border-[#dfc19c]/20 bg-[#0a0507] text-[#c5b0a5] hover:text-[#e8b4b8]"
+              className="grid size-8 sm:size-9 place-items-center rounded-full border border-[#dfc19c]/20 bg-[#0a0507] text-[#c5b0a5] hover:text-[#e8b4b8] shrink-0"
             >
               <ArrowLeft className="size-4" />
             </Link>
-            <div>
-              <p className="text-[0.6rem] uppercase tracking-[0.2em] text-[#dfc19c]/60">Romantic Studio</p>
-              <p className="text-sm font-serif text-white font-medium">Customising {draft.template_name}</p>
+            <div className="min-w-0">
+              <p className="text-[0.58rem] sm:text-[0.6rem] uppercase tracking-[0.2em] text-[#dfc19c]/60">Romantic Studio</p>
+              <p className="text-xs sm:text-sm font-serif text-white font-medium truncate max-w-[130px] sm:max-w-xs">{draft.template_name}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               type="button"
               onClick={handleSaveClick}
-              className="inline-flex h-9 items-center gap-1.5 sm:gap-2 rounded-full border border-[#dfc19c]/30 bg-[#160b11] px-3.5 sm:px-4 text-xs font-medium text-[#f5e6d3] hover:bg-[#25101c] hover:border-[#dfc19c]/50 transition-all cursor-pointer"
+              className="inline-flex h-8 sm:h-9 items-center gap-1 sm:gap-2 rounded-full border border-[#dfc19c]/30 bg-[#160b11] px-2.5 sm:px-4 text-xs font-medium text-[#f5e6d3] hover:bg-[#25101c] hover:border-[#dfc19c]/50 transition-all cursor-pointer"
             >
               {isSaved ? (
                 <>
-                  <Check className="size-3.5 text-emerald-400" />
-                  <span className="text-emerald-300 font-medium">Saved!</span>
+                  <Check className="size-3 text-emerald-400" />
+                  <span className="text-emerald-300 font-medium text-[0.75rem]">Saved!</span>
                 </>
               ) : (
                 <>
-                  <Save className="size-3.5 text-[#dfc19c]" />
-                  <span>Save</span>
+                  <Save className="size-3 sm:size-3.5 text-[#dfc19c]" />
+                  <span className="text-[0.75rem] sm:text-xs">Save</span>
                 </>
               )}
             </button>
@@ -865,10 +929,10 @@ export default function TemplateEditor() {
             <button
               type="button"
               onClick={handlePublishClick}
-              className="inline-flex h-9 items-center gap-1.5 sm:gap-2 rounded-full bg-[#d48b95] px-4 sm:px-5 text-xs font-semibold text-[#0a0507] hover:bg-[#e8b4b8] shadow-md shadow-rose-950/30 transition-all cursor-pointer"
+              className="inline-flex h-8 sm:h-9 items-center gap-1 sm:gap-2 rounded-full bg-[#d48b95] px-3 sm:px-5 text-xs font-semibold text-[#0a0507] hover:bg-[#e8b4b8] shadow-md shadow-rose-950/30 transition-all cursor-pointer"
             >
-              <Send className="size-3.5" />
-              <span>Publish (₹9)</span>
+              <Send className="size-3 sm:size-3.5" />
+              <span className="text-[0.75rem] sm:text-xs">Publish (₹9)</span>
             </button>
           </div>
         </div>
@@ -883,18 +947,22 @@ export default function TemplateEditor() {
         </section>
       </div>
 
-      <div className="flex flex-1 flex-col lg:hidden">
-        <div className="flex-1 p-4 pb-24">
+      {/* Fully Scrollable Mobile Experience */}
+      <div id="mobile-editor-scroll-container" className="flex flex-1 flex-col lg:hidden overflow-y-auto scrollbar-thin">
+        <div className="flex-1 p-3 sm:p-4 pb-28">
           {mobileTab === "edit" ? editForm : <div className="flex justify-center">{preview}</div>}
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#dfc19c]/15 bg-[#140a0f]/95 p-3 backdrop-blur-xl">
-          <div className="grid grid-cols-2 gap-2">
+        {/* Bottom Floating Navigation for Mobile */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#dfc19c]/15 bg-[#140a0f]/95 p-2.5 sm:p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
             <button
               type="button"
               onClick={() => setMobileTab("edit")}
-              className={`flex h-11 items-center justify-center gap-2 rounded-lg text-xs font-medium ${
-                mobileTab === "edit" ? "bg-[#4a0e1c] text-[#f5e6d3]" : "text-[#c5b0a5]"
+              className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                mobileTab === "edit"
+                  ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] shadow-lg shadow-rose-950/40"
+                  : "border border-[#dfc19c]/20 bg-[#1a0c15]/60 text-[#c5b0a5] hover:text-white"
               }`}
             >
               <Edit3 className="size-4" /> Edit Details
@@ -902,8 +970,10 @@ export default function TemplateEditor() {
             <button
               type="button"
               onClick={() => setMobileTab("preview")}
-              className={`flex h-11 items-center justify-center gap-2 rounded-lg text-xs font-medium ${
-                mobileTab === "preview" ? "bg-[#4a0e1c] text-[#f5e6d3]" : "text-[#c5b0a5]"
+              className={`flex h-11 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                mobileTab === "preview"
+                  ? "bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] shadow-lg shadow-rose-950/40"
+                  : "border border-[#dfc19c]/20 bg-[#1a0c15]/60 text-[#c5b0a5] hover:text-white"
               }`}
             >
               <Eye className="size-4" /> Live Preview

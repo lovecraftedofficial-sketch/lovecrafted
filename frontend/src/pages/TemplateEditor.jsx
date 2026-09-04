@@ -22,6 +22,8 @@ import {
   Trash2,
   Smile,
   Radio,
+  Upload,
+  FileAudio,
 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -220,6 +222,33 @@ export default function TemplateEditor() {
     } finally {
       setIsDetectingSong(false);
     }
+  };
+
+  const audioInputRef = useRef(null);
+
+  const handleAudioFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("audio/") && !file.name.endsWith(".mp3") && !file.name.endsWith(".m4a")) {
+      toast.error("Please select a valid audio file (.mp3, .m4a, .wav).");
+      return;
+    }
+
+    // Convert file to local object URL for instant, full playback
+    const audioBlobUrl = URL.createObjectURL(file);
+    update("audio_preview_url", audioBlobUrl);
+    update("bg_music_url", file.name);
+
+    // Extract clean title from filename
+    const cleanTitle = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim();
+
+    update("music_title", cleanTitle);
+    toast.success(`Full audio loaded: "${cleanTitle}"! Full song playback enabled 🎶`);
   };
 
   const [isSaved, setIsSaved] = useState(false);
@@ -477,11 +506,49 @@ export default function TemplateEditor() {
               </div>
             </div>
 
+            {/* Direct Full MP3 File Upload from Device */}
+            <div className="p-3.5 rounded-xl border border-[#dfc19c]/20 bg-[#0e050a] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#dfc19c] flex items-center gap-1.5">
+                  <FileAudio className="size-4 text-[#e8b4b8]" />
+                  Upload Full Song (MP3 / Audio File)
+                </span>
+                <span className="text-[0.62rem] px-2 py-0.5 rounded-full bg-[#d48b95]/20 text-[#e8b4b8] border border-[#d48b95]/30 font-medium">
+                  Full 3–5 min Playback
+                </span>
+              </div>
+              <p className="text-[0.7rem] text-[#c5b0a5]/80 leading-relaxed">
+                Spotify/Apple web links are limited to 30-second preview clips due to music copyright laws. For the <strong>complete full song</strong>, upload your downloaded MP3 audio from your phone or device:
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <input
+                  ref={audioInputRef}
+                  type="file"
+                  accept="audio/*,.mp3,.m4a,.wav"
+                  onChange={handleAudioFileUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => audioInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] px-4 py-2 text-xs font-semibold text-[#0a0507] hover:brightness-110 transition-all shadow-md cursor-pointer"
+                >
+                  <Upload className="size-3.5" />
+                  Choose MP3 from Device
+                </button>
+                {draft.audio_preview_url && draft.audio_preview_url.startsWith("blob:") && (
+                  <span className="text-xs text-emerald-300 flex items-center gap-1">
+                    <Check className="size-3.5" /> Custom audio file loaded!
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* Song Link & Instant Auto-Detect */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs text-[#dfc19c]/80">
-                  Song Link or Track Name (Spotify, JioSaavn, YouTube, MP3)
+                  Or Paste Song Link / Track Name (Spotify, JioSaavn, YouTube, MP3)
                 </Label>
                 <button
                   type="button"
@@ -530,7 +597,7 @@ export default function TemplateEditor() {
               </div>
 
               <p className="text-[0.65rem] text-[#c5b0a5]/60 italic">
-                💡 Paste any Spotify link, JioSaavn URL, YouTube track, or MP3 link — Title, Singer, HD Album Art, and Vinyl audio stream will update automatically!
+                💡 Spotify/JioSaavn web links play an official 30s preview loop. For full 4–5 minute track playback, upload your MP3 file above or paste a direct .mp3 URL!
               </p>
             </div>
 
