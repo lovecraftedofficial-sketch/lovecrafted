@@ -193,28 +193,29 @@ export default function ViewWebsitePage() {
             type="button"
             data-testid="exit-preview-button"
             onClick={handleExitPreview}
-            className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-[#0a0507]/90 hover:bg-[#1a0c16] border border-[#dfc19c]/40 hover:border-[#dfc19c]/80 text-[#f5e6d3] hover:text-white text-xs font-semibold shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer group shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-[#0a0507]/90 hover:bg-[#1a0c16] border border-[#dfc19c]/40 hover:border-[#dfc19c]/80 text-[#f5e6d3] hover:text-white text-xs font-medium shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer group shrink-0"
             title="Exit preview and return to Dashboard/Editor"
           >
-            <ArrowLeft size={14} className="text-[#dfc19c] group-hover:-translate-x-0.5 transition-transform" />
-            <span>Exit Preview</span>
+            <ArrowLeft size={13} className="text-[#dfc19c] group-hover:-translate-x-0.5 transition-transform" />
+            <span>Exit</span>
           </button>
 
-          {/* 2. Edit in Studio Button */}
+          {/* 2. Edit Keepsake in Studio Button - Always visible on mobile & desktop */}
           <Link
             to={`/editor/${shareId === "aurora-noire" || !shareId ? "aurora-noire" : shareId}`}
-            className="hidden xs:flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full bg-[#140a10]/85 hover:bg-[#200f1a] border border-[#dfc19c]/25 hover:border-[#dfc19c]/50 text-[#c5b0a5] hover:text-[#f5e6d3] text-xs font-medium shadow-lg backdrop-blur-md transition-all shrink-0"
+            data-testid="edit-keepsake-button"
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-[#1e0e18]/90 hover:bg-[#2a1322] border border-[#e8b4b8]/40 hover:border-[#e8b4b8] text-[#f5e6d3] hover:text-[#e8b4b8] text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 shrink-0 cursor-pointer"
             title="Edit this Keepsake in Studio"
           >
             <Edit3 size={13} className="text-[#e8b4b8]" />
-            <span>Edit in Studio</span>
+            <span>Edit Keepsake</span>
           </Link>
 
           {/* 3. Quick Publish Button */}
           <button
             type="button"
             onClick={() => setIsPublishModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] hover:opacity-95 text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] hover:opacity-95 text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 cursor-pointer shrink-0"
             title="Publish Keepsake & Get Live WhatsApp Link"
           >
             <Send size={12} className="text-[#0a0507]" />
@@ -224,7 +225,7 @@ export default function ViewWebsitePage() {
           </button>
 
           {/* 4. Live Preview Indicator Pill */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dfc19c]/10 border border-[#dfc19c]/25 text-[#dfc19c] text-[0.68rem] tracking-wider uppercase font-medium backdrop-blur-md shrink-0">
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dfc19c]/10 border border-[#dfc19c]/25 text-[#dfc19c] text-[0.68rem] tracking-wider uppercase font-medium backdrop-blur-md shrink-0">
             <span className="size-1.5 rounded-full bg-[#dfc19c] animate-pulse" />
             Live Preview
           </div>
@@ -246,6 +247,21 @@ export default function ViewWebsitePage() {
 
       {/* Fullscreen Keepsake Experience */}
       <AnniversaryKeepsakeView draft={draftContent} />
+
+      {/* Floating Bottom Edit Button in Preview Mode */}
+      {isPreview && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <Link
+            to={`/editor/${shareId === "aurora-noire" || !shareId ? "aurora-noire" : shareId}`}
+            data-testid="bottom-edit-button"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#180a14]/95 hover:bg-[#261020] border border-[#e8b4b8]/40 hover:border-[#e8b4b8] text-[#f5e6d3] hover:text-[#e8b4b8] text-xs font-semibold shadow-2xl backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            title="Edit this Keepsake in Studio"
+          >
+            <Edit3 size={13} className="text-[#e8b4b8]" />
+            <span>Edit Keepsake</span>
+          </Link>
+        </div>
+      )}
 
       {/* Subtle Romantic Atelier Floating Pill Badge */}
       <div className="fixed bottom-4 right-4 z-50">

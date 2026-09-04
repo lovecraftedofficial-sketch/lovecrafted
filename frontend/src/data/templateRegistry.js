@@ -7,10 +7,21 @@
 import AuroraSampleTemplate from "@/templates/aurora-sample/AuroraSampleTemplate";
 import auroraSampleConfig from "@/templates/aurora-sample/template.config";
 
+// Aurora Noire Monogram Flagship Keepsake Import
+import AuroraNoireTemplate from "@/templates/aurora-noire/AuroraNoireTemplate";
+import auroraNoireConfig from "@/templates/aurora-noire/template.config";
+
 // Sunset Love Template Import
 import SunsetLoveTemplate from "../templates/sunset-love/SunsetLoveTemplate";
 
 export const templateRegistry = {
+  // Aurora Noire Flagship Romantic Keepsake Edition
+  "aurora-noire": {
+    component: AuroraNoireTemplate,
+    comingSoon: false,
+    config: auroraNoireConfig,
+  },
+
   [auroraSampleConfig.slug]: {
     component: AuroraSampleTemplate,
     config: auroraSampleConfig,
