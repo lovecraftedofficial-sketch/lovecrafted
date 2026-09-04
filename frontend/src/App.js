@@ -16,6 +16,7 @@ import ViewWebsitePage from "./pages/ViewWebsitePage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthProvider } from "./context/AuthContext";
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -38,8 +39,9 @@ function Shell({ children, hideFooter = false }) {
 function App() {
     return (
         <ErrorBoundary>
-            <div className="App relative bg-[#0a0507] min-h-screen">
-                <BrowserRouter>
+            <AuthProvider>
+                <div className="App relative bg-[#0a0507] min-h-screen">
+                    <BrowserRouter>
                     <ScrollToTop />
                     <BackgroundMusic />
                     <FloatingHearts />
@@ -119,6 +121,7 @@ function App() {
                     </Routes>
                 </BrowserRouter>
             </div>
+            </AuthProvider>
         </ErrorBoundary>
     );
 }

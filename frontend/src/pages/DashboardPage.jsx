@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -13,6 +13,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { useAuth } from "../context/AuthContext";
 
 const INITIAL_DRAFTS = [
   {
@@ -39,6 +40,7 @@ const INITIAL_DRAFTS = [
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [drafts] = useState(INITIAL_DRAFTS);
   const [requestedLive, setRequestedLive] = useState({});
 
@@ -60,13 +62,13 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#dfc19c]/30 bg-[#140a0f]/80 px-4 py-1.5 text-[0.65rem] tracking-[0.25em] uppercase font-semibold text-[#dfc19c]">
                 <Sparkles className="size-3.5 text-[#e8b4b8]" />
-                YOUR ATELIER STUDIO
+                {user ? `WELCOME, ${user.name.toUpperCase()}` : "YOUR ATELIER STUDIO"}
               </span>
               <h1 className="font-serif text-4xl sm:text-5xl font-medium text-white">
-                Your websites
+                {user ? `${user.name.split(" ")[0]}'s Keepsakes` : "Your romantic websites"}
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-[#c5b0a5] sm:text-base">
-                Customize your romantic website drafts or request your final shareable live link.
+                Customize your romantic keepsakes, review drafts, or copy your published live links.
               </p>
             </div>
 
