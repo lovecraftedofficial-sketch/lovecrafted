@@ -1,14 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import AnniversaryKeepsakeView from "@/components/AnniversaryKeepsakeView";
 import templateOccasions from "@/data/templateOccasions.json";
-import { Heart, Lock, Clock, Send, ShieldCheck, ArrowRight, Eye } from "lucide-react";
+import { Heart, Lock, Clock, Send, ShieldCheck, ArrowRight, Eye, ArrowLeft, Edit3, Sparkles } from "lucide-react";
 import { openRazorpayCheckout } from "@/lib/paymentService";
+import PublishModal from "@/components/PublishModal";
 import { toast } from "sonner";
 
 export default function ViewWebsitePage() {
+  const navigate = useNavigate();
   const { shareId } = useParams();
   const [searchParams] = useSearchParams();
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
 
   // Price for Aurora Noire Anniversary Edition (₹9)
   const templatePrice = templateOccasions["aurora-noire"]?.price || 9;
@@ -115,6 +118,14 @@ export default function ViewWebsitePage() {
     }
   };
 
+  const handleExitPreview = () => {
+    if (window.history?.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
   // If not activated and not in preview, show romantic activation card with synced ₹9 price
   if (!isActivatedLocally) {
     return (
@@ -158,12 +169,13 @@ export default function ViewWebsitePage() {
               <Eye size={13} /> Preview Keepsake
             </button>
 
-            <Link
-              to="/marketplace"
-              className="inline-block text-xs text-[#c5b0a5]/60 hover:text-[#f5e6d3] transition-colors pt-2"
+            <button
+              type="button"
+              onClick={handleExitPreview}
+              className="w-full text-center text-xs text-[#c5b0a5]/60 hover:text-[#f5e6d3] transition-colors pt-2 cursor-pointer flex items-center justify-center gap-1.5"
             >
-              ← Return to LoveCrafted Collection
-            </Link>
+              <ArrowLeft size={13} /> Return to Dashboard
+            </button>
           </div>
         </div>
       </div>
@@ -173,6 +185,65 @@ export default function ViewWebsitePage() {
   // Active / Preview Keepsake: Fullscreen romantic digital keepsake
   return (
     <div className="relative min-h-screen bg-[#070305]">
+      {/* Floating Exit & Preview Controls Bar */}
+      {isPreview ? (
+        <header className="fixed top-3 left-3 sm:top-4 sm:left-4 z-50 flex items-center gap-2 max-w-[calc(100vw-24px)] overflow-x-auto no-scrollbar py-1">
+          {/* 1. Exit Preview Button */}
+          <button
+            type="button"
+            data-testid="exit-preview-button"
+            onClick={handleExitPreview}
+            className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-[#0a0507]/90 hover:bg-[#1a0c16] border border-[#dfc19c]/40 hover:border-[#dfc19c]/80 text-[#f5e6d3] hover:text-white text-xs font-semibold shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer group shrink-0"
+            title="Exit preview and return to Dashboard/Editor"
+          >
+            <ArrowLeft size={14} className="text-[#dfc19c] group-hover:-translate-x-0.5 transition-transform" />
+            <span>Exit Preview</span>
+          </button>
+
+          {/* 2. Edit in Studio Button */}
+          <Link
+            to={`/editor/${shareId === "aurora-noire" || !shareId ? "aurora-noire" : shareId}`}
+            className="hidden xs:flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full bg-[#140a10]/85 hover:bg-[#200f1a] border border-[#dfc19c]/25 hover:border-[#dfc19c]/50 text-[#c5b0a5] hover:text-[#f5e6d3] text-xs font-medium shadow-lg backdrop-blur-md transition-all shrink-0"
+            title="Edit this Keepsake in Studio"
+          >
+            <Edit3 size={13} className="text-[#e8b4b8]" />
+            <span>Edit in Studio</span>
+          </Link>
+
+          {/* 3. Quick Publish Button */}
+          <button
+            type="button"
+            onClick={() => setIsPublishModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full bg-gradient-to-r from-[#e8b4b8] to-[#d48b95] text-[#0a0507] hover:opacity-95 text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 cursor-pointer shrink-0"
+            title="Publish Keepsake & Get Live WhatsApp Link"
+          >
+            <Send size={12} className="text-[#0a0507]" />
+            <span className="hidden sm:inline">Publish Keepsake</span>
+            <span className="sm:hidden">Publish</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#0a0507]/20 rounded-full">₹{templatePrice}</span>
+          </button>
+
+          {/* 4. Live Preview Indicator Pill */}
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dfc19c]/10 border border-[#dfc19c]/25 text-[#dfc19c] text-[0.68rem] tracking-wider uppercase font-medium backdrop-blur-md shrink-0">
+            <span className="size-1.5 rounded-full bg-[#dfc19c] animate-pulse" />
+            Live Preview
+          </div>
+        </header>
+      ) : (
+        /* Discreet Back button for visitors navigating within site */
+        window.history?.length > 1 && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="fixed top-3 left-3 sm:top-4 sm:left-4 z-50 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0a0507]/80 hover:bg-[#180c14] border border-[#dfc19c]/25 text-[#c5b0a5] hover:text-[#f5e6d3] text-xs backdrop-blur-md transition-all cursor-pointer"
+            title="Go back"
+          >
+            <ArrowLeft size={13} className="text-[#dfc19c]" />
+            <span>Back</span>
+          </button>
+        )
+      )}
+
       {/* Fullscreen Keepsake Experience */}
       <AnniversaryKeepsakeView draft={draftContent} />
 
@@ -189,6 +260,17 @@ export default function ViewWebsitePage() {
           </span>
         </Link>
       </div>
+
+      {/* Publish & WhatsApp Share Modal */}
+      <PublishModal
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        templateSlug="aurora-noire"
+        draftTitle={draftContent.title || "Aurora Noire Keepsake"}
+        price={templatePrice}
+        draft={draftContent}
+        customContent={draftContent}
+      />
     </div>
   );
 }
