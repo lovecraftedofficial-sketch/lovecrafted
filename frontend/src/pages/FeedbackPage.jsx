@@ -6,6 +6,7 @@ import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 
 const OWNER_EMAIL = "lovecrafted.official@gmail.com";
+const FORMSUBMIT_TOKEN = "801cb9fa7a0bd838567f8078c7121391";
 const STORAGE_KEY = "lovecrafted_received_feedbacks";
 
 export default function FeedbackPage() {
@@ -76,9 +77,9 @@ export default function FeedbackPage() {
     // 1. Save locally as persistent backup
     saveFeedbackLocally(newRecord);
 
-    // 2. Dispatch directly to owner's Gmail via FormSubmit AJAX
+    // 2. Dispatch directly to owner's Gmail via FormSubmit AJAX token
     try {
-      const response = await fetch(`https://formsubmit.co/ajax/${OWNER_EMAIL}`, {
+      const response = await fetch(`https://formsubmit.co/ajax/${FORMSUBMIT_TOKEN}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

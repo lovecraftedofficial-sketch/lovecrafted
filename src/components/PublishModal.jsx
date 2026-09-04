@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   X,
   ShieldCheck,
@@ -9,48 +9,102 @@ import {
   Heart,
   Loader2,
   Lock,
-  QrCode,
   Sparkles,
   AlertCircle
 } from "lucide-react";
+import { toast } from "sonner";
 import HeartQRCard from "./HeartQRCard";
+import { openRazorpayCheckout } from "../lib/paymentService";
 
-export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, price = 1499, customContent }) {
-  const OWNER_UPI_ID = "8618379301@pz";
-  const priceFormatted = (price || 1499).toLocaleString("en-IN");
+export default function PublishModal({
+  isOpen,
+  onClose,
+  templateSlug,
+  templateId,
+  draftTitle,
+  price = 9,
+  customContent,
+  draft,
+}) {
+  const actualSlug = templateSlug || templateId || "aurora-noire";
+  const actualContent = useMemo(() => customContent || draft || {}, [customContent, draft]);
+  const priceFormatted = (price || 9).toLocaleString("en-IN");
 
-  const [senderName, setSenderName] = useState("");
-  const [partnerName, setPartnerName] = useState("");
+  const [senderName, setSenderName] = useState(
+    () => actualContent.partner1_name || actualContent.partner1 || ""
+  );
+  const [partnerName, setPartnerName] = useState(
+    () => actualContent.partner2_name || actualContent.partner2 || ""
+  );
   const [customSlug, setCustomSlug] = useState("");
-  const [step, setStep] = useState("form"); // "form" | "payment" | "success"
+  const [step, setStep] = useState("form"); // "form" | "success"
   const [copiedLink, setCopiedLink] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  useEffect(() => {
+    if (actualContent.partner1_name || actualContent.partner1) {
+      setSenderName(actualContent.partner1_name || actualContent.partner1);
+    }
+    if (actualContent.partner2_name || actualContent.partner2) {
+      setPartnerName(actualContent.partner2_name || actualContent.partner2);
+    }
+  }, [actualContent]);
+
   if (!isOpen) return null;
 
-  const displayTitle = draftTitle || "My Baby";
+  const displayTitle = draftTitle || "Aurora Noire Keepsake";
   const slugPart = customSlug.trim()
     ? customSlug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
     : `${senderName || "our"}-story`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3005";
-  const publishedUrl = `${baseUrl}/v/${slugPart}`;
+  const baseUrl =
+    typeof window !== "undefined" && window.location.origin
+      ? window.location.origin
+      : "https://lovecrafted-official.netlify.app";
+  const publishedUrl = `${baseUrl}/v/${slugPart}?active=true`;
 
-  const handleFormSubmit = (e) => {
+  const handleLaunchRazorpay = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setStep("payment");
-    }, 800);
-  };
 
-  const handlePaymentComplete = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      await openRazorpayCheckout({
+        amount: price || 9,
+        templateName: displayTitle,
+        customerName: senderName || "Romantic Creator",
+        customerEmail: `${(senderName || "love").toLowerCase().replace(/[^a-z0-9]/g, "")}@lovecrafted.me`,
+        onSuccess: (paymentData) => {
+          try {
+            const storyData = {
+              slug: slugPart,
+              senderName,
+              partnerName,
+              templateSlug: actualSlug,
+              customContent: actualContent,
+              payment: paymentData,
+              publishedAt: new Date().toISOString(),
+            };
+            localStorage.setItem(`lovecrafted:story:${slugPart}`, JSON.stringify(storyData));
+            localStorage.setItem(`lws:story:${slugPart}`, JSON.stringify(storyData));
+            localStorage.setItem(`lovecrafted:activated:${slugPart}`, "true");
+          } catch {}
+          setIsProcessing(false);
+          setStep("success");
+          toast.success("Payment verified! Your keepsake is now published! 🎉💍");
+        },
+        onFailure: (errMsg) => {
+          setIsProcessing(false);
+          toast.error(errMsg || "Payment could not be completed.");
+        },
+        onDismiss: () => {
+          setIsProcessing(false);
+        },
+      });
+    } catch (err) {
+      console.error(err);
       setIsProcessing(false);
-      setStep("success");
-    }, 1200);
+      toast.error("Failed to open Razorpay modal.");
+    }
   };
 
   const handleCopy = () => {
@@ -60,8 +114,8 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className={`relative w-full ${step === "success" ? "max-w-md max-h-[92vh] overflow-y-auto" : "max-w-md"} rounded-3xl border border-[#d48b95]/30 bg-[#0e070a] p-6 sm:p-7 text-[#f5e6d3] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] scrollbar-thin`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-[#d48b95]/30 bg-[#0e070a] p-5 sm:p-7 text-[#f5e6d3] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] scrollbar-thin">
         
         {/* Close Button */}
         <button
@@ -76,38 +130,36 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
         <div className="flex justify-center">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-[#d48b95]/40 bg-[#1f0e18] text-[#e8b4b8] text-[0.7rem] font-medium tracking-wide">
             <ShieldCheck className="size-3.5 text-[#e8b4b8]" />
-            <span>Secure Razorpay Checkout</span>
+            <span>Official Razorpay Checkout</span>
           </div>
         </div>
 
         {/* Modal Header */}
         <div className="text-center mt-4 space-y-1.5">
           <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium">
-            {step === "form" && `Publish For ${displayTitle}`}
-            {step === "payment" && `Complete Razorpay Payment`}
+            {step === "form" && `Publish ${displayTitle}`}
             {step === "success" && `Keepsake Published! 🎉`}
           </h2>
           <p className="text-xs text-[#c5b0a5]/80 max-w-sm mx-auto leading-relaxed font-sans">
-            {step === "form" && "Enter recipient details and custom slug to unlock public sharing for this Sweet & Personal template."}
-            {step === "payment" && `Scan QR or proceed with UPI / Razorpay to activate live URL.`}
+            {step === "form" && "Complete payment via Razorpay (UPI, Cards, NetBanking) to instantly activate your live keepsake URL."}
             {step === "success" && `Your romantic keepsake is live and ready to share with ${partnerName || "your partner"}!`}
           </p>
         </div>
 
-        {/* STEP 1: FORM */}
+        {/* STEP 1: FORM & DIRECT RAZORPAY CHECKOUT */}
         {step === "form" && (
-          <form onSubmit={handleFormSubmit} className="mt-6 space-y-4 text-left">
+          <form onSubmit={handleLaunchRazorpay} className="mt-6 space-y-4 text-left">
             {/* Price Card */}
             <div className="rounded-2xl border border-[#dfc19c]/15 bg-[#140a0f] p-4 flex items-center justify-between">
               <div className="space-y-0.5">
                 <span className="text-[0.6rem] font-semibold tracking-wider uppercase text-[#c5b0a5]/60 block">
-                  SWEET &amp; PERSONAL TIER TEMPLATE
+                  ROMANTIC KEEPSAKE EDITION
                 </span>
                 <h3 className="font-serif text-base font-bold text-white">
                   {displayTitle}
                 </h3>
               </div>
-              <span className="font-serif text-xl font-bold text-[#dfc19c]">
+              <span className="font-serif text-2xl font-bold text-[#dfc19c]">
                 ₹{priceFormatted}
               </span>
             </div>
@@ -120,7 +172,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
               <input
                 type="text"
                 required
-                placeholder="e.g. Rahul Sharma"
+                placeholder="e.g. Kabir"
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 className="w-full h-11 bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 text-xs text-white placeholder:text-[#c5b0a5]/40 focus:outline-none focus:border-[#e8b4b8]"
@@ -145,10 +197,10 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
             {/* Custom Story Slug */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-[#f5e6d3]">
-                Custom Story Slug (Optional)
+                Custom Keepsake Slug (Optional)
               </label>
               <div className="flex items-center bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 h-11 text-xs">
-                <span className="text-[#c5b0a5]/50 font-mono mr-1 select-none">/story/</span>
+                <span className="text-[#c5b0a5]/50 font-mono mr-1 select-none">/v/</span>
                 <input
                   type="text"
                   placeholder="our-anniversary"
@@ -159,53 +211,32 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
               </div>
             </div>
 
+            {/* Payment Method Badges */}
+            <div className="flex items-center justify-center gap-4 py-1 text-[0.65rem] text-[#c5b0a5]/60 font-sans">
+              <span>💳 Credit/Debit Cards</span>
+              <span>•</span>
+              <span>📲 UPI / GPay / PhonePe</span>
+              <span>•</span>
+              <span>🏦 NetBanking</span>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isProcessing}
-              className="w-full h-12 mt-4 rounded-xl bg-gradient-to-r from-[#e8b4b8] via-[#dfc19c] to-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-lg cursor-pointer"
+              className="w-full h-12 mt-2 rounded-xl bg-gradient-to-r from-[#e8b4b8] via-[#dfc19c] to-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-lg cursor-pointer"
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" /> Preparing Checkout...
+                  <Loader2 className="size-4 animate-spin" /> Opening Razorpay...
                 </>
               ) : (
                 <>
-                  Proceed to Razorpay Checkout (₹{priceFormatted}) <ArrowRight className="size-4" />
+                  Pay ₹{priceFormatted} with Razorpay <ArrowRight className="size-4" />
                 </>
               )}
             </button>
           </form>
-        )}
-
-        {/* STEP 2: RAZORPAY / UPI PAYMENT */}
-        {step === "payment" && (
-          <div className="mt-6 space-y-4 text-left animate-fadeIn">
-            <div className="rounded-2xl border border-[#e8b4b8]/30 bg-[#140a0f] p-5 text-center space-y-3">
-              <div className="flex items-center justify-center gap-2 text-xs text-[#e8b4b8] font-semibold">
-                <QrCode className="size-4" /> Scan &amp; Pay via UPI / Cards / NetBanking
-              </div>
-              <div className="bg-white p-3 rounded-xl inline-block mx-auto">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`upi://pay?pa=${OWNER_UPI_ID}&am=${price}&cu=INR`)}`}
-                  alt="Razorpay UPI QR"
-                  className="w-36 h-36 mx-auto"
-                />
-              </div>
-              <p className="text-xs text-[#c5b0a5]">UPI ID: <span className="font-mono text-white">{OWNER_UPI_ID}</span></p>
-              <p className="text-xs text-[#dfc19c] font-bold">Total: ₹{priceFormatted} INR</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handlePaymentComplete}
-              disabled={isProcessing}
-              className="w-full h-12 rounded-xl bg-[#d48b95] text-[#0a0507] text-xs font-semibold flex items-center justify-center gap-2 hover:bg-[#e8b4b8] transition-all cursor-pointer"
-            >
-              {isProcessing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Verify &amp; Activate Keepsake Link
-            </button>
-          </div>
         )}
 
         {/* STEP 3: SUCCESS */}
@@ -239,6 +270,18 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                   <ExternalLink className="size-3.5" /> Open Story
                 </a>
               </div>
+
+              {/* Direct WhatsApp Share Button */}
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  `Hey ${partnerName || "my love"}! ❤️ I have crafted a special romantic digital keepsake for our anniversary. Open our story here:\n${publishedUrl}`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-full h-10 items-center justify-center gap-2 rounded-xl bg-[#25D366] text-black font-semibold text-xs hover:bg-[#20bd5a] transition-all shadow-md cursor-pointer mt-1"
+              >
+                <span>📲 Share Directly on WhatsApp 💌</span>
+              </a>
             </div>
 
             {/* Heart-Shaped Red QR Keepsake Card */}

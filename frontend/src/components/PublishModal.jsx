@@ -57,7 +57,10 @@ export default function PublishModal({
     ? customSlug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
     : `${senderName || "our"}-story`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+  const baseUrl =
+    typeof window !== "undefined" && window.location.origin
+      ? window.location.origin
+      : "https://lovecrafted-official.netlify.app";
   const publishedUrl = `${baseUrl}/v/${slugPart}?active=true`;
 
   const handleLaunchRazorpay = async (e) => {
