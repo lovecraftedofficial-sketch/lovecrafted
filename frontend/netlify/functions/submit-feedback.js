@@ -58,9 +58,35 @@ exports.handler = async (event, context) => {
       email,
       recommendation,
       testimonialPermission,
+      targetEmail: "lovecrafted.official@gmail.com",
       isApproved: false, // Default false: Admin approval required for public display
       createdAt: new Date().toISOString(),
     };
+
+    // Forward to LoveCrafted Official Gmail via FormSubmit
+    try {
+      await fetch("https://formsubmit.co/ajax/lovecrafted.official@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          _subject: `💌 [LoveCrafted Feedback] ${record.rating}★ from ${name}`,
+          _template: "table",
+          _captcha: "false",
+          "Rating": `${record.rating} / 5 Hearts`,
+          "Customer Feedback": feedback,
+          "Customer Name": name,
+          "Customer Email": email || "Not provided",
+          "Would Recommend": recommendation,
+          "Permission to Feature Testimonial": testimonialPermission ? "Granted (Yes)" : "Declined (Keep Private)",
+          "Submitted At (UTC)": record.createdAt,
+        }),
+      });
+    } catch (forwardErr) {
+      console.warn("Netlify feedback forward note:", forwardErr.message);
+    }
 
     return {
       statusCode: 200,
@@ -70,7 +96,7 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        message: "Thank you for sharing your feedback with LoveCrafted.",
+        message: "Thank you for sharing your feedback with LoveCrafted. Sent to lovecrafted.official@gmail.com.",
         record,
       }),
     };
