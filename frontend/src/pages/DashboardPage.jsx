@@ -152,7 +152,7 @@ export default function DashboardPage() {
 
                 <button
                   type="button"
-                  onClick={() => navigate(`/v/${keepsakeDraft.slug}`)}
+                  onClick={() => navigate(`/v/${keepsakeDraft.slug}?preview=true`)}
                   className="flex h-10 items-center justify-center gap-2 rounded-xl border border-[#dfc19c]/20 bg-[#1b0e15] text-xs font-medium text-[#f5e6d3] hover:border-[#e8b4b8] hover:text-[#e8b4b8] transition-colors cursor-pointer"
                 >
                   <Eye className="size-3.5" />

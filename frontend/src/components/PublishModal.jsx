@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   X,
   ShieldCheck,
@@ -16,15 +16,39 @@ import { toast } from "sonner";
 import HeartQRCard from "./HeartQRCard";
 import { openRazorpayCheckout } from "../lib/paymentService";
 
-export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle, price = 9, customContent }) {
+export default function PublishModal({
+  isOpen,
+  onClose,
+  templateSlug,
+  templateId,
+  draftTitle,
+  price = 9,
+  customContent,
+  draft,
+}) {
+  const actualSlug = templateSlug || templateId || "aurora-noire";
+  const actualContent = useMemo(() => customContent || draft || {}, [customContent, draft]);
   const priceFormatted = (price || 9).toLocaleString("en-IN");
 
-  const [senderName, setSenderName] = useState("");
-  const [partnerName, setPartnerName] = useState("");
+  const [senderName, setSenderName] = useState(
+    () => actualContent.partner1_name || actualContent.partner1 || ""
+  );
+  const [partnerName, setPartnerName] = useState(
+    () => actualContent.partner2_name || actualContent.partner2 || ""
+  );
   const [customSlug, setCustomSlug] = useState("");
   const [step, setStep] = useState("form"); // "form" | "success"
   const [copiedLink, setCopiedLink] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (actualContent.partner1_name || actualContent.partner1) {
+      setSenderName(actualContent.partner1_name || actualContent.partner1);
+    }
+    if (actualContent.partner2_name || actualContent.partner2) {
+      setPartnerName(actualContent.partner2_name || actualContent.partner2);
+    }
+  }, [actualContent]);
 
   if (!isOpen) return null;
 
@@ -34,7 +58,7 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
     : `${senderName || "our"}-story`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-  const publishedUrl = `${baseUrl}/v/${slugPart}`;
+  const publishedUrl = `${baseUrl}/v/${slugPart}?active=true`;
 
   const handleLaunchRazorpay = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -52,13 +76,14 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
               slug: slugPart,
               senderName,
               partnerName,
-              templateSlug,
-              customContent,
+              templateSlug: actualSlug,
+              customContent: actualContent,
               payment: paymentData,
               publishedAt: new Date().toISOString(),
             };
             localStorage.setItem(`lovecrafted:story:${slugPart}`, JSON.stringify(storyData));
             localStorage.setItem(`lws:story:${slugPart}`, JSON.stringify(storyData));
+            localStorage.setItem(`lovecrafted:activated:${slugPart}`, "true");
           } catch {}
           setIsProcessing(false);
           setStep("success");
@@ -242,6 +267,18 @@ export default function PublishModal({ isOpen, onClose, templateSlug, draftTitle
                   <ExternalLink className="size-3.5" /> Open Story
                 </a>
               </div>
+
+              {/* Direct WhatsApp Share Button */}
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  `Hey ${partnerName || "my love"}! ❤️ I have crafted a special romantic digital keepsake for our anniversary. Open our story here:\n${publishedUrl}`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-full h-10 items-center justify-center gap-2 rounded-xl bg-[#25D366] text-black font-semibold text-xs hover:bg-[#20bd5a] transition-all shadow-md cursor-pointer mt-1"
+              >
+                <span>📲 Share Directly on WhatsApp 💌</span>
+              </a>
             </div>
 
             {/* Heart-Shaped Red QR Keepsake Card */}
