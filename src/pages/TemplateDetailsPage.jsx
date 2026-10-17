@@ -31,6 +31,42 @@ const HIGHLIGHTS = [
 ];
 
 const ALL_SUITES_MAP = {
+  "celebration-of-you": {
+    id: "celebration-of-you",
+    title: "Celebration of You 🎂",
+    subtitle: "Birthday Edition: Candle blow-out, wish jar, life chapters & gift box",
+    description: "An extraordinary birthday digital keepsake featuring a realistic birthday cake with candle blow-out, wish jar, life story timeline, 3D polaroid memories, vinyl soundtrack player, and surprise gift box.",
+    category: "Birthday & Celebration",
+    tier: "Flagship Edition",
+    price: 9,
+    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Interactive Birthday Candle Blow-Out",
+      "Secret Birthday Wish Jar Cards",
+      "Chapters of Your Life Timeline",
+      "3D Polaroid Photo Stack Gallery",
+      "Spinning Vinyl Record & Custom Song",
+      "Unwrapping Surprise Gift Box Payoff",
+    ],
+  },
+  "whispers-of-love": {
+    id: "whispers-of-love",
+    title: "Love in Bloom 🌸",
+    subtitle: "Romantic pastel suite: Garden of Love, Starry night, Envelope letter & 3D Polaroids",
+    description: "An enchanting romantic keepsake featuring soft pastel hero, starry night quote, Garden of Love rose picker, animated love letter, 3D Polaroid memories, and forever promises.",
+    category: "Romantic & Pastel",
+    tier: "Flagship Edition",
+    price: 9,
+    image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80",
+    features: [
+      "Love in Bloom Soft Hero & Falling Petals",
+      "Starry Night Moonlit Scene",
+      "Interactive Garden of Love Rose Picker",
+      "Animated Envelope & Notebook Love Letter",
+      "3D Polaroid Memories Stack",
+      "Grand Love Poem & Forever Promises Cards",
+    ],
+  },
   "aurora-noire": {
     id: "aurora-noire",
     title: "Aurora Noire Monogram",

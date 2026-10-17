@@ -71,6 +71,7 @@ export default function PublishModal({
     try {
       await openRazorpayCheckout({
         amount: price || 9,
+        templateSlug: actualSlug,
         templateName: displayTitle,
         customerName: senderName || "Romantic Creator",
         customerEmail: `${(senderName || "love").toLowerCase().replace(/[^a-z0-9]/g, "")}@lovecrafted.me`,

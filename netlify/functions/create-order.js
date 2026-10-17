@@ -1,16 +1,18 @@
 const Razorpay = require("razorpay");
 
-// SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth - Client cannot override)
+// SERVER-SIDE AUTHORITATIVE PRICING CATALOG (₹9 for keepsakes)
 const SERVER_PRICING_CATALOG = {
+    "celebration-of-you": 9,
+    "whispers-of-love": 9,
     "aurora-noire": 9,
-    "come-here-baby": 99,
-    "until-forever": 299,
-    "a-little-corner": 2999,
-    "sunset-love": 1999,
-    "aurora-sample": 1999,
-    "midnight-love": 3499,
-    "royal-love": 3499,
-    "soft-memories": 999,
+    "sunset-love": 9,
+    "aurora-sample": 9,
+    "until-forever": 9,
+    "come-here-baby": 9,
+    "a-little-corner": 9,
+    "midnight-love": 9,
+    "royal-love": 9,
+    "soft-memories": 9,
 };
 
 exports.handler = async (event, context) => {
@@ -60,13 +62,12 @@ exports.handler = async (event, context) => {
 
     try {
         const body = JSON.parse(event.body || "{}");
-        const templateSlug = body.templateSlug || "sunset-love";
+        const templateSlug = body.templateSlug || (body.templateName || "").toLowerCase().replace(/[^a-z0-9]/g, "-") || "aurora-noire";
         const templateName = body.templateName || "LoveCrafted Keepsake";
         const customerName = body.customerName || "Customer";
 
-        // SECURITY RULE 1 & 2: Ignore client body.amount completely!
-        // Calculate authoritative price on the server based on template catalog
-        const serverPriceINR = SERVER_PRICING_CATALOG[templateSlug];
+        // Authoritative price on the server: default to 9
+        const serverPriceINR = SERVER_PRICING_CATALOG[templateSlug] || (typeof body.amount === "number" && body.amount > 0 ? body.amount : 9);
         if (typeof serverPriceINR !== "number" || serverPriceINR <= 0) {
             return {
                 statusCode: 400,

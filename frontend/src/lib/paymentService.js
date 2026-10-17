@@ -33,8 +33,9 @@ export function loadRazorpayScript() {
 }
 
 export async function openRazorpayCheckout({
-  amount,
+  amount = 9,
   currency = "INR",
+  templateSlug = "aurora-noire",
   templateName = "LoveCrafted Keepsake",
   customerName = "Romantic Creator",
   customerEmail = "creator@lovecrafted.com",
@@ -66,7 +67,8 @@ export async function openRazorpayCheckout({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            amount,
+            amount: amount || 9,
+            templateSlug: templateSlug || "aurora-noire",
             templateName,
             customerName,
           }),

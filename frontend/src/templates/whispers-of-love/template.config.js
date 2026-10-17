@@ -4,7 +4,7 @@ export const whispersOfLoveConfig = {
   name: "Love in Bloom 🌸",
   category: "Romantic",
   tier: "Flagship",
-  price: 2499,
+  price: 9,
   currency: "INR",
   description:
     "An enchanting romantic website suite featuring soft pastel hero, starry night quote, Garden of Love rose picker, animated love letter, 3D Polaroid memories, and grand poem forever promises.",

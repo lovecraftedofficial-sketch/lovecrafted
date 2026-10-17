@@ -1,16 +1,19 @@
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
 
-// SERVER-SIDE AUTHORITATIVE PRICING CATALOG (Single Source of Truth)
+// SERVER-SIDE AUTHORITATIVE PRICING CATALOG (₹9 for keepsakes)
 const SERVER_PRICING_CATALOG = {
-    "come-here-baby": 99,
-    "until-forever": 299,
-    "a-little-corner": 2999,
-    "sunset-love": 1999,
-    "aurora-sample": 1999,
-    "midnight-love": 3499,
-    "royal-love": 3499,
-    "soft-memories": 999,
+    "celebration-of-you": 9,
+    "whispers-of-love": 9,
+    "aurora-noire": 9,
+    "sunset-love": 9,
+    "aurora-sample": 9,
+    "until-forever": 9,
+    "come-here-baby": 9,
+    "a-little-corner": 9,
+    "midnight-love": 9,
+    "royal-love": 9,
+    "soft-memories": 9,
 };
 
 exports.handler = async (event, context) => {

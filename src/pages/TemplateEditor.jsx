@@ -1351,7 +1351,7 @@ export default function TemplateEditor() {
         onClose={() => setIsPublishModalOpen(false)}
         draftTitle={draft.template_name}
         templateSlug={id}
-        price={id === "aurora-noire" ? 9 : 99}
+        price={9}
         customContent={draft}
       />
 
