@@ -98,6 +98,26 @@ export default function PublishModal({
               slug: slugPart,
               amount: price || 9,
             });
+
+            // Persist permanently to Supabase Cloud Database (so images & story live forever)
+            try {
+              fetch("/.netlify/functions/save-story", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  storyId: slugPart,
+                  templateSlug: actualSlug,
+                  title: displayTitle,
+                  content: {
+                    ...actualContent,
+                    senderName,
+                    partnerName,
+                    payment: paymentData,
+                  },
+                  paymentId: paymentData?.razorpay_payment_id || null,
+                }),
+              }).catch(() => {});
+            } catch {}
           } catch {}
           setIsProcessing(false);
           setStep("success");

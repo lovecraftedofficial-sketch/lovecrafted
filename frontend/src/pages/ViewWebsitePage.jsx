@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import AnniversaryKeepsakeView from "@/components/AnniversaryKeepsakeView";
 import templateOccasions from "@/data/templateOccasions.json";
@@ -13,6 +13,7 @@ export default function ViewWebsitePage() {
   const { shareId } = useParams();
   const [searchParams] = useSearchParams();
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [cloudStory, setCloudStory] = useState(null);
 
   // Price for Aurora Noire Anniversary Edition (₹9)
   const templatePrice = templateOccasions["aurora-noire"]?.price || 9;
@@ -37,6 +38,21 @@ export default function ViewWebsitePage() {
       return false;
     }
   });
+
+  // Fetch story from Supabase Cloud if opened on partner's device
+  useEffect(() => {
+    if (shareId && shareId !== "aurora-noire") {
+      fetch(`/.netlify/functions/get-story?storyId=${encodeURIComponent(shareId)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.success && data.content) {
+            setCloudStory(data.content);
+            setIsActivatedLocally(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [shareId]);
 
   // Resolve content/draft for the keepsake (Strictly Isolated per Template ID)
   const draftContent = useMemo(() => {
@@ -69,7 +85,18 @@ export default function ViewWebsitePage() {
       }
     }
 
-    // 2. Try published story from localStorage
+    // 2. Try cloud story fetched from Supabase PostgreSQL
+    if (cloudStory) {
+      const contentPayload = cloudStory.customContent || cloudStory;
+      return {
+        ...defaultData,
+        ...contentPayload,
+        partner1_name: cloudStory.senderName || contentPayload.partner1_name || defaultData.partner1_name,
+        partner2_name: cloudStory.partnerName || contentPayload.partner2_name || defaultData.partner2_name,
+      };
+    }
+
+    // 3. Try published story from localStorage
     if (shareId && shareId !== "aurora-noire") {
       try {
         const storedStory =
@@ -87,7 +114,7 @@ export default function ViewWebsitePage() {
       } catch (e) {}
     }
 
-    // 3. Try template-specific studio draft from localStorage
+    // 4. Try template-specific studio draft from localStorage
     try {
       const storedDraft =
         localStorage.getItem(`lws:draft:${templateKey}`) ||
@@ -98,7 +125,7 @@ export default function ViewWebsitePage() {
     } catch (e) {}
 
     return defaultData;
-  }, [shareId, searchParams]);
+  }, [shareId, searchParams, cloudStory]);
 
   // Handle direct activation via Razorpay
   const handlePayAndActivate = async () => {
