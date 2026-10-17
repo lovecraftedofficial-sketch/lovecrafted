@@ -14,14 +14,24 @@ import EditorPage from "./pages/EditorPage";
 import TemplateEditor from "./pages/TemplateEditor";
 import ViewWebsitePage from "./pages/ViewWebsitePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import OwnerAnalyticsPage from "./pages/OwnerAnalyticsPage";
 
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./context/AuthContext";
+import { trackPageView } from "./services/analyticsService";
 
 function ScrollToTop() {
     const { pathname } = useLocation();
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "auto" });
+    }, [pathname]);
+    return null;
+}
+
+function AnalyticsTracker() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        trackPageView(pathname);
     }, [pathname]);
     return null;
 }
@@ -43,10 +53,16 @@ function App() {
                 <div className="App relative bg-[#0a0507] min-h-screen">
                     <BrowserRouter>
                     <ScrollToTop />
+                    <AnalyticsTracker />
                     <BackgroundMusic />
                     <FloatingHearts />
 
                     <Routes>
+                        {/* Private Owner Analytics Routes (Hidden from public navigation) */}
+                        <Route path="/owner-analytics" element={<OwnerAnalyticsPage />} />
+                        <Route path="/admin/analytics" element={<OwnerAnalyticsPage />} />
+                        <Route path="/portal/analytics" element={<OwnerAnalyticsPage />} />
+
                         <Route
                             path="/"
                             element={

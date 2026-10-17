@@ -4,6 +4,30 @@
  */
 export const TEMPLATE_SUITES = [
   {
+    id: "celebration-of-you",
+    title: "Celebration of You 🎂",
+    subtitle: "Birthday Edition: Candle blow-out, wish jar, life chapters, vinyl soundtrack & unwrapping gift box",
+    description: "Birthday Edition: Candle blow-out, wish jar, life chapters, vinyl soundtrack & unwrapping gift box",
+    category: "BIRTHDAY & CELEBRATION",
+    tier: "Flagship Edition",
+    price: 9,
+    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
+    archived: false,
+    status: "published",
+  },
+  {
+    id: "whispers-of-love",
+    title: "Love in Bloom 🌸",
+    subtitle: "Romantic pastel suite: Garden of Love, Starry night, Envelope letter & 3D Polaroids",
+    description: "Romantic pastel suite: Garden of Love, Starry night, Envelope letter & 3D Polaroids",
+    category: "ROMANTIC & PASTEL",
+    tier: "Flagship Edition",
+    price: 9,
+    image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80",
+    archived: false,
+    status: "published",
+  },
+  {
     id: "aurora-noire",
     title: "Aurora Noire Monogram",
     subtitle: "Anniversary Edition: Playful teasing, little quirks, our song, 2 photo galleries & proposing again",

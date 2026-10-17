@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import HeartQRCard from "./HeartQRCard";
 import { openRazorpayCheckout } from "../lib/paymentService";
+import { trackKeepsakePublished } from "../services/analyticsService";
 
 export default function PublishModal({
   isOpen,
@@ -87,6 +88,16 @@ export default function PublishModal({
             localStorage.setItem(`lovecrafted:story:${slugPart}`, JSON.stringify(storyData));
             localStorage.setItem(`lws:story:${slugPart}`, JSON.stringify(storyData));
             localStorage.setItem(`lovecrafted:activated:${slugPart}`, "true");
+
+            // Track published keepsake in analytics
+            trackKeepsakePublished({
+              templateId: actualSlug,
+              title: displayTitle,
+              partner1: senderName,
+              partner2: partnerName,
+              slug: slugPart,
+              amount: price || 9,
+            });
           } catch {}
           setIsProcessing(false);
           setStep("success");
@@ -172,7 +183,7 @@ export default function PublishModal({
               <input
                 type="text"
                 required
-                placeholder="e.g. Kabir"
+                placeholder="e.g. Alex"
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 className="w-full h-11 bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 text-xs text-white placeholder:text-[#c5b0a5]/40 focus:outline-none focus:border-[#e8b4b8]"
@@ -187,7 +198,7 @@ export default function PublishModal({
               <input
                 type="text"
                 required
-                placeholder="e.g. Ananya"
+                placeholder="e.g. Rosea"
                 value={partnerName}
                 onChange={(e) => setPartnerName(e.target.value)}
                 className="w-full h-11 bg-[#070305] border border-[#dfc19c]/20 rounded-xl px-4 text-xs text-white placeholder:text-[#c5b0a5]/40 focus:outline-none focus:border-[#e8b4b8]"

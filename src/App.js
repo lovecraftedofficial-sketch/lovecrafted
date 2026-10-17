@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -14,13 +14,24 @@ import EditorPage from "./pages/EditorPage";
 import TemplateEditor from "./pages/TemplateEditor";
 import ViewWebsitePage from "./pages/ViewWebsitePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import OwnerAnalyticsPage from "./pages/OwnerAnalyticsPage";
 
 import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthProvider } from "./context/AuthContext";
+import { trackPageView } from "./services/analyticsService";
 
 function ScrollToTop() {
     const { pathname } = useLocation();
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "auto" });
+    }, [pathname]);
+    return null;
+}
+
+function AnalyticsTracker() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        trackPageView(pathname);
     }, [pathname]);
     return null;
 }
@@ -38,13 +49,20 @@ function Shell({ children, hideFooter = false }) {
 function App() {
     return (
         <ErrorBoundary>
-            <div className="App relative bg-[#0a0507] min-h-screen">
-                <BrowserRouter>
+            <AuthProvider>
+                <div className="App relative bg-[#0a0507] min-h-screen">
+                    <BrowserRouter>
                     <ScrollToTop />
+                    <AnalyticsTracker />
                     <BackgroundMusic />
                     <FloatingHearts />
 
                     <Routes>
+                        {/* Private Owner Analytics Routes (Hidden from public navigation) */}
+                        <Route path="/owner-analytics" element={<OwnerAnalyticsPage />} />
+                        <Route path="/admin/analytics" element={<OwnerAnalyticsPage />} />
+                        <Route path="/portal/analytics" element={<OwnerAnalyticsPage />} />
+
                         <Route
                             path="/"
                             element={
@@ -79,11 +97,7 @@ function App() {
                         />
                         <Route
                             path="/editor/:id"
-                            element={
-                                <Shell hideFooter>
-                                    <TemplateEditor />
-                                </Shell>
-                            }
+                            element={<TemplateEditor />}
                         />
                         <Route
                             path="/dashboard"
@@ -123,6 +137,7 @@ function App() {
                     </Routes>
                 </BrowserRouter>
             </div>
+            </AuthProvider>
         </ErrorBoundary>
     );
 }

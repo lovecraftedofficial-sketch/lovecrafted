@@ -20,3 +20,17 @@ frontend/build/
 dist/
 .DS_Store
 *.log
+
+# Video generation & promo render artifacts
+*.webm
+*.mp4
+concat_list.txt
+export_video_pure_showcase.js
+hd_ad_frames/
+**/hd_ad_frames/
+**/landscape_ad_frames/
+**/promo_assets/
+**/promo_cinematic/
+**/user_promo_assets/
+**/video_player*.html
+**/landscape_ad_video_showcase.html

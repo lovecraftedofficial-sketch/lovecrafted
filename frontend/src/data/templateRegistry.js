@@ -14,7 +14,29 @@ import auroraNoireConfig from "@/templates/aurora-noire/template.config";
 // Sunset Love Template Import
 import SunsetLoveTemplate from "../templates/sunset-love/SunsetLoveTemplate";
 
+// Whispers of Love Template Import
+import WhispersOfLoveTemplate from "../templates/whispers-of-love/WhispersOfLoveTemplate";
+import whispersOfLoveConfig from "../templates/whispers-of-love/template.config";
+
+// Celebration of You Birthday Flagship Import
+import CelebrationOfYouTemplate from "../templates/celebration-of-you/CelebrationOfYouTemplate";
+import celebrationOfYouConfig from "../templates/celebration-of-you/template.config";
+
 export const templateRegistry = {
+  // Celebration of You Flagship Birthday Keepsake
+  "celebration-of-you": {
+    component: CelebrationOfYouTemplate,
+    comingSoon: false,
+    config: celebrationOfYouConfig,
+  },
+
+  // Whispers of Love Flagship Romantic Keepsake
+  "whispers-of-love": {
+    component: WhispersOfLoveTemplate,
+    comingSoon: false,
+    config: whispersOfLoveConfig,
+  },
+
   // Aurora Noire Flagship Romantic Keepsake Edition
   "aurora-noire": {
     component: AuroraNoireTemplate,

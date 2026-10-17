@@ -24,6 +24,9 @@ import {
   Radio,
   Upload,
   FileAudio,
+  Volume2,
+  VolumeX,
+  RotateCcw,
 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -31,9 +34,13 @@ import { Textarea } from "../components/ui/textarea";
 import PublishModal from "../components/PublishModal";
 import AnniversaryKeepsakeView from "../components/AnniversaryKeepsakeView";
 import ImageUploadInput from "../components/ImageUploadInput";
+import AudioUploadInput from "../components/AudioUploadInput";
+import CupidAiModal from "../components/CupidAiModal";
 import { resolveSongDetails } from "../services/songResolver";
 
 import templateOccasions from "../data/templateOccasions.json";
+import { templateRegistry } from "../data/templateRegistry";
+import { trackKeepsakeCreated } from "../services/analyticsService";
 
 const ACCENT_TONES = [
   { id: "rose-gold", label: "Rose Gold", hex: "#d48b95" },
@@ -52,6 +59,7 @@ export default function TemplateEditor() {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [proposalAccepted, setProposalAccepted] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isCupidModalOpen, setIsCupidModalOpen] = useState(false);
   const audioRef = useRef(null);
 
   // Accordion sections
@@ -62,13 +70,67 @@ export default function TemplateEditor() {
   const [memories2Open, setMemories2Open] = useState(true);
   const [proposalOpen, setProposalOpen] = useState(true);
   const [accentOpen, setAccentOpen] = useState(false);
+  const [openSchemaSections, setOpenSchemaSections] = useState({});
 
-  const initialData = templateOccasions[id] || templateOccasions["aurora-noire"];
+  const toggleSchemaSection = (secName) => {
+    setOpenSchemaSections((prev) => ({
+      ...prev,
+      [secName]: prev[secName] === undefined ? false : !prev[secName],
+    }));
+  };
+
+  const registryItem = templateRegistry[id];
+  const RegisteredComp = registryItem?.component;
+  const editableSchema = registryItem?.config?.editableSchema;
+
+  const schemaSections = React.useMemo(() => {
+    if (!editableSchema) return [];
+    const groups = [];
+    const map = new Map();
+
+    editableSchema.forEach((field) => {
+      const secName = field.section || "General Details";
+      const icon = field.sectionIcon || "🌸";
+      if (!map.has(secName)) {
+        const newSec = { name: secName, icon, fields: [] };
+        map.set(secName, newSec);
+        groups.push(newSec);
+      }
+      map.get(secName).fields.push(field);
+    });
+    return groups;
+  }, [editableSchema]);
+
+  const initialData =
+    registryItem?.config?.demoData ||
+    templateOccasions[id] ||
+    templateOccasions["aurora-noire"];
+
   const [draft, setDraft] = useState(initialData);
 
   useEffect(() => {
-    if (templateOccasions[id]) {
-      setDraft(templateOccasions[id]);
+    try {
+      const saved =
+        localStorage.getItem(`lws:draft:${id}`) ||
+        localStorage.getItem(`lws:draft:${id}:demo`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Automatic Migration: Upgrade stale default song to new Spotify track for Love in Bloom 🌸
+        if (id === "whispers-of-love" && (!parsed.songTitle || parsed.songTitle.includes("Sab Tera") || parsed.songTitle.includes("Whispers of Love"))) {
+          parsed.songTitle = "Saiyonee · Hiten & Ritika Raj";
+          parsed.bgMusicUrl = "https://open.spotify.com/track/1wgJy9zGdOLRHGEkzpD5f0?si=8f0528522b574c5e";
+          localStorage.setItem(`lws:draft:${id}`, JSON.stringify(parsed));
+        }
+        setDraft(parsed);
+        return;
+      }
+    } catch (e) {}
+
+    const dataForId =
+      templateRegistry[id]?.config?.demoData ||
+      templateOccasions[id];
+    if (dataForId) {
+      setDraft(dataForId);
     }
   }, [id]);
 
@@ -198,9 +260,9 @@ export default function TemplateEditor() {
   const [isDetectingSong, setIsDetectingSong] = useState(false);
 
   const autoDetectSong = async (inputUrl) => {
-    const url = (inputUrl !== undefined ? inputUrl : draft.bg_music_url || "").trim();
+    const url = (inputUrl !== undefined ? inputUrl : draft.songTitle || draft.bgMusicUrl || draft.bg_music_url || "").trim();
     if (!url) {
-      toast.info("Please paste a song link (Spotify, JioSaavn, YouTube, or MP3).");
+      toast.info("Please enter a song name or paste a song link.");
       return;
     }
 
@@ -208,17 +270,23 @@ export default function TemplateEditor() {
     try {
       const songInfo = await resolveSongDetails(url);
       if (songInfo && songInfo.title) {
+        const fullTrackName = `${songInfo.title}${songInfo.artist ? " · " + songInfo.artist : ""}`;
+        update("songTitle", fullTrackName);
         update("music_title", songInfo.title);
         update("music_artist", songInfo.artist);
+        if (songInfo.audioUrl) {
+          update("bgMusicUrl", songInfo.audioUrl);
+          update("bg_music_url", songInfo.audioUrl);
+          update("audio_preview_url", songInfo.audioUrl);
+        }
         if (songInfo.cover) update("music_cover", songInfo.cover);
-        if (songInfo.audioUrl) update("audio_preview_url", songInfo.audioUrl);
-        toast.success(`✨ Auto-detected: "${songInfo.title}" by ${songInfo.artist}!`);
+        toast.success(`✨ Auto-detected: "${fullTrackName}"!`);
       } else {
-        toast.info("Song link updated! You can refine the title and singer below.");
+        toast.info("Song info updated!");
       }
     } catch (err) {
       console.error("Auto detect failed:", err);
-      toast.error("Could not fetch song details automatically. Please enter title manually.");
+      toast.error("Could not fetch song details automatically.");
     } finally {
       setIsDetectingSong(false);
     }
@@ -257,6 +325,17 @@ export default function TemplateEditor() {
     try {
       localStorage.setItem(`lws:draft:${id}`, JSON.stringify(draft));
       localStorage.setItem(`lws:draft:${id}:demo`, JSON.stringify(draft));
+      
+      // Track keepsake creation event silently
+      trackKeepsakeCreated({
+        templateId: id,
+        title: draft.heroTitle || draft.birthdayName || `${id} Keepsake`,
+        partner1: draft.partner1_name || draft.partner1 || "Partner 1",
+        partner2: draft.partner2_name || draft.partner2 || draft.birthdayName || "Partner 2",
+        isPublished: false,
+        slug: id,
+      });
+
       setIsSaved(true);
       toast.success("Anniversary draft saved successfully!");
       setTimeout(() => setIsSaved(false), 2500);
@@ -274,8 +353,246 @@ export default function TemplateEditor() {
     setIsPublishModalOpen(true);
   };
 
-  // Left Side Editor Form
-  const editForm = (
+  const handleResetToDefault = () => {
+    try {
+      localStorage.removeItem(`lws:draft:${id}`);
+      localStorage.removeItem(`lws:draft:${id}:demo`);
+    } catch (e) {}
+    const defaultData =
+      templateRegistry[id]?.config?.demoData || templateOccasions[id];
+    if (defaultData) {
+      setDraft(defaultData);
+      toast.success("Reset keepsake to default sample data (Rosea & Alex) ✨");
+    }
+  };
+
+  // Left Side Editor Form with Romantic Theme Styling
+  const editForm = editableSchema && editableSchema.length > 0 ? (
+    <div className="space-y-4">
+      {/* Header Badge & Action Buttons */}
+      <div className="rounded-2xl border border-[#ffb8ce]/40 bg-gradient-to-r from-[#2c0c1b] via-[#200713] to-[#17040d] p-4 text-center space-y-2.5 shadow-lg">
+        <span className="text-[0.68rem] font-bold tracking-[0.25em] uppercase text-[#ffd0e0] flex items-center justify-center gap-1.5">
+          <Sparkles className="size-3.5 text-[#ff7395] animate-pulse" />
+          ✨ {registryItem?.config?.name || "Love in Bloom Studio 🌸"}
+        </span>
+        <p className="text-xs text-[#ffc5d5]/80 font-serif italic">
+          Customize every page of your romantic keepsake live (Page 1 to 6)
+        </p>
+        
+        {/* Cupid AI & Reset Action Buttons */}
+        <div className="pt-1 flex flex-wrap gap-2 justify-center">
+          <button
+            type="button"
+            onClick={() => setIsCupidModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#ff7395] via-[#e61e5c] to-[#d81b5c] text-white text-xs font-bold shadow-lg shadow-rose-950/50 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
+          >
+            <Sparkles className="size-3.5 animate-spin" />
+            <span>✨ Cupid AI 1-Click Auto-Fill</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={handleResetToDefault}
+            className="px-3.5 py-2 rounded-xl border border-[#ffb8ce]/30 bg-[#290f20]/60 hover:bg-[#38142b] text-[#ffc5d5] hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Reset form fields back to default Rosea & Alex sample data"
+          >
+            <RotateCcw className="size-3.5" />
+            <span>Reset Sample Data</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Accordion Sections arranged Page by Page */}
+      {schemaSections.map((sec) => {
+        const isOpen = openSchemaSections[sec.name] !== false;
+
+        return (
+          <section key={sec.name} className="rounded-2xl border border-[#ffb8ce]/25 bg-gradient-to-b from-[#230c18] via-[#1a0712] to-[#12040c] overflow-hidden shadow-xl backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => toggleSchemaSection(sec.name)}
+              className="flex min-h-[52px] w-full items-center justify-between px-5 text-left font-medium text-[#ffd0e0] hover:bg-[#2c0f21] transition-all cursor-pointer"
+            >
+              <span className="flex items-center gap-2.5 text-xs sm:text-sm font-bold tracking-wide">
+                <span className="text-base">{sec.icon}</span>
+                <span>{sec.name}</span>
+              </span>
+              <ChevronDown className={`size-4 text-[#ffb8ce]/70 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isOpen && (
+              <div className="space-y-5 border-t border-[#ffb8ce]/15 p-5">
+                {sec.fields.map((field) => {
+                  if (field.key === "bgMusicUrl" || field.key === "bg_music_url" || field.key.toLowerCase().includes("musicurl")) {
+                    return (
+                      <div key={field.key} className="space-y-4 pt-1 pb-2 border-b border-[#ffb8ce]/15">
+                        {/* Music Source Mode Switch Tabs */}
+                        <div className="space-y-2">
+                          <Label className="text-xs text-[#ffd0e0] font-semibold tracking-wide block">
+                            🎵 Choose Music Source Mode
+                          </Label>
+                          <div className="flex gap-2 p-1.5 rounded-xl border border-[#ffb8ce]/25 bg-[#200a18]">
+                            <button
+                              type="button"
+                              onClick={() => update("music_mode", "spotify")}
+                              className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                (draft.music_mode || "spotify") === "spotify"
+                                  ? "bg-gradient-to-r from-[#1db954] to-[#1aa34a] text-black shadow-md"
+                                  : "text-[#ffc5d5]/70 hover:text-white"
+                              }`}
+                            >
+                              🎵 Spotify / Web Track (Auto)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => update("music_mode", "mp3")}
+                              className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                draft.music_mode === "mp3"
+                                  ? "bg-gradient-to-r from-[#ff7395] to-[#d81b5c] text-white shadow-md"
+                                  : "text-[#ffc5d5]/70 hover:text-white"
+                              }`}
+                            >
+                              📁 Custom MP3 / Audio Link
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* MODE 1: SPOTIFY / WEB SONG (AUTO DETECT + PRESETS) */}
+                        {(draft.music_mode || "spotify") === "spotify" ? (
+                          <div className="space-y-3 p-3.5 rounded-xl border border-[#ffb8ce]/20 bg-[#290f20]/60">
+                            <div className="space-y-1.5">
+                              <Label className="text-[0.72rem] text-[#ffd0e0] font-semibold flex items-center justify-between">
+                                <span>Spotify Link or Song Title</span>
+                                {isDetectingSong && <span className="text-[0.65rem] text-[#ff7395] animate-pulse">✨ Detecting song details...</span>}
+                              </Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={draft.songTitle || draft[field.key] || ""}
+                                  onChange={(e) => {
+                                    update("songTitle", e.target.value);
+                                    update(field.key, e.target.value);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      autoDetectSong(draft.songTitle || draft[field.key]);
+                                    }
+                                  }}
+                                  onPaste={(e) => {
+                                    const pasted = e.clipboardData.getData("text");
+                                    if (pasted) {
+                                      update("songTitle", pasted);
+                                      update(field.key, pasted);
+                                      setTimeout(() => autoDetectSong(pasted), 50);
+                                    }
+                                  }}
+                                  placeholder="Paste Spotify link or type song title & press Enter ↵"
+                                  className="min-h-[44px] border-[#ffb8ce]/30 bg-[#290f20] text-[#fff0f5] text-xs rounded-xl flex-1"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => autoDetectSong(draft.songTitle || draft[field.key])}
+                                  className="px-3.5 py-2 rounded-xl bg-[#1db954] text-black font-bold text-xs hover:brightness-110 transition-all cursor-pointer shrink-0"
+                                >
+                                  Auto-Fill
+                                </button>
+                              </div>
+                              <p className="text-[0.65rem] text-[#ffc5d5]/70 italic pt-0.5">
+                                💡 Tip: Type song name (e.g., Kesariya) and press <strong className="text-white font-mono">Enter ↵</strong> to auto-fill details!
+                              </p>
+                            </div>
+
+                            {/* Popular Romantic Song Presets */}
+                            <div className="space-y-1.5 pt-1">
+                              <span className="text-[0.65rem] uppercase tracking-wider text-[#ffd0e0]/70 font-semibold block">
+                                Trending Romantic Song Presets
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  { label: "🌸 Saiyonee", query: "Saiyonee Hiten Ritika Raj" },
+                                  { label: "🎻 Until I Found You", query: "Until I Found You Stephen Sanchez" },
+                                  { label: "🧡 Kesariya", query: "Kesariya Pritam Arijit Singh" },
+                                  { label: "🎵 Sab Tera", query: "Sab Tera Armaan Malik" },
+                                  { label: "✨ Tum Hi Ho", query: "Tum Hi Ho Arijit Singh" },
+                                  { label: "💕 Lover", query: "Lover Taylor Swift" },
+                                  { label: "🌹 Perfect", query: "Perfect Ed Sheeran" },
+                                ].map((preset) => (
+                                  <button
+                                    key={preset.label}
+                                    type="button"
+                                    onClick={() => autoDetectSong(preset.query)}
+                                    className="px-2.5 py-1 rounded-lg border border-[#ffb8ce]/30 bg-[#200713] text-[#ffd0e0] text-[0.7rem] hover:bg-[#ff7395]/20 hover:border-[#ff7395] transition-all cursor-pointer"
+                                  >
+                                    {preset.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* MODE 2: CUSTOM MP3 / AUDIO FILE UPLOAD FROM DEVICE */
+                          <div className="p-3.5 rounded-xl border border-[#ffb8ce]/20 bg-[#290f20]/60">
+                            <AudioUploadInput
+                              value={draft[field.key] || ""}
+                              onChange={(val) => update(field.key, val)}
+                              songTitle={draft.songTitle}
+                              onSongTitleChange={(val) => update("songTitle", val)}
+                              label="Upload Audio File from Phone / Device Storage"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={field.key} className="space-y-2">
+                      <Label className="text-xs text-[#ffd0e0] font-semibold tracking-wide flex items-center gap-1.5">
+                        <span>{field.label}</span>
+                      </Label>
+
+                      {field.type === "textarea" ? (
+                        <Textarea
+                          rows={4}
+                          value={draft[field.key] !== undefined ? draft[field.key] : field.defaultValue || ""}
+                          onChange={(e) => update(field.key, e.target.value)}
+                          className="border-[#ffb8ce]/30 bg-[#290f20] text-[#fff0f5] text-sm leading-relaxed rounded-xl placeholder:text-[#ffb8ce]/40 focus-visible:border-[#ff7395] focus-visible:ring-1 focus-visible:ring-[#ff7395] shadow-inner"
+                          placeholder={field.label}
+                        />
+                      ) : field.key.toLowerCase().includes("image") ? (
+                        <ImageUploadInput
+                          value={draft[field.key] || field.defaultValue || ""}
+                          onChange={(val) => update(field.key, val)}
+                          placeholder={field.label}
+                        />
+                      ) : (
+                        <Input
+                          value={draft[field.key] !== undefined ? draft[field.key] : field.defaultValue || ""}
+                          onChange={(e) => update(field.key, e.target.value)}
+                          className="min-h-[44px] border-[#ffb8ce]/30 bg-[#290f20] text-[#fff0f5] placeholder:text-[#ffb8ce]/40 focus-visible:border-[#ff7395] focus-visible:ring-1 focus-visible:ring-[#ff7395] rounded-xl shadow-inner text-sm"
+                          placeholder={field.label}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        );
+      })}
+
+      {/* Save & Publish Action Button */}
+      <button
+        type="button"
+        onClick={handlePublishClick}
+        className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#ff8dae] via-[#e61e5c] to-[#c2184b] text-sm font-bold text-white transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(230,30,92,0.4)] cursor-pointer shadow-xl uppercase tracking-wider"
+      >
+        <Save className="size-4" />
+        <span>Save &amp; Publish Keepsake (₹9)</span>
+      </button>
+    </div>
+  ) : (
     <div className="space-y-6">
       <div className="rounded-xl border border-[#e8b4b8]/30 bg-[#160b11] p-4 text-center space-y-1">
         <span className="text-[0.65rem] font-semibold tracking-[0.2em] uppercase text-[#e8b4b8] flex items-center justify-center gap-1.5">
@@ -925,8 +1242,12 @@ export default function TemplateEditor() {
 
   // Right Side Live Preview (Expansive, beautifully aligned & 100% interactive)
   const preview = (
-    <div className="w-full max-w-2xl min-h-full pb-20 px-1 sm:px-0">
-      <AnniversaryKeepsakeView draft={draft} />
+    <div className="w-full max-w-4xl min-h-full pb-20 px-1 sm:px-0">
+      {RegisteredComp ? (
+        <RegisteredComp data={draft} />
+      ) : (
+        <AnniversaryKeepsakeView draft={draft} />
+      )}
     </div>
   );
 
@@ -943,7 +1264,9 @@ export default function TemplateEditor() {
             </Link>
             <div className="min-w-0">
               <p className="text-[0.58rem] sm:text-[0.6rem] uppercase tracking-[0.2em] text-[#dfc19c]/60">Romantic Studio</p>
-              <p className="text-xs sm:text-sm font-serif text-white font-medium truncate max-w-[130px] sm:max-w-xs">{draft.template_name}</p>
+              <p className="text-xs sm:text-sm font-serif text-white font-medium truncate max-w-[130px] sm:max-w-xs">
+                {(registryItem?.config?.name && registryItem.config.name !== "Whispers of Love") ? registryItem.config.name : (draft.template_name && draft.template_name !== "Whispers of Love" ? draft.template_name : "Love in Bloom 🌸")}
+              </p>
             </div>
           </div>
 
@@ -979,10 +1302,10 @@ export default function TemplateEditor() {
       </header>
 
       <div className="hidden lg:grid lg:grid-cols-12 flex-1 overflow-hidden">
-        <aside className="col-span-5 h-[calc(100vh-4rem)] overflow-y-auto border-r border-[#dfc19c]/15 bg-[#12070c] p-6 scrollbar-thin">
+        <aside className="col-span-5 h-[calc(100vh-4rem)] overflow-y-auto border-r border-[#dfc19c]/15 bg-[#12070c] p-6 scrollbar-thin relative z-50">
           {editForm}
         </aside>
-        <section id="editor-preview-column" className="col-span-7 h-[calc(100vh-4rem)] overflow-y-auto bg-gradient-to-b from-[#0c0409] via-[#070205] to-[#030102] px-4 py-8 flex justify-center scrollbar-thin">
+        <section id="editor-preview-column" className="col-span-7 h-[calc(100vh-4rem)] overflow-y-auto bg-gradient-to-b from-[#0c0409] via-[#070205] to-[#030102] px-4 py-8 flex justify-center scrollbar-thin relative z-10">
           {preview}
         </section>
       </div>
@@ -1030,6 +1353,14 @@ export default function TemplateEditor() {
         templateSlug={id}
         price={id === "aurora-noire" ? 9 : 99}
         customContent={draft}
+      />
+
+      {/* Cupid AI Assistant Modal */}
+      <CupidAiModal
+        isOpen={isCupidModalOpen}
+        onClose={() => setIsCupidModalOpen(false)}
+        draft={draft}
+        onAutoFill={(aiData) => setDraft((prev) => ({ ...prev, ...aiData }))}
       />
     </div>
   );

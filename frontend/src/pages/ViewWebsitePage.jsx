@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import AnniversaryKeepsakeView from "@/components/AnniversaryKeepsakeView";
 import templateOccasions from "@/data/templateOccasions.json";
+import { templateRegistry } from "@/data/templateRegistry";
 import { Heart, Lock, Clock, Send, ShieldCheck, ArrowRight, Eye, ArrowLeft, Edit3, Sparkles } from "lucide-react";
 import { openRazorpayCheckout } from "@/lib/paymentService";
 import PublishModal from "@/components/PublishModal";
@@ -37,9 +38,14 @@ export default function ViewWebsitePage() {
     }
   });
 
-  // Resolve content/draft for the keepsake
+  // Resolve content/draft for the keepsake (Strictly Isolated per Template ID)
   const draftContent = useMemo(() => {
-    const defaultData = templateOccasions["aurora-noire"] || {};
+    const templateKey = shareId || "aurora-noire";
+    const defaultData =
+      templateRegistry[templateKey]?.config?.demoData ||
+      templateOccasions[templateKey] ||
+      templateOccasions["aurora-noire"] ||
+      {};
 
     // 1. Try URL encoded parameter `d`
     const encodedData = searchParams.get("d");
@@ -81,11 +87,11 @@ export default function ViewWebsitePage() {
       } catch (e) {}
     }
 
-    // 3. Try studio draft from localStorage
+    // 3. Try template-specific studio draft from localStorage
     try {
       const storedDraft =
-        localStorage.getItem("lws:draft:aurora-noire") ||
-        localStorage.getItem("lws:draft:aurora-noire:demo");
+        localStorage.getItem(`lws:draft:${templateKey}`) ||
+        localStorage.getItem(`lws:draft:${templateKey}:demo`);
       if (storedDraft) {
         return { ...defaultData, ...JSON.parse(storedDraft) };
       }
@@ -246,22 +252,13 @@ export default function ViewWebsitePage() {
       )}
 
       {/* Fullscreen Keepsake Experience */}
-      <AnniversaryKeepsakeView draft={draftContent} />
-
-      {/* Floating Bottom Edit Button in Preview Mode */}
-      {isPreview && (
-        <div className="fixed bottom-4 left-4 z-50">
-          <Link
-            to={`/editor/${shareId === "aurora-noire" || !shareId ? "aurora-noire" : shareId}`}
-            data-testid="bottom-edit-button"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#180a14]/95 hover:bg-[#261020] border border-[#e8b4b8]/40 hover:border-[#e8b4b8] text-[#f5e6d3] hover:text-[#e8b4b8] text-xs font-semibold shadow-2xl backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            title="Edit this Keepsake in Studio"
-          >
-            <Edit3 size={13} className="text-[#e8b4b8]" />
-            <span>Edit Keepsake</span>
-          </Link>
-        </div>
+      {templateRegistry[shareId]?.component ? (
+        React.createElement(templateRegistry[shareId].component, { data: draftContent })
+      ) : (
+        <AnniversaryKeepsakeView draft={draftContent} />
       )}
+
+      {/* (Bottom-left corner is reserved for PLAY MUSIC button) */}
 
       {/* Subtle Romantic Atelier Floating Pill Badge */}
       <div className="fixed bottom-4 right-4 z-50">

@@ -1,13 +1,27 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Heart, Lock, Mail, X, User, ArrowRight, ChevronDown, LogOut, Sparkles } from "lucide-react";
 import { Input } from "./ui/input";
 import { useAuth } from "../context/AuthContext";
 import GoogleAccountChooserModal from "./GoogleAccountChooserModal";
+import { toast } from "sonner";
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout, loginWithEmail, showGoogleChooser, setShowGoogleChooser } = useAuth();
+
+  // Secret Owner Hotkey (Ctrl + Shift + A or Alt + A)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) || (e.altKey && (e.key === "A" || e.key === "a"))) {
+        e.preventDefault();
+        navigate("/owner-analytics");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate]);
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -16,10 +30,124 @@ export default function Navbar() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Helper for real email validation (rejects dummy/example/disposable domains)
+  const isRealEmail = (emailStr) => {
+    const trimmed = emailStr.trim().toLowerCase();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(trimmed)) return false;
+
+    const domain = trimmed.split("@")[1];
+    const invalidDomains = [
+      "example.com",
+      "example.org",
+      "example.net",
+      "test.com",
+      "fake.com",
+      "tempmail.com",
+      "mailinator.com",
+      "10minutemail.com",
+      "dispostable.com",
+      "trashmail.com",
+      "guerrillamail.com",
+      "getnada.com",
+    ];
+
+    return !invalidDomains.includes(domain);
+  };
+
   const handleAuth = (e) => {
     if (e) e.preventDefault();
-    loginWithEmail(email, name);
-    setShowAuthModal(false);
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Strict Real Email Check
+    if (!isRealEmail(cleanEmail)) {
+      toast.error("Please enter a valid real email address (e.g., yourname@gmail.com). Disposable or test domains like example.com are not allowed.");
+      return;
+    }
+
+    // 2. Password Check
+    if (!password || password.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
+
+    // Fetch existing registered users from localStorage
+    let registeredUsers = [];
+    try {
+      const saved = localStorage.getItem("lovecrafted:registered_users");
+      if (saved) registeredUsers = JSON.parse(saved);
+    } catch (err) {}
+
+    const existingUser = registeredUsers.find((u) => u.email === cleanEmail);
+
+    if (authMode === "signup") {
+      // Sign Up Flow
+      if (!name.trim()) {
+        toast.error("Please enter your full name to register.");
+        return;
+      }
+      if (existingUser) {
+        toast.error("An account with this email already exists! Please click 'Sign In' below.");
+        setAuthMode("signin");
+        return;
+      }
+
+      // Register new user
+      const newUser = {
+        name: name.trim(),
+        email: cleanEmail,
+        password: password, // Saved locally for demo auth validation
+        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          name.trim()
+        )}&background=d48b95&color=0a0507&bold=true&rounded=true`,
+        provider: "email",
+        id: `user_${Date.now()}`,
+      };
+
+      registeredUsers.push(newUser);
+      try {
+        localStorage.setItem("lovecrafted:registered_users", JSON.stringify(registeredUsers));
+      } catch (err) {}
+
+      loginWithEmail(cleanEmail, name.trim());
+      setShowAuthModal(false);
+      toast.success("Account created successfully! Welcome to LoveCrafted 🎉");
+    } else {
+      // Sign In Flow
+      if (!existingUser) {
+        // Automatically create account for first-time sign-in or prompt signup
+        const defaultName = cleanEmail.split("@")[0];
+        const newUser = {
+          name: defaultName,
+          email: cleanEmail,
+          password: password,
+          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            defaultName
+          )}&background=d48b95&color=0a0507&bold=true&rounded=true`,
+          provider: "email",
+          id: `user_${Date.now()}`,
+        };
+        registeredUsers.push(newUser);
+        try {
+          localStorage.setItem("lovecrafted:registered_users", JSON.stringify(registeredUsers));
+        } catch (err) {}
+
+        loginWithEmail(cleanEmail, defaultName);
+        setShowAuthModal(false);
+        toast.success(`Welcome to LoveCrafted, ${defaultName}! ✨`);
+      } else {
+        if (existingUser.password && existingUser.password !== password) {
+          toast.error("Incorrect password for this email. Please try again.");
+          return;
+        }
+        loginWithEmail(cleanEmail, existingUser.name);
+        setShowAuthModal(false);
+        toast.success(`Welcome back, ${existingUser.name.split(" ")[0]}! ❤️`);
+      }
+    }
   };
 
   const handleGoogleAuth = () => {
@@ -254,7 +382,7 @@ export default function Navbar() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Alex Morgan"
+                      placeholder="Your Full Name"
                       className="h-11 border-[#dfc19c]/20 bg-[#0d0609] pl-10 text-sm text-[#f5e6d3] rounded-xl"
                     />
                   </div>
@@ -270,7 +398,7 @@ export default function Navbar() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@example.com"
+                    placeholder="yourname@gmail.com"
                     className="h-11 border-[#dfc19c]/20 bg-[#0d0609] pl-10 text-sm text-[#f5e6d3] rounded-xl"
                   />
                 </div>

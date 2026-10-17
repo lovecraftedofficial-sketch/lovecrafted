@@ -1,8 +1,20 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const [clickCount, setClickCount] = useState(0);
+
+  const handleSecretHeartClick = () => {
+    const nextCount = clickCount + 1;
+    setClickCount(nextCount);
+    if (nextCount >= 3) {
+      setClickCount(0);
+      navigate("/owner-analytics");
+    }
+    setTimeout(() => setClickCount(0), 1800);
+  };
   return (
     <footer className="border-t border-[#dfc19c]/10 bg-[#0a0507] text-[#c5b0a5] pt-20 pb-12">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -65,8 +77,16 @@ export default function Footer() {
         </div>
 
         {/* Bottom copyright bar */}
-        <div className="border-t border-[#dfc19c]/10 pt-8 text-center text-xs text-[#c5b0a5]/60">
-          Crafted with <span className="text-[#e8b4b8]">♡</span> by LoveCrafted
+        <div className="border-t border-[#dfc19c]/10 pt-8 text-center text-xs text-[#c5b0a5]/60 select-none">
+          Crafted with{" "}
+          <span
+            onClick={handleSecretHeartClick}
+            className="text-[#e8b4b8] cursor-pointer inline-block active:scale-125 transition-transform"
+            title=""
+          >
+            ♡
+          </span>{" "}
+          by LoveCrafted
         </div>
       </div>
     </footer>

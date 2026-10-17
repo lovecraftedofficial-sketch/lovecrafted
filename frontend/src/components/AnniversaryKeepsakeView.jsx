@@ -29,8 +29,8 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
   const draft = contentProp || draftProp || {};
 
   // Safe Fallback Data
-  const partner1 = draft?.partner1_name || draft?.partner1 || "Kabir";
-  const partner2 = draft?.partner2_name || draft?.partner2 || "Ananya";
+  const partner1 = draft?.partner1_name || draft?.partner1 || "Alex";
+  const partner2 = draft?.partner2_name || draft?.partner2 || "Rosea";
   const anniversaryDate = draft?.relationship_date || "2023-11-24";
   const occasionBadge = draft?.occasion_badge || "🥂 Happy Anniversary, My Favorite Human ❤️";
   const greetingTeaser =
@@ -44,7 +44,7 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
         id: 1,
         emoji: draft?.note1Emoji || "🥰",
         title: draft?.note1Title || "Your Sleepy Morning Smile",
-        content: draft?.note1Content || "The adorable squint you make when the alarm rings and you stubbornly pull the blanket over your head.",
+        content: draft?.note1Content || "The adorable squint you make when the alarm goes off and you stubbornly pull the blanket over your head.",
       },
       {
         id: 2,
@@ -56,7 +56,7 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
         id: 3,
         emoji: draft?.note3Emoji || "🤝",
         title: draft?.note3Title || "How You Reach For My Hand",
-        content: draft?.note3Content || "The unconscious way you find my fingers whenever we're in crowded places or crossing the street.",
+        content: draft?.note3Content || "The way you instinctively find my hand whenever we're in crowded places or crossing the street.",
       },
       {
         id: 4,
@@ -69,7 +69,7 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
         id: 1,
         emoji: "🥰",
         title: "Your Sleepy Morning Smile",
-        content: "The adorable squint you make when the alarm rings and you stubbornly pull the blanket over your head.",
+        content: "The adorable squint you make when the alarm goes off and you stubbornly pull the blanket over your head.",
       },
       {
         id: 2,
@@ -81,7 +81,7 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
         id: 3,
         emoji: "🤝",
         title: "How You Reach For My Hand",
-        content: "The unconscious way you find my fingers whenever we're in crowded places or crossing the street.",
+        content: "The way you instinctively find my hand whenever we're in crowded places or crossing the street.",
       },
       {
         id: 4,
@@ -616,9 +616,7 @@ export default function AnniversaryKeepsakeView({ draft: draftProp, content: con
                   </p>
                   <p className="text-[0.68rem] text-[#c5b0a5]/70 pt-0.5 flex items-center gap-1.5 justify-center sm:justify-start">
                     <span className="size-1.5 rounded-full bg-[#d48b95] animate-pulse" />
-                    {audioRef.current?.duration && audioRef.current.duration <= 35
-                      ? "Continuous romantic loop • 30s preview"
-                      : "Continuous full soundtrack playback"}
+                    {isPlaying ? "Playing our song 🎵" : "Tap play to listen"}
                   </p>
                 </div>
 
